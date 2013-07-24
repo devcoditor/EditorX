@@ -44,7 +44,8 @@ define(function (require, exports, module) {
         FileIndexManager    = brackets.getModule("project/FileIndexManager"),
         HintUtils           = require("HintUtils"),
         MessageIds          = require("MessageIds"),
-        Preferences         = require("Preferences");
+        Preferences         = require("Preferences"),
+        TernShim            = require("tern-shim").TernShim;
     
     var ternEnvironment     = [],
         pendingTernRequests = {},
@@ -1032,8 +1033,8 @@ define(function (require, exports, module) {
             }
             var workerDeferred = $.Deferred();
             ternPromise = workerDeferred.promise();
-            var path = ExtensionUtils.getModulePath(module, "tern-worker.js");
-            _ternWorker = new Worker(path);
+            //var path = ExtensionUtils.getModulePath(module, "tern-worker.js");
+            _ternWorker = new TernShim();
     
             _ternWorker.addEventListener("message", function (e) {
                 var response = e.data,
