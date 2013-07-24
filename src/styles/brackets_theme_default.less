@@ -45,7 +45,7 @@
  */
 @background-color-1: lighten(@bc-black, @bc-color-step-size*2);
 @background-color-2: lighten(@bc-black, @bc-color-step-size);
-@background-color-3: #2c2d2f;
+@background-color-3: #212224;
 
 /*
  * @content-color-stronger should be should be further away from the
@@ -62,17 +62,17 @@
 
 /* code accent colors */
 @accent-keyword: #6c9ef8;
-@accent-atom: #d88f30;
+@accent-atom: #c38433;
 @accent-number: #819f00;
-@accent-def: #b27edd;
+@accent-def: #a97ad0;
 @accent-variable: #bebebe;
 @accent-variable-2: #bebebe;
 @accent-variable-3: #bebebe;
-@accent-property: #b27edd;
+@accent-property: #a97ad0;
 @accent-operator: #bebebe;
 @accent-comment: #747474;
-@accent-string: #d88f30;
-@accent-string-2: #d88f30;
+@accent-string: #c38433;
+@accent-string-2: #c38433;
 @accent-meta: #bebebe;
 @accent-error: #dc322f;
 @accent-qualifier: #6c9ef8;
@@ -80,16 +80,16 @@
 @accent-bracket: #bebebe;
 @accent-tag: #6c9ef8;
 @accent-attribute: #738d00;
-@accent-header: #d33682;
+@accent-header: #d85896;
 @accent-quote: #6c9ef8;
-@accent-hr: #d88f30;
-@accent-link: #b27edd;
+@accent-hr: #c38433;
+@accent-link: #a97ad0;
 @accent-rangeinfo: #6c71c4;
 @accent-minus: #dc322f;
 @accent-plus: #819f00;
 
 /* inline editor colors */
-@inline-background-color-1: #eaeaea;
+@inline-background-color-1: #1c1d1f;
 @inline-background-color-2: #dfe2e2;
 @inline-background-color-3: #d0d5d5;
 
@@ -104,11 +104,11 @@
 @main-toolbar-background-color: #5D5F60;
 
 /* Selection colors */
-@selection-color-focused: #d2dcf8;
+@selection-color-focused: #2b2c2e;
 @selection-color-unfocused: #d9d9d9;
 
 /* background color of the line that has the cursor */
-@activeline-bgcolor: #e8f2ff;
+@activeline-bgcolor: #191a1c;
 
 /* Code font formatting
  *
@@ -139,9 +139,34 @@
     // border: none !important;
 
     // to make an I-cursor, use something like this:
-    border-left: 1px solid black !important;
-
+    border-left: 1px solid #eee !important;
 }
 
 /* Variables and Mixins for non-code UI elements that can be styled */
 
+#status-bar {
+    background: #1C1C1E !important;
+    border-top: 1px solid rgba(255, 255, 255, 0.08) !important;
+    color: #a1a1a1 !important;
+}
+    
+#status-info {
+    color: #a1a1a1 !important;
+}
+
+#status-file {
+    color: #666 !important;
+}
+
+#status-indicators {
+    background: #1C1C1E !important;
+    color: #a1a1a1 !important;
+        
+    > div {
+        border-left: 1px solid rgba(255, 255, 255, 0.08) !important;
+    }
+    
+    #status-language {
+        border-right: 1px solid rgba(0, 0, 0, 0.1);
+    }
+}
