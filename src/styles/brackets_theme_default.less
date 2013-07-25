@@ -45,7 +45,7 @@
  */
 @background-color-1: lighten(@bc-black, @bc-color-step-size*2);
 @background-color-2: lighten(@bc-black, @bc-color-step-size);
-@background-color-3: #212224;
+@background-color-3: #242221;
 
 /*
  * @content-color-stronger should be should be further away from the
@@ -79,7 +79,7 @@
 @accent-builtin: #6c9ef8;
 @accent-bracket: #bebebe;
 @accent-tag: #6c9ef8;
-@accent-attribute: #738d00;
+@accent-attribute: #819f00;
 @accent-header: #d85896;
 @accent-quote: #6c9ef8;
 @accent-hr: #c38433;
@@ -89,7 +89,7 @@
 @accent-plus: #819f00;
 
 /* inline editor colors */
-@inline-background-color-1: #1c1d1f;
+@inline-background-color-1: #312F2D;
 @inline-background-color-2: #dfe2e2;
 @inline-background-color-3: #d0d5d5;
 
@@ -169,4 +169,22 @@
     #status-language {
         border-right: 1px solid rgba(255, 255, 255, 0.1) !important;
     }
+}
+
+/* Inline Color Editor */
+.color-editor section .gradient-overlay {
+    border-bottom: 1px solid #4A4947 !important;
+    box-shadow: 0 -1px 0 rgba(0, 0, 0, 0.12) !important;
+}
+
+.color-editor section .slider {
+    box-shadow: 0 1px 0 #4A4947, inset 0 1px 0 rgba(0,0,0,0.2) !important;    
+}
+
+.color-editor aside header .large-swatches {
+    box-shadow: 0 1px 0 #4A4947 !important;
+}
+
+.color-editor aside ul.swatches li .swatch-bg .swatch {
+    box-shadow: 0 -1px 0 rgba(0,0,0,0.2), 0 1px 0 rgba(255,255,255,0.2) !important;
 }
