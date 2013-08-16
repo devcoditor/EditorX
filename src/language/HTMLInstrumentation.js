@@ -781,11 +781,9 @@ define(function (require, exports, module) {
      * will look for either an element immediately in the chosen direction
      * or a text node and then, optionally, an element. 
      *
-     * When newlyInserted is set, we skip over newly inserted elements when 
-     * moving rightwards, since those elements will not yet have been
-     * inserted when the current element is inserted. However, when moving 
-     * leftwards, we don't skip over newly inserted elements, since those 
-     * elements will already have been inserted and so are valid as beforeID. 
+     * When skipElements is set, we assume those elements don't exist 
+     * when the edit that's going to reference the associated
+     * position is applied.
      *
      * Note that this function assumes that there are no comment nodes
      * and no runs of multiple text nodes.
@@ -793,26 +791,26 @@ define(function (require, exports, module) {
      * @param {Array} siblings List of nodes that are siblings to the target node
      * @param {integer} index Index into the siblings list for the target node
      * @param {boolean} left True to look left, falsy value to look right
-     * @param {Array.<Object>} newlyInserted An array of hashes of tag IDs of newly inserted elements.
+     * @param {Array.<Object>} skipElements An array of hashes of tag IDs of elements to skip for the purposes of calculating relative position.
      * @return {Object} each field of the return is optional. `element` contains the next element found if there was one, `text` contains the text node in between if there was one. If there is only a text node in the given direction, then just `text` will be set. `firstChild` and `lastChild` reflect if the index is at the beginning or end of the list.
      */
-    function _findElementAndText(siblings, index, left, newlyInserted) {
+    function _findElementAndText(siblings, index, left, skipElements) {
         var step = left ? -1 : 1,
             guard = left ? -1 : siblings.length,
             result = {},
             nextToCheck;
         
-        function isNewlyInserted(element) {
-            return newlyInserted.some(function (hash) {
+        function shouldSkip(element) {
+            return skipElements.some(function (hash) {
                 return !!hash[element];
             });
         }
         
-        newlyInserted = newlyInserted || [];
+        skipElements = skipElements || [];
         
         for (nextToCheck = index + step; (step < 0 ? nextToCheck > guard : nextToCheck < guard); nextToCheck += step) {
             var elementOrText = siblings[nextToCheck];
-            if (step < 0 || !isNewlyInserted(elementOrText.tagID)) {
+            if (!shouldSkip(elementOrText.tagID)) {
                 if (elementOrText.children) {
                     result.element = elementOrText;
                     break;
@@ -849,14 +847,23 @@ define(function (require, exports, module) {
      *
      * @param {Object} node SimpleDOM node for which to find the neighbors
      * @param {Array.<Object>} newlyInserted An array of hashes of tag IDs of newly inserted elements.
+     * @param {Array.<Object>} newlyDeleted An array of hashes of tag IDs of deleted elements we don't want to reference.
      * @return {Object} object with left and right neighbors, each with element/text/firstChild/lastChild.
      */
-    function findNeighbors(node, newlyInserted) {
+    function findNeighbors(node, newlyInserted, newlyDeleted) {
         var siblings = node.parent.children;
         var childIndex = siblings.indexOf(node);
         var neighbors = {};
-        neighbors.left = _findElementAndText(siblings, childIndex, true, newlyInserted);
-        neighbors.right = _findElementAndText(siblings, childIndex, false, newlyInserted);
+        
+        newlyInserted = newlyInserted || [];
+        newlyDeleted = newlyDeleted || [];
+        
+        // We don't pass "newlyInserted" when looking leftward, because those items will
+        // in fact already have been inserted before we get to this edit.
+        // TODO: that's only true if we're guaranteed that insertions are left-to-right,
+        // which they currently aren't because the nodes we look at are sorted by priority.
+        neighbors.left = _findElementAndText(siblings, childIndex, true, newlyDeleted);
+        neighbors.right = _findElementAndText(siblings, childIndex, false, newlyInserted.concat(newlyDeleted));
         return neighbors;
     }
     
@@ -881,7 +888,9 @@ define(function (require, exports, module) {
             textChanges = {},
             currentElement,
             oldElement,
-            elementDeletes = {};
+            elementDeletes = {},
+            textDeletionEdits = [];
+        
         
         queue.push(newNode);
         
@@ -962,7 +971,7 @@ define(function (require, exports, module) {
             // Text operations happen after element insertions, so they don't need to
             // take into account whether their siblings have already been inserted when
             // finding neighbors. So we don't pass newlyInserted here.
-            var neighbors = findNeighbors(node);
+            var neighbors = findNeighbors(node, [], [elementDeletes]);
             if (neighbors.left.element) {
                 edit.afterID = neighbors.left.element.tagID;
             }
@@ -1015,12 +1024,16 @@ define(function (require, exports, module) {
                         type: "elementDelete",
                         tagID: element.tagID
                     });
+                    elementDeletes[element.tagID] = true;
                 } else {
                     var edit = {
-                        type: "textDelete"
+                        type: "textDelete",
+                        element: element
                     };
-                    addPositionToTextEdit(edit, element);
+                    // We can't set up the position for this edit here, because we
+                    // need to know what other deletions are happening first.
                     edits.push(edit);
+                    textDeletionEdits.push(edit);
                 }
             } else if (element.children) {
                 var i;
@@ -1031,6 +1044,10 @@ define(function (require, exports, module) {
         };
         
         findDeletions(oldNode);
+        textDeletionEdits.forEach(function (edit) {
+            addPositionToTextEdit(edit, edit.element);
+            delete edit.element;
+        });
         
         Object.keys(elementInserts).forEach(function (nonMatchingID) {
             var newElement = newNode.nodeMap[nonMatchingID];
@@ -1077,7 +1094,9 @@ define(function (require, exports, module) {
             return null;
         }
         
+        console.log("old DOM: " + _dumpDOM(previousDOM));
         var edits = domdiff(result.oldSubtree, result.newSubtree);
+        console.log("edits: " + JSON.stringify(edits, null, "  "));
         return {
             dom: result.newDOM,
             edits: edits

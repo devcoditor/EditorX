@@ -689,7 +689,7 @@ define(function (require, exports, module) {
                 });
             });
             
-            it("should gather text as well as elements when looking rightward, but skip newly inserted nodes", function () {
+            it("should gather text as well as elements, but skip the given nodes", function () {
                 var dom = HTMLInstrumentation._buildSimpleDOM("<body><div>First</div>textOne<div>Second</div>textTwo<div>Third</div>");
                 var secondText = dom.children[1];
                 var secondElement = dom.children[2];
@@ -702,17 +702,6 @@ define(function (require, exports, module) {
                 expect(result).toEqual({
                     element: thirdElement,
                     text: thirdText
-                });
-            });
-            
-            it("should *not* skip newly added elements when looking leftward", function () {
-                var dom = HTMLInstrumentation._buildSimpleDOM("<body><div>First</div><div>Second</div><div>Third</div>");
-                var second = dom.children[1];
-                var elementInserts = {};
-                elementInserts[second.tagID] = true;
-                var result = HTMLInstrumentation._findElementAndText(dom.children, 2, true, [elementInserts]);
-                expect(result).toEqual({
-                    element: second
                 });
             });
             
