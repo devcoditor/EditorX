@@ -103,12 +103,42 @@
 @project-panel-text-2: #94A3A7;
 @main-toolbar-background-color: #5D5F60;
 
-/* Selection colors */
+/* selection colors */
 @selection-color-focused: #414243;
 @selection-color-unfocused: #444;
 
 /* background color of the line that has the cursor */
-@activeline-bgcolor: #191a1c;
+@activeline-bgcolor: #000;
+
+/* status bar colors */
+@status-bar-background-color: #1C1C1E;
+@status-bar-top-border: rgba(255, 255, 255, 0.08);
+@status-bar-text-color: #a1a1a1;
+@status-bar-quiet-text-color: #666;
+@status-bar-separator-color: rgba(255, 255, 255, 0.08);
+
+#status-bar {
+    background: #1C1C1E !important;
+    border-top: 1px solid rgba(255, 255, 255, 0.08) !important;
+    color: #a1a1a1 !important;
+}
+    
+#status-info {
+    color: #a1a1a1 !important;
+}
+
+#status-file {
+    color: #666 !important;
+}
+
+#status-indicators {
+    background: #1C1C1E !important;
+    color: #a1a1a1 !important;
+        
+    > div {
+        border-left: 1px solid rgba(255, 255, 255, 0.08) !important;
+    }
+}
 
 /* Code font formatting
  *
@@ -144,32 +174,7 @@
 
 /* Variables and Mixins for non-code UI elements that can be styled */
 
-#status-bar {
-    background: #1C1C1E !important;
-    border-top: 1px solid rgba(255, 255, 255, 0.08) !important;
-    color: #a1a1a1 !important;
-}
-    
-#status-info {
-    color: #a1a1a1 !important;
-}
 
-#status-file {
-    color: #666 !important;
-}
-
-#status-indicators {
-    background: #1C1C1E !important;
-    color: #a1a1a1 !important;
-        
-    > div {
-        border-left: 1px solid rgba(255, 255, 255, 0.08) !important;
-    }
-    
-    #status-language {
-        border-right: 1px solid rgba(255, 255, 255, 0.1) !important;
-    }
-}
 
 /* Inline Color Editor */
 .color-editor section .gradient-overlay {

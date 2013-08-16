@@ -21,6 +21,9 @@
  * 
  */
 
+/* Making a part of Inline Editor themeable */
+@import url(brackets_theme_default.less);
+
 .color-editor {
     font-size: 12px;
     min-width: 450px;
