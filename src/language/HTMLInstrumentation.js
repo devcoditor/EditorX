@@ -461,6 +461,19 @@ define(function (require, exports, module) {
         return result;
     }
     
+    function _dumpMarks(editor) {
+        var result = "",
+            cm = editor._codeMirror,
+            marks = cm.getAllMarks();
+        marks.forEach(function (mark) {
+            if (mark.hasOwnProperty("tagID")) {
+                var range = mark.find();
+                result += "[" + mark.tagID + "] " + JSON.stringify(range) + ": '" + cm.getRange(range.from, range.to) + "'\n";
+            }
+        });
+        return result;
+    }
+    
     /**
      * Recursively walks the SimpleDOM starting at node and marking
      * all tags in the CodeMirror instance. The more useful interface
@@ -902,7 +915,7 @@ define(function (require, exports, module) {
             currentElement = queue.shift();
             
             oldElement = oldNode.nodeMap[currentElement.tagID];
-            if (oldElement) {
+            if (oldElement && (!oldElement.children || oldElement.tag === currentElement.tag)) {
                 matches[currentElement.tagID] = true;
                 if (oldElement.children) {
                     if (oldElement.signature !== currentElement.signature) {
@@ -1085,6 +1098,7 @@ define(function (require, exports, module) {
     }
     
     function _updateDOM(previousDOM, editor, changeList) {
+        console.log("marks after edit: " + _dumpMarks(editor));
         if (!allowIncremental) {
             changeList = undefined;
         }
@@ -1097,6 +1111,7 @@ define(function (require, exports, module) {
         console.log("old DOM: " + _dumpDOM(previousDOM));
         var edits = domdiff(result.oldSubtree, result.newSubtree);
         console.log("edits: " + JSON.stringify(edits, null, "  "));
+        console.log("new subtree: " + _dumpDOM(result.newSubtree));
         return {
             dom: result.newDOM,
             edits: edits
@@ -1262,6 +1277,7 @@ define(function (require, exports, module) {
         
         // Ensure that the marks in the editor are up to date with respect to the given DOM.
         _markTextFromDOM(editor, dom);
+        console.log("initial marks: " + _dumpMarks(editor));
         
         // Walk through the dom nodes and insert the 'data-brackets-id' attribute at the
         // end of the open tag        
