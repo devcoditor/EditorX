@@ -75,6 +75,8 @@ define(function LiveDevelopment(require, exports, module) {
     var STATUS_SYNC_ERROR     = exports.STATUS_SYNC_ERROR     =  5;
 
     var Async                = require("utils/Async"),
+        CollectionUtils      = require("utils/CollectionUtils"),
+        FileIndexManager     = require("project/FileIndexManager"),
         Dialogs              = require("widgets/Dialogs"),
         DefaultDialogs       = require("widgets/DefaultDialogs"),
         DocumentManager      = require("document/DocumentManager"),
@@ -566,7 +568,7 @@ define(function LiveDevelopment(require, exports, module) {
             // After (1) the interstitial page loads, (2) then browser navigation
             // to the base URL is completed, and (3) the agents finish loading
             // gather related documents and finally set status to STATUS_ACTIVE.
-            var doc = _getCurrentDocument();
+            var doc = _getCurrentDocument();  // TODO: probably wrong...
 
             if (doc) {
                 var status = STATUS_ACTIVE,
@@ -610,7 +612,61 @@ define(function LiveDevelopment(require, exports, module) {
 
         return result.promise();
     }
-
+    
+    
+    function _getInitialDocFromCurrent() {
+        var doc = _getCurrentDocument(),
+            refPath,
+            i;
+        
+        if (doc) {
+            refPath = doc.file.fullPath;
+            if (FileUtils.isStaticHtmlFileExt(refPath) || FileUtils.isServerHtmlFileExt(refPath)) {
+                return new $.Deferred().resolve(doc);
+            }
+        }
+        
+        var result = new $.Deferred();
+        
+        FileIndexManager.getFileInfoList("all").done(function (allFiles) {
+            if (refPath) {
+                var containingFolder = FileUtils.getDirectoryPath(refPath);
+                i = CollectionUtils.indexOf(allFiles, function (fileInfo) {
+                    if (fileInfo.name === "index.html" || fileInfo.name === "index.htm") {
+                        if (fileInfo.fullPath.indexOf(containingFolder) === 0) {
+                            return true;
+                        }
+                    }
+                    // TODO: or if there's only one HTML file in folder, use it regardless of name
+                });
+                if (i !== -1) {
+                    DocumentManager.getDocumentForPath(allFiles[i].fullPath).pipe(result.resolve, result.resolve);
+                    return;
+                }
+            }
+            
+            // TODO: walk up each parent folder instead of jumping straight to root?
+            
+            var projRoot = ProjectManager.getProjectRoot().fullPath;
+            i = CollectionUtils.indexOf(allFiles, function (fileInfo) {
+                if (fileInfo.name === "index.html" || fileInfo.name === "index.htm") {
+                    if (fileInfo.fullPath.indexOf(projRoot) === 0) {
+                        return true;
+                    }
+                }
+                // TODO: or if there's only one HTML file in project, use it regardless of name
+            });
+            if (i !== -1) {
+                DocumentManager.getDocumentForPath(allFiles[i].fullPath).pipe(result.resolve, result.resolve);
+                return;
+            }
+            result.resolve(null);
+        });
+        
+        return result.promise();
+    }
+    
+    
     /**
      * @private
      * While still connected to the Inspector, do cleanup for agents,
@@ -818,18 +874,23 @@ define(function LiveDevelopment(require, exports, module) {
             // To accomodate this, we load all agents and navigate in
             // parallel.
             loadAgents();
+            
+            console.log("_onInterstitialPageLoad(): Getting initial doc again, to redirect");
 
-            var doc = _getCurrentDocument();
-            if (doc) {
-                // Navigate from interstitial to the document
-                // Fires a frameNavigated event
-                Inspector.Page.navigate(doc.url);
-            } else {
-                // Unlikely that we would get to this state where
-                // a connection is in process but there is no current
-                // document
-                close();
-            }
+            _getInitialDocFromCurrent().done(function (doc) {
+                console.log("Got: ", doc);
+                if (doc) {
+                    console.log("Redirecting to " + doc.url);
+                    // Navigate from interstitial to the document
+                    // Fires a frameNavigated event
+                    Inspector.Page.navigate(doc.url);
+                } else {
+                    // Unlikely that we would get to this state where
+                    // a connection is in process but there is no current
+                    // document
+                    close();
+                }
+            });
         });
     }
     
@@ -877,6 +938,7 @@ define(function LiveDevelopment(require, exports, module) {
             retryCount      = 0;
         
         // Open the live browser if the connection fails, retry 6 times
+        console.log("Launching " + launcherUrl);
         Inspector.connectToURL(launcherUrl).fail(function onConnectFail(err) {
             if (err === "CANCEL") {
                 _openDeferred.reject(err);
@@ -974,12 +1036,16 @@ define(function LiveDevelopment(require, exports, module) {
     
     // helper function that actually does the launch once we are sure we have
     // a doc and the server for that doc is up and running.
-    function _doLaunchAfterServerReady() {
+    function _doLaunchAfterServerReady(initialDoc) {
         // update status
         _setStatus(STATUS_CONNECTING);
         
+        console.log("_doLaunchAfterServerReady", initialDoc, initialDoc.doc, initialDoc.url);
+        
         // create live document
-        _liveDocument = _createDocument(_getCurrentDocument(), EditorManager.getCurrentFullEditor());
+        // FIXME: may not be current editor!!! ALSO -- may not even HAVE an editor yet...
+        initialDoc._ensureMasterEditor();
+        _liveDocument = _createDocument(initialDoc, initialDoc._masterEditor);
 
         // start listening for requests
         _server.add(_liveDocument);
@@ -1033,19 +1099,27 @@ define(function LiveDevelopment(require, exports, module) {
         
         return deferred.promise();
     }
-
+    
     /** Open the Connection and go live */
     function open() {
         _openDeferred = new $.Deferred();
-
-        var doc = _getCurrentDocument(),
-            prepareServerPromise = (doc && _prepareServer(doc)) || new $.Deferred().reject();
         
-        // wait for server (StaticServer, Base URL or file:)
-        prepareServerPromise.done(_doLaunchAfterServerReady);
-        prepareServerPromise.fail(function () {
-            _showWrongDocError();
-            _openDeferred.reject();
+        // TODO: need to run _onDocumentChange() after load if doc != currentDocument here? Maybe not, since activeEditorChange
+        // doesn't trigger it, while inline editors can still cause edits in doc other than currentDoc...
+        _getInitialDocFromCurrent().done(function (doc) {
+            var prepareServerPromise = (doc && _prepareServer(doc)) || new $.Deferred().reject();
+            
+            doc.addRef(); // FIXME TEMP - need better solution
+        
+            // wait for server (StaticServer, Base URL or file:)
+            prepareServerPromise
+                .done(function () {
+                    _doLaunchAfterServerReady(doc);
+                })
+                .fail(function () {
+                    _showWrongDocError();
+                    _openDeferred.reject();
+                });
         });
 
         return _openDeferred.promise();
