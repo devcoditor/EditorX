@@ -309,7 +309,8 @@ define(function (require, exports, module) {
             selectedDOMItem = $(".smart_autocomplete_container > li:first-child").get(0);
         }
         
-        var selectedItem = domItemToSearchResult(selectedDOMItem);
+        var selectedItem = domItemToSearchResult(selectedDOMItem),
+            doClose = true;
 
         // Delegate to current plugin
         if (currentPlugin) {
@@ -323,6 +324,11 @@ define(function (require, exports, module) {
             // Navigate to file and line number
             var fullPath = selectedItem && selectedItem.fullPath;
             if (fullPath) {
+                // Start closing the modal bar before we switch to the new editor. This will properly
+                // restore the scroll position in the current editor and pop the modal bar out of the flow,
+                // so the modal bar animation doesn't mess up the editor state while we're switching.
+                doClose = false;
+                this.close();
                 CommandManager.execute(Commands.FILE_ADD_TO_WORKING_SET, {fullPath: fullPath})
                     .done(function () {
                         if (!isNaN(gotoLine)) {
@@ -335,9 +341,10 @@ define(function (require, exports, module) {
             }
         }
 
-
-        this.close();
-        EditorManager.focusEditor();
+        if (doClose) {
+            this.close();
+            EditorManager.focusEditor();
+        }
     };
 
     /**
