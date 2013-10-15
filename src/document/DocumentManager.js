@@ -491,7 +491,6 @@ define(function (require, exports, module) {
         
         // Make it the current document
         _currentDocument = doc;
-        EditorManager.setCurrentlyViewedFile(doc.file.fullPath);
         $(exports).triggerHandler("currentDocumentChange");
         // (this event triggers EditorManager to actually switch editors in the UI)
 
