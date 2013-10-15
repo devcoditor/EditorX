@@ -625,7 +625,7 @@ define(function (require, exports, module) {
         if (mode.getId() === "image" && $customView && fullPath) {
             // clear the current document so that 
             // getCurrentDocument returns null 
-            DocumentManager.clearCurrentDocument();
+            DocumentManager.nullifyCurrentDocument();
             
             // Hide the not-editor
             $("#not-editor").css("display", "none");
