@@ -597,20 +597,6 @@ define(function (require, exports, module) {
         }
     }
 
-    /** Display a custom view in the editor container
-    * More custom viewers i.e. video viewer, audio player, ... 
-    * can be added here in the future.
-    */
-    function _showCustomViewer() {
-        $("#editor-holder").append(_currentCustomViewer);
-        var mode = LanguageManager.getLanguageForPath(_currentlyViewedFile);
-        if (mode.getId() === "image") {
-            ImageViewer.render(_currentlyViewedFile);
-        } else {
-            _showNoEditor();
-        }
-    }
-    
     /** Remove existing custom view if present */
     function _removeCustomViewer() {
         var customViewId;
@@ -632,12 +618,14 @@ define(function (require, exports, module) {
     * @param {?string} fullPath  path to the file displayed in the custom view
     */
     function showCustomViewer($customView, fullPath) {
+        
+        var mode = LanguageManager.getLanguageForPath(fullPath);
         // remove current image, this will only happen if the view switches from one 
         // image to another
-        if ($customView && fullPath) {
+        if (mode.getId() === "image" && $customView && fullPath) {
             // clear the current document so that 
             // getCurrentDocument returns null 
-            DocumentManager.clearCurrentDocument();
+            DocumentManager.nullifyCurrentDocument();
             
             // Hide the not-editor
             $("#not-editor").css("display", "none");
@@ -653,7 +641,13 @@ define(function (require, exports, module) {
             _currentCustomViewer = $customView;
 
             _nullifyEditor();
-            _showCustomViewer();
+            
+            // place in window
+            $("#editor-holder").append(_currentCustomViewer);
+
+            // add path, dimensions and file size to the view after loading image
+            ImageViewer.render(_currentlyViewedFile);
+
             $(FileViewController).triggerHandler("documentSelectionFocusChange");
         }
     }

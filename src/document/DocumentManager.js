@@ -497,8 +497,9 @@ define(function (require, exports, module) {
         PerfUtils.addMeasurement(perfTimerName);
     }
     
-    /** Changes currentDocument to null, causing no full Editor to be shown in the UI */
-    function clearCurrentDocument() {
+        
+
+    function nullifyCurrentDocument() {
         // make sure code catching currentDocumentChange do not use the file cleared
         if (EditorManager.getCurrentlyViewedFile) {
             EditorManager.clearCurrentlyViewedFile();
@@ -511,9 +512,19 @@ define(function (require, exports, module) {
         
         // Change model & dispatch event
         _currentDocument = null;
+    }    
+
+
+    
+    /** Changes currentDocument to null, causing no full Editor to be shown in the UI */
+    function clearCurrentDocument() {
+        
+        nullifyCurrentDocument();
         $(exports).triggerHandler("currentDocumentChange");
         // (this event triggers EditorManager to actually clear the editor UI)
     }
+    
+
     
     /**
      * Warning: low level API - use FILE_CLOSE command in most cases.
@@ -941,6 +952,7 @@ define(function (require, exports, module) {
     exports.Document                    = DocumentModule.Document;
     exports.getCurrentDocument          = getCurrentDocument;
     exports.clearCurrentDocument        = clearCurrentDocument;
+    exports.nullifyCurrentDocument      = nullifyCurrentDocument;
     exports.getDocumentForPath          = getDocumentForPath;
     exports.getOpenDocumentForPath      = getOpenDocumentForPath;
     exports.createUntitledDocument      = createUntitledDocument;

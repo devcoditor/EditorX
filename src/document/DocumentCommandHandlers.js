@@ -258,9 +258,11 @@ define(function (require, exports, module) {
                         
                         doOpen(paths[paths.length - 1], silent)
                             .done(function (doc) {
-                                _defaultOpenDialogFullPath = FileUtils.getDirectoryPath(doc.file.fullPath);
-                                
-                                DocumentManager.addToWorkingSet(doc.file);
+                                if (doc) {
+                                    _defaultOpenDialogFullPath = FileUtils.getDirectoryPath(doc.file.fullPath);
+                                    
+                                    DocumentManager.addToWorkingSet(doc.file);
+                                }
                             })
                             // Send the resulting document that was opened
                             .then(result.resolve, result.reject);
