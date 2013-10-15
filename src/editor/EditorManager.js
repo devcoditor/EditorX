@@ -632,9 +632,11 @@ define(function (require, exports, module) {
     * @param {?string} fullPath  path to the file displayed in the custom view
     */
     function showCustomViewer($customView, fullPath) {
+        
+        var mode = LanguageManager.getLanguageForPath(fullPath);
         // remove current image, this will only happen if the view switches from one 
         // image to another
-        if ($customView && fullPath) {
+        if (mode.getId() === "image" && $customView && fullPath) {
             // clear the current document so that 
             // getCurrentDocument returns null 
             DocumentManager.clearCurrentDocument();
@@ -653,7 +655,13 @@ define(function (require, exports, module) {
             _currentCustomViewer = $customView;
 
             _nullifyEditor();
-            _showCustomViewer();
+            
+            // place in window
+            $("#editor-holder").append(_currentCustomViewer);
+
+            // add path, dimensions and file size to the view after loading image
+            ImageViewer.render(_currentlyViewedFile);
+
             $(FileViewController).triggerHandler("documentSelectionFocusChange");
         }
     }
