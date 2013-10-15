@@ -596,20 +596,6 @@ define(function (require, exports, module) {
             _nullifyEditor();
         }
     }
-
-    /** Display a custom view in the editor container
-    * More custom viewers i.e. video viewer, audio player, ... 
-    * can be added here in the future.
-    */
-    function _showCustomViewer() {
-        $("#editor-holder").append(_currentCustomViewer);
-        var mode = LanguageManager.getLanguageForPath(_currentlyViewedFile);
-        if (mode.getId() === "image") {
-            ImageViewer.render(_currentlyViewedFile);
-        } else {
-            _showNoEditor();
-        }
-    }
     
     /** Remove existing custom view if present */
     function _removeCustomViewer() {
