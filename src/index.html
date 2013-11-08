@@ -60,6 +60,16 @@
     <!-- JS for CodeMirror search support -->
     <script src="thirdparty/CodeMirror2/addon/search/searchcursor.js"></script>
 
+    <!-- TODO: fix this for proper dep inclusion -->
+    <script src="thirdparty/idbfs/dist/idbfs.js"></script>
+
+    <!-- TODO: deal with brackets.app issues -->
+    <script>
+      window.brackets = window.brackets || {};
+      brackets.app = brackets.app || {};
+      brackets.app.getApplicationSupportDirectory = brackets.app.getApplicationSupportDirectory || function() { return "/"; };
+    </script>
+
 </head>
 <body>
 
