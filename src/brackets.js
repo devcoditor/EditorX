@@ -109,7 +109,9 @@ define(function (require, exports, module) {
     PerfUtils.addMeasurement("brackets module dependencies resolved");
 
     // Initialize the file system
-    FileSystem.init(require("fileSystemImpl"));
+//    FileSystem.init(require("fileSystemImpl"));
+    // TODO: figure out how to properly register this file system
+    FileSystem.init(require("filesystem/impls/browser/BrowserFileSystem"));
     
     // Local variables
     var params = new UrlParams();
