@@ -74,11 +74,16 @@ define(function (require, exports, module) {
         // Create new fs
         _fs = new IDBFS.FileSystem('local');
 
-        // Don't want to block on _nodeConnectionDeferred because we're needed as the 'root' fs
-        // at startup -- and the Node-side stuff isn't needed for most functionality anyway.
-        if (callback) {
+        // XXX: force a non-root folder into the fs
+        _fs.mkdir("/project", function() {
+
+          // Don't want to block on _nodeConnectionDeferred because we're needed as the 'root' fs
+          // at startup -- and the Node-side stuff isn't needed for most functionality anyway.
+          if (callback) {
             callback();
-        }
+          }
+
+        });
     }
 
     function _wrap(cb) {
@@ -90,12 +95,12 @@ define(function (require, exports, module) {
     }
 
     function showOpenDialog(allowMultipleSelection, chooseDirectories, title, initialPath, fileTypes, callback) {
-        callback(null, "/index.html");
+        callback(null, "/project/index.html");
       //  appshell.fs.showOpenDialog(allowMultipleSelection, chooseDirectories, title, initialPath, fileTypes, _wrap(callback));
     }
 
     function showSaveDialog(title, initialPath, proposedNewFilename, callback) {
-      callback(null, "/index.html");
+      callback(null, "/project/index.html");
     //    appshell.fs.showSaveDialog(title, initialPath, proposedNewFilename, _wrap(callback));
     }
 
@@ -104,8 +109,11 @@ define(function (require, exports, module) {
             if (err) {
                 callback(_mapError(err));
             } else {
-                var options = { isFile: stats.isFile(), mtime: stats.mtime, size: stats.size },
-                    fsStats = new FileSystemStats(options);
+                var fsStats = new FileSystemStats({
+                  isFile: stats.type === "FILE",
+                  mtime: stats.mtime,
+                  size: stats.size
+                });
 
                 callback(null, fsStats);
             }
@@ -114,11 +122,7 @@ define(function (require, exports, module) {
 
     function exists(path, callback) {
         stat(path, function (err) {
-            if (err) {
-                callback(false);
-            } else {
-                callback(true);
-            }
+            callback(!!err);
         });
     }
 
@@ -162,7 +166,8 @@ define(function (require, exports, module) {
                         callback(err, stat);
                     } finally {
                         // Fake a file-watcher result until real watchers respond quickly
-                        _changeCallback(_parentPath(path));
+// XXXhumph: TODO
+//                        _changeCallback(_parentPath(path));
                     }
                 });
             }
@@ -170,6 +175,7 @@ define(function (require, exports, module) {
     }
 
     function rename(oldPath, newPath, callback) {
+// XXXhumph: TODO
         appshell.fs.mv(oldPath, newPath, _wrap(callback));
         // No need to fake a file-watcher result here: FileSystem already updates index on rename()
     }
@@ -212,7 +218,6 @@ define(function (require, exports, module) {
 
     function writeFile(path, data, options, callback) {
         var encoding = options.encoding || "utf8";
-debugger;
         exists(path, function (alreadyExists) {
             _fs.writeFile(path, data, encoding, function (err) {
                 if (err) {
@@ -224,9 +229,11 @@ debugger;
                         } finally {
                             // Fake a file-watcher result until real watchers respond quickly
                             if (alreadyExists) {
-                                _changeCallback(path, stat);        // existing file modified
+// XXXhumph: TODO
+//                                _changeCallback(path, stat);        // existing file modified
                             } else {
-                                _changeCallback(_parentPath(path)); // new file created
+// XXXhumph: TODO
+//                                _changeCallback(_parentPath(path)); // new file created
                             }
                         }
                     });
@@ -242,12 +249,14 @@ debugger;
                 callback(_mapError(err));
             } finally {
                 // Fake a file-watcher result until real watchers respond quickly
-                _changeCallback(_parentPath(path));
+// XXXhumph: TODO
+//                _changeCallback(_parentPath(path));
             }
         });
     }
 
     function moveToTrash(path, callback) {
+// XXXhumph: TODO
         appshell.fs.moveToTrash(path, function (err) {
             try {
                 callback(_mapError(err));
