@@ -66,8 +66,28 @@
     <!-- TODO: deal with brackets.app issues -->
     <script>
       window.brackets = window.brackets || {};
+
+      // Deal with in-browser warning, see src/util/Globals.js
+//      brackets.fs = {};
+
       brackets.app = brackets.app || {};
-      brackets.app.getApplicationSupportDirectory = brackets.app.getApplicationSupportDirectory || function() { return "/"; };
+
+      // Nothing will load if we don't provide a path here...
+      brackets.app.getApplicationSupportDirectory =
+        brackets.app.getApplicationSupportDirectory ||
+        function() {
+          console.warn("[brackets.app access]: getApplicationSupportDirectory: "  + arguments);
+          return "/";
+        };
+
+      // Keep track of things that try to touch FS-like things in the app shell
+      ("getPendingFilesToOpen getDroppedFiles showOSFolder showExtensionFolder")
+      .split(" " )
+      .forEach(function(name) {
+        brackets.app[name] = function() {
+          console.warn("[brackets.app access]: " + name + ": " + arguments);
+        }
+      });
     </script>
 
 </head>
