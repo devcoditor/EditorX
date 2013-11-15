@@ -207,7 +207,7 @@ define(function (require, exports, module) {
             // Load the initial project after extensions have loaded
             extensionLoaderPromise.always(function () {
                 // Finish UI initialization
-                var initialProjectPath = ProjectManager.getInitialProjectPath();
+                var initialProjectPath = "/project"; //ProjectManager.getInitialProjectPath();
                 ProjectManager.openProject(initialProjectPath).always(function () {
                     _initTest();
                     

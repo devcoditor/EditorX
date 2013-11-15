@@ -65,11 +65,7 @@
 
     <!-- TODO: deal with brackets.app issues -->
     <script>
-      window.brackets = window.brackets || {};
-
-      // Deal with in-browser warning, see src/util/Globals.js
-//      brackets.fs = {};
-
+      var brackets = window.brackets = window.brackets || {};
       brackets.app = brackets.app || {};
 
       // Nothing will load if we don't provide a path here...

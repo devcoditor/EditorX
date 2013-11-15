@@ -820,6 +820,8 @@ define(function (require, exports, module) {
      * @return {!string} fullPath reference
      */
     function _getWelcomeProjectPath() {
+      return "/project";
+/**
         var initialPath = FileUtils.getNativeBracketsDirectoryPath(),
             sampleUrl = Urls.GETTING_STARTED;
         if (sampleUrl) {
@@ -829,6 +831,7 @@ define(function (require, exports, module) {
         }
 
         return _ensureTrailingSlash(initialPath); // paths above weren't canonical
+**/
     }
     
     /**

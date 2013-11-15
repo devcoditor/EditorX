@@ -33,15 +33,6 @@ define(function (require, exports, module) {
     // IDBFS File System object - https://github.com/js-platform/idbfs
     var _fs;
 
-    /**
-     * @const
-     * Amount of time to wait before automatically rejecting the connection
-     * deferred. If we hit this timeout, we'll never have a node connection
-     * for the file watcher in this run of Brackets.
-     */
-    var NODE_CONNECTION_TIMEOUT = 30000,    // 30 seconds - TODO: share with StaticServer & Package?
-        FILE_WATCHER_BATCH_TIMEOUT = 200;   // 200ms - granularity of file watcher changes
-
     var _changeCallback,            // Callback to notify FileSystem of watcher changes
         _changeTimeout,             // Timeout used to batch up file watcher changes
         _pendingChanges = {};       // Pending file watcher changes
@@ -95,7 +86,8 @@ define(function (require, exports, module) {
     }
 
     function showOpenDialog(allowMultipleSelection, chooseDirectories, title, initialPath, fileTypes, callback) {
-        callback(null, "/project/index.html");
+        // XXXhumph: hack to allow "Open" for file vs. "Open" for folder
+        callback(null, [ chooseDirectories ? "/project" : "/project/index.html" ] );
       //  appshell.fs.showOpenDialog(allowMultipleSelection, chooseDirectories, title, initialPath, fileTypes, _wrap(callback));
     }
 
