@@ -33,11 +33,11 @@ define(function (require, exports, module) {
         DefaultDialogs  = require("widgets/DefaultDialogs"),
         Filer           = window.Filer,
         async           = require('thirdparty/async'),
-        fs              = new Filer.FileSystem({
-                              name: "brackets",
-                              provider: new Filer.FileSystem.providers.Fallback()
-        }),
-        fsPath          = Filer.Path;
+        fs              = new Filer.FileSystem({ provider: new Filer.FileSystem.providers.Fallback() }),
+        fsPath          = Filer.Path,
+        watchers        = {};
+
+    var _changeCallback;            // Callback to notify FileSystem of watcher changes
 
     function showOpenDialog(allowMultipleSelection, chooseDirectories, title, initialPath, fileTypes, callback) {
         // FIXME: Here we need to create a new dialog that at least
@@ -99,7 +99,7 @@ define(function (require, exports, module) {
 
 
     function stat(path, callback) {
-        fs.stat(path, function(err, stats){
+        fs.stat(path, function(err, stats) {
             if (err){
                 callback(_mapError(err));
                 return;
@@ -236,19 +236,38 @@ define(function (require, exports, module) {
     }
 
     function initWatchers(changeCallback, offlineCallback) {
-        // Ignore - since this FS is immutable, we're never going to call these
+        _changeCallback = changeCallback;
     }
 
     function watchPath(path, callback) {
-        console.warn("File watching is not supported in browser.");
+        // Strip trailing slash on pathname (probably /brackets/)
+        path = path.replace(/\/$/, '');
+        if(watchers[path]) {
+            return;
+        }
+        watchers[path] = fs.watch(path, {recursive: true}, function(event, filename) {
+            stat(filename, function(err, stats) {
+              if(err) {
+                  return;
+              }
+              _changeCallback(filename, stats);
+            });
+        });
         callback();
     }
 
     function unwatchPath(path, callback) {
+        if(watchers[path]) {
+            watchers[path].close();
+            delete watchers[path];
+        }
         callback();
     }
 
     function unwatchAll(callback) {
+        Object.keys(watchers).forEach(function(path) {
+            unwatchPath(path, function(){});
+        });
         callback();
     }
 
