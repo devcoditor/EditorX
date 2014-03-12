@@ -108,9 +108,12 @@ function requiler(req, moduleName, url) {
     }
 
     if(!fs) {
-        fs = requiler.fs = new Filer.FileSystem({name: "brackets"}, function() {
-          // Make sure we have a /brackets dir
-          fs.mkdir('/brackets', load);
+        fs = requiler.fs = new Filer.FileSystem({
+            name: "brackets",
+            provider: new Filer.FileSystem.providers.Fallback()
+        }, function() {
+              // Make sure we have a /brackets dir
+              fs.mkdir('/brackets', load);
         });
         return;
     }
@@ -145,7 +148,10 @@ define(function (require, exports, module) {
 
     // Allow dumping the fs if requested before loading brackets.
     if(deleteCache) {
-        var fs = new Filer.FileSystem({name: "brackets"}, function() {
+        var fs = new Filer.FileSystem({
+            name: "brackets",
+            provider: new Filer.FileSystem.providers.Fallback()
+        }, function() {
             var sh = fs.Shell();
             sh.rm('/brackets', {recursive: true}, function() {
                 require("brackets");

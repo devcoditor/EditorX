@@ -33,7 +33,10 @@ define(function (require, exports, module) {
         DefaultDialogs  = require("widgets/DefaultDialogs"),
         Filer           = window.Filer,
         async           = require('thirdparty/async'),
-        fs              = new Filer.FileSystem({name: "brackets"}),
+        fs              = new Filer.FileSystem({
+                              name: "brackets",
+                              provider: new Filer.FileSystem.providers.Fallback()
+        }),
         fsPath          = Filer.Path;
 
     function showOpenDialog(allowMultipleSelection, chooseDirectories, title, initialPath, fileTypes, callback) {
