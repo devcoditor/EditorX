@@ -339,9 +339,7 @@ define(function (require, exports, module) {
                     "RecentProjects",
                     //"StaticServer",
                     "UrlCodeHints",
-                    "WebPlatformDocs",
-                    
-                    "test-server-file-system"
+                    "WebPlatformDocs"
                 ];
             
             return Async.doInParallel(defaultExtensions, function (item) {

@@ -29,6 +29,12 @@
 /*jslint vars: true, plusplus: true, devel: true, nomen: true, indent: 4, maxerr: 50 */
 /*global require, define, window, brackets, navigator */
 
+
+// Use ?refreshCache=1 to force the files to load from the server again.
+var refreshCache = document.location.search.indexOf("refreshCache=1") > -1;
+// Use ?deleteCache=1 to force the fs to delete cached files, load from server normally
+var deleteCache = document.location.search.indexOf("deleteCache=1") > -1;
+
 // XXXhumph: move this to sh.mkdirp()
 function ensureDir(fs, dir, callback) {
     fs.exists(dir, function (exists) {
@@ -48,16 +54,18 @@ function ensureDir(fs, dir, callback) {
 
 // XXXhumph: require.js + filer.js = requiler
 // Custom require loader for filer caching
-// Use ?nocache=1 to force the files to load from the server again
 function requiler(req, moduleName, url) {
     var fs = requiler.fs;
     var Path = Filer.Path;
     var path = Path.join('/brackets', url);
-    var refreshCache = document.location.search.indexOf("refreshCache=1") > -1;
 
     function onLoad(script) {
-        eval(script);
-        req.completeLoad(moduleName);
+        try {
+            eval(script);
+            req.completeLoad(moduleName);
+        } catch(e) {
+            console.log('Script exec err for `' + moduleName + '`, skipping:', e.message);
+        }
     }
 
     function download() {
@@ -119,7 +127,7 @@ require.config({
         "fileSystemImpl"    : "filesystem/impls/browser/BrowserFileSystem"
     },
     // Replace the usual load for requiler (requires patched require.js for load swap)
-    load: requiler
+    load: deleteCache ? null : requiler
 });
 
 // hack for r.js optimization, move locale to another config call
@@ -135,6 +143,15 @@ require.config({
 define(function (require, exports, module) {
     "use strict";
 
-    // Load the brackets module. This is a self-running module that loads and runs the entire application.
-    require("brackets");
+    // Allow dumping the fs if requested before loading brackets.
+    if(deleteCache) {
+        var fs = new Filer.FileSystem({name: "brackets"}, function() {
+            var sh = fs.Shell();
+            sh.rm('/brackets', {recursive: true}, function() {
+                require("brackets");
+            });
+        });
+    } else {
+        require("brackets");
+    }
 });

@@ -36,10 +36,6 @@ define(function (require, exports, module) {
         fs              = new Filer.FileSystem({name: "brackets"}),
         fsPath          = Filer.Path;
 
-//    window.Filer = Filer;
-    window.fs = fs;
-
-
     function showOpenDialog(allowMultipleSelection, chooseDirectories, title, initialPath, fileTypes, callback) {
         // FIXME: Here we need to create a new dialog that at least
         //        lists all files/folders on filesystem
@@ -56,41 +52,6 @@ define(function (require, exports, module) {
     }
 
     /**
-     * Create Getting Started directory and files. We ignore all errors here
-     * the dir and files likely exist.
-     */
-    function _createGettingStartedEntry(file, contents, callback){
-        var path = fsPath.join("/Getting Started", file);
-
-        if (contents){
-            fs.writeFile(path, contents, function(err){
-                callback();
-            });
-
-        } else {
-            fs.mkdir(path, function(err){
-                callback();
-            });
-        }
-    }
-
-    function _bootstrapGettingStarted(callback){
-        _createGettingStartedEntry(null, null, function(){
-            _createGettingStartedEntry(
-                "index.html",
-                "<html>\n<head>\n  <title>Hello, world!</title>\n</head>\n<body>\n  Welcome to Brackets Online!\n</body>\n</html>",
-                function(){
-                    _createGettingStartedEntry(
-                        "main.css",
-                        ".hello {\n  content: 'world!';\n}",
-                        callback
-                    );
-                }
-            );
-        });
-    }
-
-    /**
      * Convert Filer error codes to FileSystemError values.
      *
      * @param {?number} err A Filer error code
@@ -102,36 +63,18 @@ define(function (require, exports, module) {
             return null;
         }
 
-        switch (err) {
-        case Filer.Errors.EExists:
+        switch (err.code) {
+        case 'ENOTEMPTY':
+        case 'EEXIST':
             return FileSystemError.ALREADY_EXISTS;
-        // case Filer.Errors.EIsDirectory:
-            // return FileSystemError.UNKNOWN
-        case Filer.Errors.ENoEntry:
+        case 'ENOENT':
             return FileSystemError.NOT_FOUND;
-        // case Filer.Errors.EBusy:
-            // return FileSystemError.UNKNOWN
-        case Filer.Errors.ENotEmpty:
-            // return FileSystemError.UNKNOWN
-        case Filer.Errors.ENotDirectory:
+        case 'ENOTDIR':
             return FileSystemError.INVALID_PARAMS;
-        case Filer.Errors.EBadFileDescriptor:
+        case 'EBADF':
             return FileSystemError.NOT_READABLE;
-        // case Filer.Errors.ENotImplemented:
-        //     return FileSystemError.UNKNOWN
-        // case Filer.Errors.ENotMounted:
-        //     return FileSystemError.UNKNOWN
-        // case Filer.Errors.EInvalid:
-        //     return FileSystemError.UNKNOWN
-        // case Filer.Errors.EIO:
-        //     return FileSystemError.UNKNOWN
-        // case Filer.Errors.ELoop:
-        //     return FileSystemError.UNKNOWN
-        // case Filer.Errors.EFileSystemError:
-        //     return FileSystemError.UNKNOWN
-        // case Filer.Errors.ENoAttr:
-        //     return FileSystemError.UNKNOWN
         }
+
         return FileSystemError.UNKNOWN;
     }
 
@@ -153,36 +96,29 @@ define(function (require, exports, module) {
 
 
     function stat(path, callback) {
-        // Initialize the Getting Started assets if it's hit.
-        if (path === "/Getting Started/") {
-            _bootstrapGettingStarted(function(){
-                stat("/Getting Started", callback);
+        fs.stat(path, function(err, stats){
+            if (err){
+                callback(_mapError(err));
+                return;
+            }
+            callback(null, {
+                //FIXME: unsure what to do with symlinks
+                isFile: stats.type === "FILE",
+                isDirectory: stats.type === "DIRECTORY",
+                size: stats.size,
+                mtime: new Date(stats.mtime),
+                ctime: new Date(stats.ctime),
+                // realPath: ?
+                atime: new Date(stats.atime)
             });
-        } else {
-            fs.stat(path, function(err, stats){
-                if (err){
-                    callback(_mapError(err));
-                } else {
-                    callback(null, {
-                        //FIXME: unsure what to do with symlinks
-                        isFile: stats.type === "FILE",
-                        isDirectory: stats.type === "DIRECTORY",
-                        size: stats.size,
-                        mtime: new Date(stats.mtime),
-                        ctime: new Date(stats.ctime),
-                        // realPath: ?
-                        atime: new Date(stats.atime)
-                    });
-                }
-            });
-        }
+        });
     }
 
 
     function exists(path, callback) {
         stat(path, function (err) {
             if (err) {
-                if (err === Filer.Errors.ENoEntry) {
+                if (err.code === 'ENOENT') {
                     callback(null, false);
                 } else {
                     callback(err);
@@ -198,14 +134,10 @@ define(function (require, exports, module) {
         if (path.charAt(path.length - 1) === "/"){
             path = path.substring(0, path.length - 1);
         }
-        console.log('readdir:', path);
-
         fs.readdir(path, function(err, entries){
-            console.log(entries);
             async.map(entries, function(entry, callback){
                 stat(fsPath.join(path, entry), callback);
             }, function(err, stats){
-                console.log(err, entries, stats);
                 callback(err, entries, stats);
             });
         });
@@ -242,6 +174,7 @@ define(function (require, exports, module) {
             function(err, results){
                 if (err){
                     callback(_mapError(err));
+                    return;
                 }
                 var data = results[0];
                 var stats = results[1];
@@ -261,23 +194,19 @@ define(function (require, exports, module) {
             callback = options;
         }
 
-        fs.unlink(path, function(err){
-            fs.writeFile(path, data, function(err){
-                if (err) {
-                    console.log(err);
+        fs.writeFile(path, data, function(err){
+            if (err) {
+                callback(_mapError(err));
+                return;
+            }
+            stat(path, function(err, stats){
+                if (err){
                     callback(_mapError(err));
+                    return;
                 }
-
-                stat(path, function(err, stats){
-                    if (err){
-                        console.log(err);
-                        callback(_mapError(err));
-                    }
-                    callback(null, stats);
-                });
+                callback(null, stats);
             });
         });
-
     }
 
     /**
@@ -292,6 +221,7 @@ define(function (require, exports, module) {
         fs.unlink(path, function(err){
             if (err){
                 callback(_mapError(err));
+                return;
             }
             callback();
         });
