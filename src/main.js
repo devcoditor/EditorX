@@ -82,7 +82,7 @@ function requiler(req, moduleName, url) {
         xhr.send(null);
     }
 
-    function load() {
+    function load(fs) {
         // 1. Make sure sub-dirs along the path exist first
         var dir = Path.dirname(path);
         ensureDir(fs, dir, function(err) {
@@ -97,10 +97,10 @@ function requiler(req, moduleName, url) {
             // 3. Try and read the file from the filesystem first (cached)
             fs.readFile(path, 'utf8', function(err, contents) {
                 if(err) {
-                    // 4. If it's not in the fs, get it and save to fs (cache)
+                    // 3.1. If it's not in the fs, get it and save to fs (cache)
                     download();
                 } else {
-                    // 5. If it's in the fs, use that
+                    // 3.2. If it's in the fs, use that
                     onLoad(contents);
                 }
             });
@@ -108,16 +108,23 @@ function requiler(req, moduleName, url) {
     }
 
     if(!fs) {
-        fs = requiler.fs = new Filer.FileSystem({
-            name: "brackets",
-            provider: new Filer.FileSystem.providers.Fallback()
-        }, function() {
+        var flags = refreshCache ? ['FORMAT'] : null;
+        fs = new Filer.FileSystem({
+              flags: flags,
+              provider: new Filer.FileSystem.providers.Fallback()
+          },
+          function(err, fs_) {
               // Make sure we have a /brackets dir
-              fs.mkdir('/brackets', load);
-        });
-        return;
+              fs = requiler.fs = fs_;
+              fs.mkdir('/brackets', function(err) {
+                  if(err && err.code !== 'EEXIST') throw err;
+                  load(fs);
+              });
+          }
+        );
+    } else {
+      load(fs);
     }
-    load();
 }
 
 require.config({
@@ -149,10 +156,9 @@ define(function (require, exports, module) {
     // Allow dumping the fs if requested before loading brackets.
     if(deleteCache) {
         var fs = new Filer.FileSystem({
-            name: "brackets",
             provider: new Filer.FileSystem.providers.Fallback()
-        }, function() {
-            var sh = fs.Shell();
+        }, function(err, fs_) {
+            var sh = fs_.Shell();
             sh.rm('/brackets', {recursive: true}, function() {
                 require("brackets");
             });
