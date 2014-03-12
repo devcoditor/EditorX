@@ -29,6 +29,86 @@
 /*jslint vars: true, plusplus: true, devel: true, nomen: true, indent: 4, maxerr: 50 */
 /*global require, define, window, brackets, navigator */
 
+// XXXhumph: move this to sh.mkdirp()
+function ensureDir(fs, dir, callback) {
+    fs.exists(dir, function (exists) {
+        if (exists) return callback(null);
+
+        var parent = Filer.Path.dirname(dir);
+
+        ensureDir(fs, parent, function (err) {
+            if (err) return callback(err);
+            fs.mkdir(dir, function (err) {
+                if (err && err.code != 'EEXIST') return callback(err);
+                callback(null);
+            });
+        });
+    });
+}
+
+// XXXhumph: require.js + filer.js = requiler
+// Custom require loader for filer caching
+// Use ?nocache=1 to force the files to load from the server again
+function requiler(req, moduleName, url) {
+    var fs = requiler.fs;
+    var Path = Filer.Path;
+    var path = Path.join('/brackets', url);
+    var refreshCache = document.location.search.indexOf("refreshCache=1") > -1;
+
+    function onLoad(script) {
+        eval(script);
+        req.completeLoad(moduleName);
+    }
+
+    function download() {
+        var xhr = new XMLHttpRequest();
+        xhr.open('GET', url, true);
+        xhr.onreadystatechange = function (evt) {
+            if (xhr.readyState === 4) {
+                fs.writeFile(path, xhr.responseText, function(err) {
+                    if(err) throw err;
+                    onLoad(xhr.responseText);
+                });
+            }
+        };
+        xhr.send(null);
+    }
+
+    function load() {
+        // 1. Make sure sub-dirs along the path exist first
+        var dir = Path.dirname(path);
+        ensureDir(fs, dir, function(err) {
+            if(err) throw err;
+
+            // 2. If ?refreshCache=1, redownload the source to fs
+            if(refreshCache) {
+                download();
+                return;
+            }
+
+            // 3. Try and read the file from the filesystem first (cached)
+            fs.readFile(path, 'utf8', function(err, contents) {
+                if(err) {
+                    // 4. If it's not in the fs, get it and save to fs (cache)
+                    download();
+                } else {
+                    // 5. If it's in the fs, use that
+                    onLoad(contents);
+                }
+            });
+        });
+    }
+
+    if(!fs) {
+        fs = requiler.fs = new Filer.FileSystem({name: "brackets"}, function() {
+          // Make sure we have a /brackets dir
+          fs.mkdir('/brackets', load);
+        });
+        return;
+    }
+    load();
+}
+
 require.config({
     paths: {
         "text"              : "thirdparty/text/text",
@@ -38,13 +118,8 @@ require.config({
         // implementations (e.g. cloud-based storage).
         "fileSystemImpl"    : "filesystem/impls/browser/BrowserFileSystem"
     },
-    shim: {
-        // TextEncoder and TextDecoder shims. encoding-indexes must get loaded first,
-        // and we use a fake one for reduced size, since we only care about utf8.
-        "fileSystemImpl": {
-            deps: ["thirdparty/filer/lib/encoding-indexes-shim"]
-        }
-    }
+    // Replace the usual load for requiler (requires patched require.js for load swap)
+    load: requiler
 });
 
 // hack for r.js optimization, move locale to another config call

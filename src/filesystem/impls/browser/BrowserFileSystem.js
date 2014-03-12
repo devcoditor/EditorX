@@ -31,12 +31,12 @@ define(function (require, exports, module) {
     var FileSystemError = require("filesystem/FileSystemError"),
         Dialogs         = require("widgets/Dialogs"),
         DefaultDialogs  = require("widgets/DefaultDialogs"),
-        Filer           = require('thirdparty/filer/src/index'),
+        Filer           = window.Filer,
         async           = require('thirdparty/async'),
-        fs              = new Filer.FileSystem(),
+        fs              = new Filer.FileSystem({name: "brackets"}),
         fsPath          = Filer.Path;
 
-    window.Filer = Filer;
+//    window.Filer = Filer;
     window.fs = fs;
 
 
