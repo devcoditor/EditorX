@@ -37,14 +37,17 @@
  */
 define(function (require, exports, module) {
     "use strict";
-    
+
+    // Load compatibility shims--these need to load early, be careful moving this
+    require("utils/Compatibility");
+
     // Load dependent non-module scripts
     require("widgets/bootstrap-dropdown");
     require("widgets/bootstrap-modal");
     require("widgets/bootstrap-twipsy-mod");
     require("thirdparty/path-utils/path-utils.min");
     require("thirdparty/smart-auto-complete-local/jquery.smart_autocomplete");
-    
+
     // Load dependent modules
     var Global                  = require("utils/Global"),
         AppInit                 = require("utils/AppInit"),
