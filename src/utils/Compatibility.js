@@ -28,7 +28,7 @@
 /**
  * Compatibility shims for running Brackets in various environments, browsers.
  */
-define(function (require, exports, module) {
+define(function () {
     "use strict";
 
     // [IE10] String.prototype missing trimRight() and trimLeft()
@@ -39,4 +39,5 @@ define(function (require, exports, module) {
         String.prototype.trimLeft = function () { return this.replace(/^\s+/, ""); };
     }
 
+    return true;
 });

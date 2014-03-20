@@ -150,20 +150,22 @@ require.config({
     locale: window.localStorage.getItem("locale") || (typeof (brackets) !== "undefined" ? brackets.app.language : navigator.language)
 });
 
-define(function (require, exports, module) {
+define(function(require) {
+  require(['utils/Compatibility'], function () {
     "use strict";
 
     // Allow dumping the fs if requested before loading brackets.
     if(deleteCache) {
-        var fs = new Filer.FileSystem({
-            provider: new Filer.FileSystem.providers.Fallback()
-        }, function(err, fs_) {
-            var sh = fs_.Shell();
-            sh.rm('/brackets', {recursive: true}, function() {
-                require("brackets");
-            });
+      var fs = new Filer.FileSystem({
+        provider: new Filer.FileSystem.providers.Fallback()
+      }, function(err, fs_) {
+        var sh = fs_.Shell();
+        sh.rm('/brackets', {recursive: true}, function() {
+          require(["brackets"]);
         });
+      });
     } else {
-        require("brackets");
+      require(["brackets"]);
     }
+  });
 });
