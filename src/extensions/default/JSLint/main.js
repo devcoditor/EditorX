@@ -27,12 +27,9 @@
 /**
  * Provides JSLint results via the core linting extension point
  */
-define(function (require, exports, module) {
+define(["jslint-amd"], function(JSLINT) {
     "use strict";
-    
-    // Load JSLint, a non-module lib
-    require("thirdparty/jslint/jslint");
-    
+
     // Load dependent modules
     var CodeInspection     = brackets.getModule("language/CodeInspection"),
         PreferencesManager = brackets.getModule("preferences/PreferencesManager"),
