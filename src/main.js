@@ -118,6 +118,9 @@ function requiler(req, moduleName, url) {
               fs = requiler.fs = fs_;
               fs.mkdir('/brackets', function(err) {
                   if(err && err.code !== 'EEXIST') throw err;
+                  // Create an HTML and CSS file for testing
+                  fs.writeFile('/brackets/index.html', '<html>\n<p>Hello World</p>\n</html>');
+                  fs.writeFile('/brackets/style.css', 'p { color: red; }');
                   load(fs);
               });
           }
