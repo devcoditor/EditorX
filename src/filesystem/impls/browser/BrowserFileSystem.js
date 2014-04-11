@@ -134,7 +134,7 @@ define(function (require, exports, module) {
     }
 
     function readdir(path, callback) {
-        if (path.charAt(path.length - 1) === "/"){
+        if (path !== "/" && path.charAt(path.length - 1) === "/"){
             path = path.substring(0, path.length - 1);
         }
         fs.readdir(path, function(err, entries){

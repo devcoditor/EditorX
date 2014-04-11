@@ -140,7 +140,7 @@ require.config({
         "fileSystemImpl"    : "filesystem/impls/browser/BrowserFileSystem"
     },
     // Replace the usual load for requiler (requires patched require.js for load swap)
-    load: deleteCache ? null : requiler
+//    load: deleteCache ? null : requiler
 });
 
 // hack for r.js optimization, move locale to another config call

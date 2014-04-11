@@ -899,7 +899,7 @@ define(function (require, exports, module) {
      */
     function _getWelcomeProjectPath() {
         if (brackets.inBrowser) {
-            return "/brackets"; //"/Getting Started";
+            return "/"; //"/brackets"; //"/Getting Started";
         }
         
         var initialPath = FileUtils.getNativeBracketsDirectoryPath(),
@@ -955,7 +955,7 @@ define(function (require, exports, module) {
      * first launch.
      */
     function getInitialProjectPath() {
-        return "/brackets";
+        return "/"; //"/brackets";
         //return updateWelcomeProjectPath(_prefs.getValue("projectPath"));
     }
     
