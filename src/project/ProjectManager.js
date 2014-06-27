@@ -987,6 +987,10 @@ define(function (require, exports, module) {
      * @return {!string} fullPath reference
      */
     function _getWelcomeProjectPath() {
+        // Hack for demo: use root
+        return '/';
+
+
         var initialPath = FileUtils.getNativeBracketsDirectoryPath(),
             sampleUrl = Urls.GETTING_STARTED;
         if (sampleUrl) {
@@ -1040,6 +1044,8 @@ define(function (require, exports, module) {
      * first launch.
      */
     function getInitialProjectPath() {
+        // Hack for demo: use root /
+        return '/';
         return updateWelcomeProjectPath(PreferencesManager.getViewState("projectPath"));
     }
     
@@ -1182,91 +1188,89 @@ define(function (require, exports, module) {
             // restore project tree state from last time this project was open
             _projectInitialLoad.previous = PreferencesManager.getViewState("project.treeState", context) || [];
 
-            // Populate file tree as long as we aren't running in the browser
-            if (!brackets.inBrowser) {
-                if (!isUpdating) {
-                    _watchProjectRoot(rootPath);
-                }
-                // Point at a real folder structure on local disk
-                var rootEntry = FileSystem.getDirectoryForPath(rootPath);
-                rootEntry.exists(function (err, exists) {
-                    if (exists) {
-                        var projectRootChanged = (!_projectRoot || !rootEntry) ||
-                            _projectRoot.fullPath !== rootEntry.fullPath;
-                        var i;
-                        
-                        // Success!
-                        var perfTimerName = PerfUtils.markStart("Load Project: " + rootPath);
-
-                        _projectRoot = rootEntry;
-                        
-                        if (projectRootChanged) {
-                            _reloadProjectPreferencesScope();
-                            PreferencesManager._setCurrentEditingFile(rootPath);
-                        }
-
-                        _projectBaseUrl = PreferencesManager.getViewState("project.baseUrl", context) || "";
-                        _allFilesCachePromise = null;  // invalidate getAllFiles() cache as soon as _projectRoot changes
-
-                        // If this is the most current welcome project, record it. In future launches, we want
-                        // to substitute the latest welcome project from the current build instead of using an
-                        // outdated one (when loading recent projects or the last opened project).
-                        if (rootPath === _getWelcomeProjectPath()) {
-                            addWelcomeProjectPath(rootPath);
-                        }
-
-                        // The tree will invoke our "data provider" function to populate the top-level items, then
-                        // go idle until a node is expanded - at which time it'll call us again to fetch the node's
-                        // immediate children, and so on.
-                        resultRenderTree = _renderTree(_treeDataProvider);
-
-                        resultRenderTree.always(function () {
-                            if (projectRootChanged) {
-                                // Allow asynchronous event handlers to finish before resolving result by collecting promises from them
-                                var promises = [];
-                                $(exports).triggerHandler({ type: "projectOpen", promises: promises }, [_projectRoot]);
-                                $.when.apply($, promises).then(result.resolve, result.reject);
-                            } else {
-                                $(exports).triggerHandler("projectRefresh", _projectRoot);
-                                result.resolve();
-                            }
-                        });
-                        resultRenderTree.fail(function () {
-                            PerfUtils.finalizeMeasurement(perfTimerName);
-                            result.reject();
-                        });
-                        resultRenderTree.always(function () {
-                            PerfUtils.addMeasurement(perfTimerName);
-                        });
-                    } else {
-                        Dialogs.showModalDialog(
-                            DefaultDialogs.DIALOG_ID_ERROR,
-                            Strings.ERROR_LOADING_PROJECT,
-                            StringUtils.format(
-                                Strings.REQUEST_NATIVE_FILE_SYSTEM_ERROR,
-                                StringUtils.breakableUrl(rootPath),
-                                err || FileSystemError.NOT_FOUND
-                            )
-                        ).done(function () {
-                            // Reset _projectRoot to null so that the following _loadProject call won't 
-                            // run the 'beforeProjectClose' event a second time on the original project, 
-                            // which is now partially torn down (see #6574).
-                            _projectRoot = null;
-                            
-                            // The project folder stored in preference doesn't exist, so load the default
-                            // project directory.
-                            // TODO (issue #267): When Brackets supports having no project directory
-                            // defined this code will need to change
-                            _loadProject(_getWelcomeProjectPath()).always(function () {
-                                // Make sure not to reject the original deferred until the fallback
-                                // project is loaded, so we don't violate expectations that there is always
-                                // a current project before continuing after _loadProject().
-                                result.reject();
-                            });
-                        });
-                    }
-                });
+            // Populate file tree
+            if (!isUpdating) {
+                _watchProjectRoot(rootPath);
             }
+            // Point at a real folder structure on local disk
+            var rootEntry = FileSystem.getDirectoryForPath(rootPath);
+            rootEntry.exists(function (err, exists) {
+                if (exists) {
+                    var projectRootChanged = (!_projectRoot || !rootEntry) ||
+                        _projectRoot.fullPath !== rootEntry.fullPath;
+                    var i;
+                        
+                    // Success!
+                    var perfTimerName = PerfUtils.markStart("Load Project: " + rootPath);
+
+                    _projectRoot = rootEntry;
+                        
+                    if (projectRootChanged) {
+                        _reloadProjectPreferencesScope();
+                        PreferencesManager._setCurrentEditingFile(rootPath);
+                    }
+
+                     _projectBaseUrl = PreferencesManager.getViewState("project.baseUrl", context) || "";
+                     _allFilesCachePromise = null;  // invalidate getAllFiles() cache as soon as _projectRoot changes
+
+                     // If this is the most current welcome project, record it. In future launches, we want
+                     // to substitute the latest welcome project from the current build instead of using an
+                     // outdated one (when loading recent projects or the last opened project).
+                     if (rootPath === _getWelcomeProjectPath()) {
+                         addWelcomeProjectPath(rootPath);
+                     }
+
+                     // The tree will invoke our "data provider" function to populate the top-level items, then
+                     // go idle until a node is expanded - at which time it'll call us again to fetch the node's
+                     // immediate children, and so on.
+                     resultRenderTree = _renderTree(_treeDataProvider);
+
+                     resultRenderTree.always(function () {
+                         if (projectRootChanged) {
+                             // Allow asynchronous event handlers to finish before resolving result by collecting promises from them
+                             var promises = [];
+                             $(exports).triggerHandler({ type: "projectOpen", promises: promises }, [_projectRoot]);
+                             $.when.apply($, promises).then(result.resolve, result.reject);
+                         } else {
+                             $(exports).triggerHandler("projectRefresh", _projectRoot);
+                             result.resolve();
+                         }
+                     });
+                     resultRenderTree.fail(function () {
+                         PerfUtils.finalizeMeasurement(perfTimerName);
+                         result.reject();
+                     });
+                     resultRenderTree.always(function () {
+                         PerfUtils.addMeasurement(perfTimerName);
+                     });
+                 } else {
+                     Dialogs.showModalDialog(
+                         DefaultDialogs.DIALOG_ID_ERROR,
+                         Strings.ERROR_LOADING_PROJECT,
+                         StringUtils.format(
+                            Strings.REQUEST_NATIVE_FILE_SYSTEM_ERROR,
+                            StringUtils.breakableUrl(rootPath),
+                            err || FileSystemError.NOT_FOUND
+                         )
+                     ).done(function () {
+                         // Reset _projectRoot to null so that the following _loadProject call won't 
+                         // run the 'beforeProjectClose' event a second time on the original project, 
+                         // which is now partially torn down (see #6574).
+                         _projectRoot = null;
+                            
+                         // The project folder stored in preference doesn't exist, so load the default
+                         // project directory.
+                         // TODO (issue #267): When Brackets supports having no project directory
+                         // defined this code will need to change
+                         _loadProject(_getWelcomeProjectPath()).always(function () {
+                             // Make sure not to reject the original deferred until the fallback
+                             // project is loaded, so we don't violate expectations that there is always
+                             // a current project before continuing after _loadProject().
+                             result.reject();
+                         });
+                     });
+                }
+            });
         });
         
         return result.promise();

@@ -61,7 +61,9 @@
       functionNotImplemented();
     },
     getPendingFilesToOpen: function(callback) {
-      functionNotImplemented();
+      // No files are passed to the app on startup, unless we want to support
+      // URL based params with a list. For now return an empty array.
+      callback(null, []);
     },
     getRemoteDebuggingPort: function() {
       functionNotImplemented();

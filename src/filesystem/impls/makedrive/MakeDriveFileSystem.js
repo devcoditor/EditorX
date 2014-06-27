@@ -8,7 +8,8 @@ define(function (require, exports, module) {
         FileSystemStats = require("filesystem/FileSystemStats"),
         Dialogs         = require("widgets/Dialogs"),
         DefaultDialogs  = require("widgets/DefaultDialogs"),
-        Filer           = require("thirdparty/filer/dist/filer.js");
+        Filer           = require("thirdparty/filer/dist/filer"),
+        OpenDialog      = require("filesystem/impls/makedrive/open-dialog");
 
     var fs              = new Filer.FileSystem({ provider: new Filer.FileSystem.providers.Fallback() }),
         Path            = Filer.Path,
@@ -16,14 +17,21 @@ define(function (require, exports, module) {
 
     var _changeCallback;            // Callback to notify FileSystem of watcher changes
 
+    // Hack for demo purposes: make sure we have a few files in the root
+    fs.exists('/index.html', function(exists) {
+        if(!exists) {
+            fs.writeFile('/index.html', '<html>\n<head><link rel="stylesheet" type="text/css" href="styles.css"></head>\n<body>\n<p>Why hello there, Brackets running in a browser!</p>\n</body>\n</html>');
+        }
+    });
+    fs.exists('/styles.css', function(exists) {
+        if(!exists) {
+            fs.writeFile('/styles.css', 'p { color: green; }');
+        }
+    });
+
+
     function showOpenDialog(allowMultipleSelection, chooseDirectories, title, initialPath, fileTypes, callback) {
-        // FIXME: Here we need to create a new dialog that at least
-        //        lists all files/folders on filesystem
-        //        require("text!htmlContent/filesystem-dialog.html");
-        // 17:51 pflynn: oh, you can store .html templates in your extension
-        // itself... you can load them with require() and then just pass
-        // them to Dialogs.showModalDialogUsingTemplate() driectly
-        throw new Error();
+        OpenDialog.showOpenDialog.apply(null, arguments);
     }
 
     function showSaveDialog(title, initialPath, x, callback) {
@@ -112,8 +120,8 @@ define(function (require, exports, module) {
     }
 
     function readdir(path, callback) {
-        // Strip trailing slash(es)
-        path = path.replace(/\/*$/, '');
+        // Strip trailing slash(es), but make sure "/" still survives
+        path = path.replace(/[^/]+\/*$/, '');
 
         fs.readdir(path, function (err, contents) {
             if (err) {
