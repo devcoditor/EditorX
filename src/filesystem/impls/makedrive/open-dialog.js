@@ -8,11 +8,6 @@ define(function (require, exports, module) {
   var ViewUtils = brackets.getModule("utils/ViewUtils");
   var openDialog = require("text!filesystem/impls/makedrive/open-dialog.html");
 
-  function closeModal() {
-    Dialogs.cancelModalDialogIfOpen("5ialog");
-    $(window).off('.makedrive');
-  }
-
   var nodeId = 0;
 
   function fileToTreeJSON(file) {
@@ -33,19 +28,6 @@ define(function (require, exports, module) {
     }
 
     return json;
-  }
-
-  function handleFileSelected(event, data) {
-    console.log(event, data);
-  }
-
-  function handleFileDoubleClick(event) {
-    var file = $(event.target).closest('li').data('file');
-
-    if (file && file.isFile) {
-      console.log('paths', file.fullPath);
-      closeModal();
-    }
   }
 
   // TODO: support all args here
@@ -71,9 +53,8 @@ define(function (require, exports, module) {
 
         if (!paths.length) { return; }
 
-        console.log('open paths', paths);
         closeModal();
-        callback(paths);
+        callback(null, paths);
       });
     }
 
@@ -93,13 +74,28 @@ define(function (require, exports, module) {
       });
     }
 
+    function handleFileDoubleClick(event) {
+      var file = $(event.target).closest('li').data('file');
+
+      if (file && file.isFile) {
+        callback(null, [file.fullPath]);
+        closeModal();
+      }
+    }
+
+    function closeModal() {
+      if(dialog) {
+        dialog.close();
+      }
+    }
+
     var data = {
       title: title,
       cancel: "Cancel",
       open: "Open"
     };
 
-    Dialogs.showModalDialogUsingTemplate(Mustache.render(openDialog, data), false);
+    var dialog = Dialogs.showModalDialogUsingTemplate(Mustache.render(openDialog, data), false);
 
     var $dialog = $(".makedrive.instance");
 
@@ -128,9 +124,7 @@ define(function (require, exports, module) {
       }
     });
 
-    jstree
-      .on('select_node.jstree', handleFileSelected)
-      .on('dblclick.jstree', handleFileDoubleClick);
+    jstree.on('dblclick.jstree', handleFileDoubleClick);
   }
 
   exports.showOpenDialog = showOpenDialog;
