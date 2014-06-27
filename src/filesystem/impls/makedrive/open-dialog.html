@@ -1,36 +1,3 @@
-<style>
-  /**
-   * HACK: this is so wrong, but...
-   * what's the right way to do this when not an extension?
-   * <@dangoor> humph: I'd think you'd just add it to the existing stylesheets
-   **/
-  .jstree-makedrive .jstree-leaf a { color: black; }
-
-  .jstree-makedrive li.jstree-closed>a,
-  .jstree-makedrive li.jstree-open>a {
-    color: black;
-    font-weight: 500;
-  }
-
-  .jstree-makedrive li a.jstree-clicked,
-  .jstree-makedrive li a.jstree-clicked {
-    background: rgba(3,0,0,0.5);
-  }
-
-  .jstree-makedrive .jstree-no-dots .jstree-open>ins {
-    -webkit-filter: drop-shadow(1px 0 1px black);
-  }
-
-  .modal-body {
-    height: 200px;
-    overflow: scroll;
-    padding: 15px 0 15px 10px;
-  }
-
-  .makedrive { font-size: 1em; }
-
-  .makedrive .dialog-title { font-weight: 500; }
-</style>
 <div class="makedrive modal">
     <div class="modal-header">
         <h1 class="dialog-title">{{title}}</h1>
