@@ -11,24 +11,15 @@ define(function (require, exports, module) {
         Filer           = require("thirdparty/filer/dist/filer"),
         OpenDialog      = require("filesystem/impls/makedrive/open-dialog");
 
-    var fs              = new Filer.FileSystem({ provider: new Filer.FileSystem.providers.Fallback() }),
+    var fs              = new Filer.FileSystem({ provider: new Filer.FileSystem.providers.Fallback(), flags: ['FORMAT'] }),
         Path            = Filer.Path,
         watchers        = {};
 
     var _changeCallback;            // Callback to notify FileSystem of watcher changes
 
     // Hack for demo purposes: make sure we have a few files in the root
-    fs.exists('/index.html', function(exists) {
-        if(!exists) {
-            fs.writeFile('/index.html', '<html>\n<head><link rel="stylesheet" type="text/css" href="styles.css"></head>\n<body>\n<p>Why hello there, Brackets running in a browser!</p>\n</body>\n</html>');
-        }
-    });
-    fs.exists('/styles.css', function(exists) {
-        if(!exists) {
-            fs.writeFile('/styles.css', 'p { color: green; }');
-        }
-    });
-
+    var SampleFileSystem = require("filesystem/impls/makedrive/SampleFileSystem");
+    SampleFileSystem.ensureSampleFileSystem(fs);
 
     function showOpenDialog(allowMultipleSelection, chooseDirectories, title, initialPath, fileTypes, callback) {
         OpenDialog.showOpenDialog.apply(null, arguments);
