@@ -6,8 +6,6 @@
 define(function (require, exports, module) {
     "use strict";
 
-    var Filer = require("thirdparty/filer/dist/filer");
-
     exports.ensureSampleFileSystem = function(fs) {
 
         var create = function createFileIfMissing(path, contents, callback) {

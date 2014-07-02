@@ -8,14 +8,19 @@ define(function (require, exports, module) {
         FileSystemStats = require("filesystem/FileSystemStats"),
         Dialogs         = require("widgets/Dialogs"),
         DefaultDialogs  = require("widgets/DefaultDialogs"),
-        Filer           = require("thirdparty/filer/dist/filer"),
+        // TODO: we have to figure out how we're going to build/deploy makedrive.js, this is hacky.
+        MakeDrive       = require("thirdparty/makedrive/client/dist/makedrive"),
         OpenDialog      = require("filesystem/impls/makedrive/open-dialog");
 
-    var fs              = new Filer.FileSystem({ provider: new Filer.FileSystem.providers.Fallback(), flags: ['FORMAT'] }),
-        Path            = Filer.Path,
+    var fs              = MakeDrive.fs(),
+        Path            = MakeDrive.Path,
         watchers        = {};
 
     var _changeCallback;            // Callback to notify FileSystem of watcher changes
+
+    // Give extensions access to MakeDrive's sync functionality. The hosting app
+    // needs to call sync.connect(serverURL) when the user is logged in, for example.
+    appshell.MakeDrive = MakeDrive;
 
     // Hack for demo purposes: make sure we have a few files in the root
     var SampleFileSystem = require("filesystem/impls/makedrive/SampleFileSystem");
