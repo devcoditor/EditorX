@@ -22,9 +22,32 @@ define(function (require, exports, module) {
     // needs to call sync.connect(serverURL) when the user is logged in, for example.
     appshell.MakeDrive = MakeDrive;
 
-    // Hack for demo purposes: make sure we have a few files in the root
-    var SampleFileSystem = require("filesystem/impls/makedrive/SampleFileSystem");
-    SampleFileSystem.ensureSampleFileSystem(fs);
+    // TODO: Maybe use an XHR or something else other than this?
+    $.get( "http://localhost:9090/api/sync", function( data ) {
+      fs.sync.connect('ws://localhost:9090', data);
+    });
+
+    var sync = fs.sync;
+
+    //TODO: Do we want to do anything other than console.log for all these events?
+    sync.on('syncing', function() {
+        console.log('sync started');
+    });
+    sync.on('error', function(e) {
+        console.log('sync error: ', e);
+    });
+    sync.on('completed', function() {
+        console.log('sync completed');
+    });
+    sync.on('updates', function() {
+        console.log('server has updates');
+    });
+
+    // TODO: Figure out when is the best time to start the sync.
+    var DocumentManager = brackets.getModule('document/DocumentManager');
+    $(DocumentManager).on("documentSaved", function(err, e) {
+        sync.request('/' + e.file._path);
+    });
 
     function showOpenDialog(allowMultipleSelection, chooseDirectories, title, initialPath, fileTypes, callback) {
         OpenDialog.showOpenDialog.apply(null, arguments);
