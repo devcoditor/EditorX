@@ -30,9 +30,17 @@ define(function (require, exports, module) {
         OpenDialog.showOpenDialog.apply(null, arguments);
     }
 
-    function showSaveDialog(title, initialPath, x, callback) {
-        // FIXME
-        throw new Error();
+    function showSaveDialog(title, initialPath, defaultName, callback) {
+        var selectedPath;
+        var saveResponse = window.prompt(title, defaultName);
+        if(saveResponse){
+            initialPath = initialPath || '/';
+            selectedPath = initialPath + saveResponse;
+            callback(null, selectedPath);
+        }
+        else{
+            callback();
+        }
     }
 
     /**
