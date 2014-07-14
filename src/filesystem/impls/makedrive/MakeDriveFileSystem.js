@@ -66,6 +66,12 @@ define(function (require, exports, module) {
         }
     }
 
+    function stripTrailingSlash(path) {
+        // Strip trailing slash(es), but make sure "/" still survives
+        path = path.replace(/\/+$/, '');
+        return path || '/';
+    }
+
     /**
      * Convert Filer error codes to FileSystemError values.
      *
@@ -147,8 +153,7 @@ define(function (require, exports, module) {
     }
 
     function readdir(path, callback) {
-        // Strip trailing slash(es), but make sure "/" still survives
-        path = path.replace(/[^/]+\/*$/, '');
+        path = stripTrailingSlash(path);
 
         fs.readdir(path, function (err, contents) {
             if (err) {
@@ -307,8 +312,8 @@ define(function (require, exports, module) {
     }
 
     function watchPath(path, callback) {
-        // Strip trailing slash on pathname (probably /brackets/)
-        path = path.replace(/\/$/, '');
+        path = stripTrailingSlash(path);
+
         if(watchers[path]) {
             return;
         }
@@ -324,6 +329,8 @@ define(function (require, exports, module) {
     }
 
     function unwatchPath(path, callback) {
+        path = stripTrailingSlash(path);
+
         if(watchers[path]) {
             watchers[path].close();
             delete watchers[path];
