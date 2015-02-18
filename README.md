@@ -23,7 +23,7 @@ for info on how we're using CodeMirror.
 Step 01: Make sure you fork and clone [Bramble](https://github.com/humphd/brackets).
 
 ```
-$ git clone https://github.com/[yourusername]/brackets
+$ git clone https://github.com/[yourusername]/brackets --recursive
 ```
 
 Step 02: Install its dependencies
