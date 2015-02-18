@@ -44,8 +44,10 @@ Grunt commands to be added
 
 Step 03: Run Bramble:
 
-There are multiple ways to run Bramble.  
-You can use [Apache Webserver](http://www.apache.org/), host on [github pages](https://help.github.com/articles/what-are-github-pages) or use [Python WebServer](https://docs.python.org/2/library/simplehttpserver.html). Run one of the suggested local servers (or your own) from the root directory of Bramble.
+Run one of the suggested local servers (or your own) from the root directory of Bramble:  
+..*[Apache Webserver](http://www.apache.org/)
+..*Host on [github pages](https://help.github.com/articles/what-are-github-pages)
+..*[Python WebServer](https://docs.python.org/2/library/simplehttpserver.html)
 
 Assuming you have Bramble running on port `8080`. Now you can visit [http://localhost:8080/src](http://localhost:8080/src).
 
