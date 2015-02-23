@@ -267,10 +267,24 @@ module.exports = function (grunt) {
             all: [
                 '<%= meta.grunt %>',
                 '<%= meta.src %>',
-                '<%= meta.test %>'
+                '<%= meta.test %>',
+                // These modules include lots of third-party code, so we skip them
+                '!src/extensions/default/HTMLHinter/slowparse/**', 
+                '!src/extensions/default/HTMLHinter/tooltipsy.source.js',
+                '!src/extensions/default/brackets-browser-livedev/nohost/**',
+                //With Previous skip statement, this file was ignored, so we specify it directly for jshinting
+                'src/extensions/default/brackets-browser-livedev/nohost/src/NoHostServer.js'
             ],
             grunt:  '<%= meta.grunt %>',
-            src:    '<%= meta.src %>',
+            src:    [
+                '<%= meta.src %>',
+                // These modules include lots of third-party code, so we skip them
+                '!src/extensions/default/HTMLHinter/slowparse/**', 
+                '!src/extensions/default/HTMLHinter/tooltipsy.source.js',
+                '!src/extensions/default/brackets-browser-livedev/nohost/**',
+                //With Previous skip statement, this file was ignored, so we specify it directly for jshinting
+                'src/extensions/default/brackets-browser-livedev/nohost/src/NoHostServer.js'
+            ],
             test:   '<%= meta.test %>',
             /* use strict options to mimic JSLINT until we migrate to JSHINT in Brackets */
             options: {
