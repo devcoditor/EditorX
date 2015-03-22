@@ -77,6 +77,10 @@ define(function (require, exports, module) {
         var blob = new Blob([data], {type: type});
         var url = URL.createObjectURL(blob);
 
+        // If there's an existing entry for this, remove it.
+        remove(filename);
+
+        // Now make a new set of cache entries
         blobs[filename] = url;
         urls[url] = filename;
     }
@@ -95,11 +99,12 @@ define(function (require, exports, module) {
         oldPath = Path.normalize(oldPath);
         newPath = Path.normalize(newPath);
 
-        blobs[newPath] = blobs[oldPath];
-        urls[newPath] = urls[oldPath];
+        var url = blobs[oldPath];
+
+        blobs[newPath] = url;
+        urls[url] = newPath;
 
         delete blobs[oldPath];
-        delete urls[oldPath];
     }
 
     // Given a filename, lookup the cached BLOB URL
