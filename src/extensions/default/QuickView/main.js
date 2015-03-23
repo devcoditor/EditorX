@@ -449,67 +449,68 @@ define(function (require, exports, module) {
             }
         }
         
-        if (tokenString) {
-            // Strip leading/trailing quotes, if present
-            tokenString = tokenString.replace(/(^['"])|(['"]$)/g, "");
-            
-            if (/^(data\:image)|(\.gif|\.png|\.jpg|\.jpeg|\.svg)$/i.test(tokenString)) {
-                var sPos, ePos;
-                var docPath = editor.document.file.fullPath;
-                var imgPath;
-                
-                if (PathUtils.isAbsoluteUrl(tokenString)) {
-                    imgPath = tokenString;
-                } else {
-                    imgPath = "file:///" + FileUtils.getDirectoryPath(docPath) + tokenString;
-                }
-                
-                if (urlMatch) {
-                    sPos = {line: pos.line, ch: urlMatch.index};
-                    ePos = {line: pos.line, ch: urlMatch.index + urlMatch[0].length};
-                } else {
-                    sPos = {line: pos.line, ch: token.start};
-                    ePos = {line: pos.line, ch: token.end};
-                }
-                
-                if (imgPath) {
-                    var imgPreview = "<div class='image-preview'>"          +
-                                     "    <img src=\"" + imgPath + "\">"    +
-                                     "</div>";
-                    var coord = cm.charCoords(sPos);
-                    var xpos = (cm.charCoords(ePos).left - coord.left) / 2 + coord.left;
-                    
-                    var showHandler = function () {
-                        // Hide the preview container until the image is loaded.
-                        $previewContainer.hide();
-                                                    
-                        
-                        $previewContainer.find(".image-preview > img").on("load", function () {
-                            $previewContent
-                                .append("<div class='img-size'>" +
-                                            this.naturalWidth + " &times; " + this.naturalHeight + " " + Strings.UNIT_PIXELS +
-                                        "</div>"
-                                    );
-                            $previewContainer.show();
-                            positionPreview(editor, popoverState.xpos, popoverState.ytop, popoverState.ybot);
-                        });
-                    };
-                    
-                    return {
-                        start: sPos,
-                        end: ePos,
-                        content: imgPreview,
-                        onShow: showHandler,
-                        xpos: xpos,
-                        ytop: coord.top,
-                        ybot: coord.bottom,
-                        _imgPath: imgPath
-                    };
-                }
-            }
+        if (!tokenString) {
+            return null;
         }
-        
-        return null;
+
+        // Strip leading/trailing quotes, if present
+        tokenString = tokenString.replace(/(^['"])|(['"]$)/g, "");
+
+        var sPos, ePos;
+        var docPath = editor.document.file.fullPath;
+        var imgPath;
+
+        if (PathUtils.isAbsoluteUrl(tokenString)) {
+            imgPath = tokenString;
+        } else if (!PathUtils.isAbsoluteUrl(tokenString) &&
+                   /(\.gif|\.png|\.jpg|\.jpeg|\.svg)$/i.test(tokenString)) {
+            imgPath = "file:///" + FileUtils.getDirectoryPath(docPath) + tokenString;
+        } else {
+            return null;
+        }
+
+        if (urlMatch) {
+            sPos = {line: pos.line, ch: urlMatch.index};
+            ePos = {line: pos.line, ch: urlMatch.index + urlMatch[0].length};
+        } else {
+            sPos = {line: pos.line, ch: token.start};
+            ePos = {line: pos.line, ch: token.end};
+        }
+
+        var imgPreview = "<div class='image-preview'>"          +
+                         "    <img src=\"" + imgPath + "\">"    +
+                         "</div>";
+        var coord = cm.charCoords(sPos);
+        var xpos = (cm.charCoords(ePos).left - coord.left) / 2 + coord.left;
+
+        var showHandler = function () {
+            // Hide the preview container until the image is loaded.
+            $previewContainer.hide();
+
+            $previewContainer.find(".image-preview > img").on("load", function () {
+                $previewContent
+                    .append("<div class='img-size'>" +
+                                this.naturalWidth + " &times; " + this.naturalHeight + " " + Strings.UNIT_PIXELS +
+                            "</div>"
+                        );
+                $previewContainer.show();
+                positionPreview(editor, popoverState.xpos, popoverState.ytop, popoverState.ybot);
+            }).on("error", function (e) {
+                e.preventDefault();
+                hidePreview();
+            });
+        };
+
+        return {
+            start: sPos,
+            end: ePos,
+            content: imgPreview,
+            onShow: showHandler,
+            xpos: xpos,
+            ytop: coord.top,
+            ybot: coord.bottom,
+            _imgPath: imgPath
+        };
     }
     
 
