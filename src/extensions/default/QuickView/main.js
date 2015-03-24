@@ -462,8 +462,7 @@ define(function (require, exports, module) {
 
         if (PathUtils.isAbsoluteUrl(tokenString)) {
             imgPath = tokenString;
-        } else if (!PathUtils.isAbsoluteUrl(tokenString) &&
-                   /(\.gif|\.png|\.jpg|\.jpeg|\.svg)$/i.test(tokenString)) {
+        } else if (/(\.gif|\.png|\.jpg|\.jpeg|\.svg|\.bmp)$/i.test(tokenString)) {
             imgPath = "file:///" + FileUtils.getDirectoryPath(docPath) + tokenString;
         } else {
             return null;
