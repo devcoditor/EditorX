@@ -363,11 +363,9 @@ define({
     "CMD_ADD_NEXT_MATCH"                  : "Add Next Match to Selection",
     "CMD_SKIP_CURRENT_MATCH"              : "Skip and Add Next Match",
     "CMD_FIND_IN_FILES"                   : "Find in Files",
-    "CMD_FIND_IN_SELECTED"                : "Find in Selected File/Folder",
     "CMD_FIND_IN_SUBTREE"                 : "Find in\u2026",
     "CMD_REPLACE"                         : "Replace",
     "CMD_REPLACE_IN_FILES"                : "Replace in Files",
-    "CMD_REPLACE_IN_SELECTED"             : "Replace in Selected File/Folder",
     "CMD_REPLACE_IN_SUBTREE"              : "Replace in\u2026",
 
     // View menu commands
@@ -583,7 +581,7 @@ define({
     "CMD_LOG_NODE_STATE"                        : "Log Node State to Console",
     "CMD_RESTART_NODE"                          : "Restart Node",
     "CMD_SHOW_ERRORS_IN_STATUS_BAR"             : "Show Errors in Status Bar",
-    "CMD_OPEN_BRACKETS_SOURCE"                  : "Open Brackets Source",
+    "CMD_OPEN_BRACKETS_SOURCE"                  : "Open {APP_NAME} Source",
 
     "LANGUAGE_TITLE"                            : "Switch Language",
     "LANGUAGE_MESSAGE"                          : "Language:",
@@ -612,7 +610,7 @@ define({
     "CMD_SHOW_PARAMETER_HINT"                   : "Show Parameter Hint",
     "NO_ARGUMENTS"                              : "<no parameters>",
     "DETECTED_EXCLUSION_TITLE"                  : "JavaScript File Inference Problem",
-    "DETECTED_EXCLUSION_INFO"                   : "Brackets ran into trouble processing <span class='dialog-filename'>{0}</span>.<br><br>This file will no longer be processed for code hints, Jump to Definition or Quick Edit. To reenable this file, open <code>.brackets.json</code> in your project and edit <code>jscodehints.detectedExclusions</code>.<br><br>This is likely a Brackets bug. If you can provide a copy of this file, please <a href='https://github.com/adobe/brackets/wiki/How-to-Report-an-Issue'>file a bug</a> with a link to the file named here.",
+    "DETECTED_EXCLUSION_INFO"                   : "{APP_NAME} ran into trouble processing <span class='dialog-filename'>{0}</span>.<br><br>This file will no longer be processed for code hints, Jump to Definition or Quick Edit. To reenable this file, open <code>.brackets.json</code> in your project and edit <code>jscodehints.detectedExclusions</code>.<br><br>This is likely a {APP_NAME} bug. If you can provide a copy of this file, please <a href='https://github.com/adobe/brackets/wiki/How-to-Report-an-Issue'>file a bug</a> with a link to the file named here.",
 
     // extensions/default/JSLint
     "JSLINT_NAME"                               : "JSLint",

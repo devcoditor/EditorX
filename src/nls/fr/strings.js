@@ -363,11 +363,9 @@ define({
 	"CMD_ADD_NEXT_MATCH": "Ajouter l’occurrence suivante à la sélection",
 	"CMD_SKIP_CURRENT_MATCH": "Ignorer et ajouter l’occurrence suivante",
 	"CMD_FIND_IN_FILES": "Rechercher dans les fichiers",
-	"CMD_FIND_IN_SELECTED": "Rechercher dans le fichier/dossier sélectionné",
 	"CMD_FIND_IN_SUBTREE": "Rechercher dans\u2026",
 	"CMD_REPLACE": "Remplacer",
 	"CMD_REPLACE_IN_FILES": "Remplacer dans les fichiers",
-	"CMD_REPLACE_IN_SELECTED": "Remplacer dans le fichier/dossier sélectionné",
 	"CMD_REPLACE_IN_SUBTREE": "Remplacer dans\u2026",
 
     // View menu commands
@@ -507,7 +505,7 @@ define({
 	"UNSUPPORTED_PROTOCOL": "L’URL doit commencer par http ou https.",
 	"UNKNOWN_ERROR": "Erreur interne inconnue.",
     // For NOT_FOUND_ERR, see generic strings above
-	"EXTENSION_MANAGER_TITLE": "Le gestionnaire d'extensions",
+	"EXTENSION_MANAGER_TITLE": "Gestionnaire d’extensions",
 	"EXTENSION_MANAGER_ERROR_LOAD": "Impossible d’accéder au registre de l’extension. Réessayez ultérieurement.",
 	"INSTALL_EXTENSION_DRAG": "Faire glisser le fichier .zip ici ou",
 	"INSTALL_EXTENSION_DROP": "Déposer le fichier .zip pour lancer l’installation",
@@ -583,7 +581,7 @@ define({
 	"CMD_LOG_NODE_STATE": "Noter l’état du nœud dans la console",
 	"CMD_RESTART_NODE": "Redémarrer le nœud",
 	"CMD_SHOW_ERRORS_IN_STATUS_BAR": "Afficher les erreurs dans la barre d’état",
-	"CMD_OPEN_BRACKETS_SOURCE": "Ouvrir la source Brackets",
+	"CMD_OPEN_BRACKETS_SOURCE": "Ouvrir la source de {APP_NAME}",
 
 	"LANGUAGE_TITLE": "Changer de langue",
 	"LANGUAGE_MESSAGE": "Langue :",
@@ -612,7 +610,7 @@ define({
 	"CMD_SHOW_PARAMETER_HINT": "Afficher l’indicateur de paramètre",
 	"NO_ARGUMENTS": "<aucun paramètre>",
 	"DETECTED_EXCLUSION_TITLE": "Problème d’inférence de fichier Javascript",
-	"DETECTED_EXCLUSION_INFO": "Brackets a rencontré des problèmes lors du traitement du fichier <span class='dialog-filename'>{0}</span>.<br><br>La fonction d’accès aux définitions, les indicateurs de code et la fonction Edition rapide de ce fichier ne seront plus traités. Pour réactiver ce fichier, ouvrez <code>.brackets.json</code> dans votre projet et éditez la section <code>jscodehints.detectedExclusions</code>.<br><br>Il s’agit vraisemblablement d’un bug au niveau de l’application Brackets. Si vous pouvez nous transmettre une copie de ce fichier, merci de <a href='https://github.com/adobe/brackets/wiki/How-to-Report-an-Issue'>consigner un bug</a> en fournissant un lien vers le fichier en question.",
+	"DETECTED_EXCLUSION_INFO": "{APP_NAME} a rencontré des problèmes lors du traitement du fichier <span class='dialog-filename'>{0}</span>.<br><br>La fonction d’accès aux définitions, les indicateurs de code et la fonction Edition rapide de ce fichier ne seront plus traités. Pour réactiver ce fichier, ouvrez <code>.brackets.json</code> dans votre projet et éditez la section <code>jscodehints.detectedExclusions</code>.<br><br>Il s’agit vraisemblablement d’un bug au niveau de l’application {APP_NAME}. Si vous pouvez nous transmettre une copie de ce fichier, merci de <a href='https://github.com/adobe/brackets/wiki/How-to-Report-an-Issue'>consigner un bug</a> en fournissant un lien vers le fichier en question.",
 
     // extensions/default/JSLint
 	"JSLINT_NAME": "JSLint",
