@@ -272,7 +272,6 @@
         },
         
         onClose: function () {
-            // TODO: This is absolutely temporary solution.
             var body = document.getElementsByTagName("body")[0],
                 overlay = document.createElement("div"),
                 background = document.createElement("div"),
@@ -291,7 +290,7 @@
             background.style.height = "100%";
             background.style.position = "absolute";
             background.style.top = 0;
-            background.style.left = 0;            
+            background.style.left = 0;
 
             status.textContent = "Live Development Session has Ended";
             status.style.width = "100%";
@@ -343,8 +342,7 @@
             try {
                 msg = JSON.parse(msgStr);
             } catch (e) {
-                console.log("[Brackets LiveDev] Invalid Message Received");
-                // TODO: we should probably send back an error message here?
+                console.log("[Brackets LiveDev] Malformed message received: ", msgStr);
                 return;
             }
             // delegates handling/routing to MessageBroker.
