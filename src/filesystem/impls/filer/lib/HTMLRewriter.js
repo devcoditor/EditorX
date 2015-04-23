@@ -1,12 +1,18 @@
 /*jslint vars: true, plusplus: true, devel: true, nomen: true, regexp: true, indent: 4, maxerr: 50 */
 /*global define, DOMParser */
 define(function (require, exports, module) {
-    "use strict";
+    'use strict';
 
-    var Content = require("filesystem/impls/filer/lib/content");
-    var CSSRewriter = require("filesystem/impls/filer/lib/CSSRewriter");
-    var BlobUtils = require("filesystem/impls/filer/BlobUtils");
-    var Path = require("filesystem/impls/filer/BracketsFiler").Path;
+    var Content = require('filesystem/impls/filer/lib/content');
+    var CSSRewriter = require('filesystem/impls/filer/lib/CSSRewriter');
+    var BlobUtils = require('filesystem/impls/filer/BlobUtils');
+    var Path = require('filesystem/impls/filer/BracketsFiler').Path;
+
+    /**
+     * This variable controls whether or not we want scripts to be run in the preview window or not
+     * We do this by altering the mime type from text/javascript to text/x-scripts-disabled below.
+     */
+    var jsEnabled = true;
 
     /**
      * Rewrite all external resources (links, scripts, img sources, ...) to
@@ -103,6 +109,31 @@ define(function (require, exports, module) {
         Array.prototype.forEach.call(elements, rewritePath);
     };
 
+    HTMLRewriter.prototype.scripts = function() {
+        var elements = this.doc.querySelectorAll('script');
+
+        function maybeDisable(element) {
+            // Skip any scripts we've injected for live dev.
+            if(!element.getAttribute('data-brackets-id')) {
+                return;
+            }
+
+            if(jsEnabled) {
+                if(element.getAttribute('type') === 'text/x-scripts-disabled') {
+                    element.removeAttribute('type');
+                }
+            } else {
+                element.setAttribute('type', 'text/x-scripts-disabled');
+            }
+        }
+
+        if(!elements) {
+            return;
+        }
+
+        Array.prototype.forEach.call(elements, maybeDisable);
+    };
+
     function rewrite(path, html) {
         var rewriter = new HTMLRewriter(path, html);
 
@@ -115,10 +146,17 @@ define(function (require, exports, module) {
         rewriter.elements('source', 'src');
         rewriter.elements('video', 'src');
         rewriter.elements('audio', 'src');
+        rewriter.scripts();
 
         // Return the processed HTML
         return rewriter.doc.documentElement.outerHTML;
     }
 
     exports.rewrite = rewrite;
+    exports.enableScripts = function() {
+        jsEnabled = true;
+    };
+    exports.disableScripts = function() {
+        jsEnabled = false;
+    };
 });
