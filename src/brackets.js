@@ -63,20 +63,12 @@ define(function (require, exports, module) {
     var AppInit                 = require("utils/AppInit"),
         LanguageManager         = require("language/LanguageManager"),
         ProjectManager          = require("project/ProjectManager"),
-        DocumentManager         = require("document/DocumentManager"),
-        EditorManager           = require("editor/EditorManager"),
-        JSUtils                 = require("language/JSUtils"),
-        WorkingSetView          = require("project/WorkingSetView"),
-        DocumentCommandHandlers = require("document/DocumentCommandHandlers"),
         FileViewController      = require("project/FileViewController"),
         FileSyncManager         = require("project/FileSyncManager"),
-        KeyBindingManager       = require("command/KeyBindingManager"),
         Commands                = require("command/Commands"),
         CommandManager          = require("command/CommandManager"),
-        CodeHintManager         = require("editor/CodeHintManager"),
         PerfUtils               = require("utils/PerfUtils"),
         FileSystem              = require("filesystem/FileSystem"),
-        Menus                   = require("command/Menus"),
         MainViewHTML            = require("text!htmlContent/main-view.html"),
         Strings                 = require("strings"),
         Dialogs                 = require("widgets/Dialogs"),
@@ -86,13 +78,23 @@ define(function (require, exports, module) {
         UpdateNotification      = require("utils/UpdateNotification"),
         UrlParams               = require("utils/UrlParams").UrlParams,
         PreferencesManager      = require("preferences/PreferencesManager"),
-        ExtensionUtils          = require("utils/ExtensionUtils"),
         DragAndDrop             = require("utils/DragAndDrop"),
-        CodeInspection          = require("language/CodeInspection"),
         NativeApp               = require("utils/NativeApp"),
         DeprecationWarning      = require("utils/DeprecationWarning"),
         ViewCommandHandlers     = require("view/ViewCommandHandlers"),
         MainViewManager         = require("view/MainViewManager");
+
+    // XXXBramble: load dependent modules that aren't used here (jshint 'defined but never used')
+    require("document/DocumentManager");
+    require("editor/EditorManager");
+    require("language/JSUtils");
+    require("project/WorkingSetView");
+    require("document/DocumentCommandHandlers");
+    require("command/KeyBindingManager");
+    require("editor/CodeHintManager");
+    require("command/Menus");
+    require("utils/ExtensionUtils");
+    require("language/CodeInspection");
 
     // load modules for later use
     require("utils/Global");
@@ -151,69 +153,6 @@ define(function (require, exports, module) {
     // read URL params
     params.parse();
     
-
-    /**
-     * Setup test object
-     */
-    function _initTest() {
-        // TODO: (issue #265) Make sure the "test" object is not included in final builds
-        // All modules that need to be tested from the context of the application
-        // must to be added to this object. The unit tests cannot just pull
-        // in the modules since they would run in context of the unit test window,
-        // and would not have access to the app html/css.
-        brackets.test = {
-            CodeHintManager         : CodeHintManager,
-            CodeInspection          : CodeInspection,
-            CommandManager          : CommandManager,
-            Commands                : Commands,
-            CSSUtils                : require("language/CSSUtils"),
-            DefaultDialogs          : DefaultDialogs,
-            Dialogs                 : Dialogs,
-            DocumentCommandHandlers : DocumentCommandHandlers,
-            DocumentManager         : DocumentManager,
-            DocumentModule          : require("document/Document"),
-            DOMAgent                : require("LiveDevelopment/Agents/DOMAgent"),
-            DragAndDrop             : DragAndDrop,
-            EditorManager           : EditorManager,
-            ExtensionLoader         : ExtensionLoader,
-            ExtensionUtils          : ExtensionUtils,
-            File                    : require("filesystem/File"),
-            FileFilters             : require("search/FileFilters"),
-            FileSyncManager         : FileSyncManager,
-            FileSystem              : FileSystem,
-            FileViewController      : FileViewController,
-            FileUtils               : require("file/FileUtils"),
-            FindInFiles             : require("search/FindInFiles"),
-            FindInFilesUI           : require("search/FindInFilesUI"),
-            HTMLInstrumentation     : require("language/HTMLInstrumentation"),
-            Inspector               : require("LiveDevelopment/Inspector/Inspector"),
-            InstallExtensionDialog  : require("extensibility/InstallExtensionDialog"),
-            JSUtils                 : JSUtils,
-            KeyBindingManager       : KeyBindingManager,
-            LanguageManager         : LanguageManager,
-            LiveDevelopment         : require("LiveDevelopment/LiveDevelopment"),
-            LiveDevMultiBrowser     : require("LiveDevelopment/LiveDevMultiBrowser"),
-            LiveDevServerManager    : require("LiveDevelopment/LiveDevServerManager"),
-            MainViewManager         : MainViewManager,
-            MainViewFactory         : require("view/MainViewFactory"),
-            Menus                   : Menus,
-            MultiRangeInlineEditor  : require("editor/MultiRangeInlineEditor").MultiRangeInlineEditor,
-            NativeApp               : NativeApp,
-            PerfUtils               : PerfUtils,
-            PreferencesManager      : PreferencesManager,
-            ProjectManager          : ProjectManager,
-            RemoteAgent             : require("LiveDevelopment/Agents/RemoteAgent"),
-            ScrollTrackMarkers      : require("search/ScrollTrackMarkers"),
-            UpdateNotification      : require("utils/UpdateNotification"),
-            WorkingSetView          : WorkingSetView,
-            doneLoading             : false
-        };
-
-        AppInit.appReady(function () {
-            brackets.test.doneLoading = true;
-        });
-    }
-
     /**
      * Setup Brackets
      */
@@ -251,8 +190,6 @@ define(function (require, exports, module) {
                 ViewCommandHandlers.restoreFontSize();
                 var initialProjectPath = ProjectManager.getInitialProjectPath();
                 ProjectManager.openProject(initialProjectPath).always(function () {
-                    _initTest();
-                    
                     // XXXThimble: We force the "SampleProjectLoad" logic to execute
                     //             by modifying preferences in our thimbleProxy
                     //             extension. This is a shortcut to opening
