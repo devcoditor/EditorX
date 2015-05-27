@@ -3,9 +3,22 @@
 define(function (require, exports, module) {
     "use strict";
 
+    var nativeMessageChannel = MessageChannel && !MessageChannel.Window;
+
+    function postMsg(win, args) {
+        if(nativeMessageChannel) {
+            console.log('postMsg native', args);
+            win.postMessage.apply(win, args);
+        } else {
+            args.unshift(win);
+            console.log('postMsg shimmed', args);
+            MessageChannel.Window.postMessage.apply(MessageChannel.Window, args);
+        }
+    }
+
     // Temporary MessageChannel shim for Firefox, see:
     // https://bugzilla.mozilla.org/show_bug.cgi?id=952139
-    if(!("MessageChannel" in window)) {
+    if(!nativeMessageChannel) {
         require("thirdparty/MessageChannel/dist/message_channel");
     }
 
@@ -45,8 +58,9 @@ define(function (require, exports, module) {
     }
     window.addEventListener("message", receiveMessagePort, false);
 
-    // Request the that remote FS be setup 
-    window.parent.postMessage(JSON.stringify({type: "bramble:filer"}), "*");
+    // Request the that remote FS be setup
+    postMsg(parent, [JSON.stringify({type: "bramble:filer"}), "*"]); 
+//    window.parent.postMessage(JSON.stringify({type: "bramble:filer"}), "*");
 
     var queue = [];
     function queueOrRun(operation) {
@@ -74,7 +88,6 @@ define(function (require, exports, module) {
 
         console.log("proxyCall", fn, id, args);
         queueOrRun(function() {
-            debugger;
             port.postMessage({method: fn, callback: id, args: args});    
         })
     }

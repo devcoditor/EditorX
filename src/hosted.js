@@ -5,6 +5,19 @@ require.config({
     }
 });
 
+var nativeMessageChannel = "MessageChannel" in window;
+
+function postMsg(win, args) {
+    if(nativeMessageChannel) {
+        console.log('postMsg native', args);
+        win.postMessage.apply(win, args);
+    } else {
+        args.unshift(win);
+        console.log('postMsg shimmed', args);
+        MessageChannel.Window.postMessage.apply(MessageChannel.Window, args);
+    }
+}
+
 function RemoteFiler(Filer) {
     "use strict";
 
@@ -19,10 +32,9 @@ function RemoteFiler(Filer) {
     var bramble;
 
     function setupChannel() {
-        console.log('setup channel');
         var channel = new MessageChannel();
-        debugger;
-        bramble.contentWindow.postMessage(JSON.stringify({type: "bramble:filer"}), "*", [channel.port2]);
+        postMsg(bramble.contentWindow, [JSON.stringify({type: "bramble:filer"}), "*", [channel.port2]]);
+//        bramble.contentWindow.postMessage(JSON.stringify({type: "bramble:filer"}), "*", [channel.port2]);
         port = channel.port1
         port.onmessage = fsHandler;
     }
@@ -38,7 +50,7 @@ function RemoteFiler(Filer) {
 
     function fsHandler(e) {
         var data = e.data;
-console.log("fsHandler got", e);
+console.log('fsHandler', e);
         function remoteCallback() {
             var args = slice.call(arguments);
             port.postMessage({callback: data.callback, result: args});
@@ -51,13 +63,14 @@ console.log("fsHandler got", e);
         if(typeof(message) !== "string") {
             message = JSON.stringify(message);
         }
-        bramble.contentWindow.postMessage(message, "*");
+        postMsg(bramble.contentWindow, [message, "*"]);
+//        bramble.contentWindow.postMessage(message, "*");
     }
 
     $(function() {
-        $(window).on("message", function(e) {
-            var data = parseEventData(e.originalEvent.data);
-console.log('hosted received', e);
+        window.addEventListener("message", function(e) {
+            var data = parseEventData(e.data);
+
             // When Bramble asks for initial content, reply but don't bother providing any
             if (data.type === "bramble:init") {
                 send({type: "bramble:init", source: null});
@@ -76,7 +89,7 @@ console.log('hosted received', e);
 
 
 define(function(require){
-    if(!("MessageChannel" in window)) {
+    if(!nativeMessageChannel) {
         // Temporary MessageChannel shim for Firefox, see:
         // https://bugzilla.mozilla.org/show_bug.cgi?id=952139
         require([

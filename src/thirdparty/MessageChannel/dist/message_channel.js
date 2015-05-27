@@ -316,17 +316,12 @@ define(["thirdparty/MessageChannel/dist/uuid.core", "thirdparty/MessageChannel/d
           },
           data, event, ports;
 
-      try {
         data = Kamino.parse( messageEvent.data );
-        event = data.event,
-        ports = event.ports;
-      } catch(err) {
-        // We didn't get a MessageChannel type message, ignore it.
-        console.log('Kamino MessageChannel ignoring', messageEvent.data);
-        return fakeEvent;
-      }
+        event = data && data.event;
+//        ports = event.ports;
 
       if( event ) {
+        ports = event.ports;
         if( ports ) {
           for(var i=0; i< ports.length ; i++) {
             fakeEvent.ports.push( MessagePort.prototype._getPort( ports[i], messageEvent, copyEvents ) );
@@ -335,6 +330,8 @@ define(["thirdparty/MessageChannel/dist/uuid.core", "thirdparty/MessageChannel/d
         fakeEvent.data = event.data;
         fakeEvent.source = messageEvent.source;
         fakeEvent.messageChannel = event.messageChannel;
+      } else {
+        return MessageEvent;
       }
 
       return fakeEvent;
@@ -396,7 +393,6 @@ define(["thirdparty/MessageChannel/dist/uuid.core", "thirdparty/MessageChannel/d
     };
 
     var _overrideMessageEventListener = function( target ) {
-      console.log("_overrideMessageEventListener", target);
       var originalAddEventListener, addEventListenerName,
           targetRemoveEventListener, removeEventListenerName,
           messageEventType,
@@ -498,6 +494,7 @@ define(["thirdparty/MessageChannel/dist/uuid.core", "thirdparty/MessageChannel/d
         @param {Array} ports: MessagePorts that need to be sent to otherWindow.
     */
     if( Window ) {
+      MessageChannel.Window = Window;
       Window.postMessage = function( otherWindow, message, targetOrigin, ports ) {
         var data, entangledPort;
 
