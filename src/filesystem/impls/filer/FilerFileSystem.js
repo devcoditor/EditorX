@@ -94,7 +94,7 @@ define(function (require, exports, module) {
             var mtime = new Date(stats.mtime);
 
             var options = {
-                isFile: stats.isFile(),
+                isFile: stats.type === "FILE",
                 mtime: mtime,
                 size: stats.size,
                 // TODO: figure out how to deal with realPath
@@ -169,7 +169,7 @@ define(function (require, exports, module) {
                     return callback(_mapError(err));
                 }
 
-                if(stat.isFile) {
+                if(stat.type === "FILE") {
                     BlobUtils.rename(oldPath, newPath);
                 }
 
