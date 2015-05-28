@@ -1,5 +1,8 @@
-define(["thirdparty/MessageChannel/dist/uuid.core", "thirdparty/MessageChannel/dist/kamino"], 
-  function(UUID, Kamino) {
+define([
+  "thirdparty/MessageChannel/uuid.core",
+  "thirdparty/MessageChannel/kamino"
+],
+function(UUID, Kamino) {
 
   var root = window;
 
@@ -202,6 +205,9 @@ define(["thirdparty/MessageChannel/dist/uuid.core", "thirdparty/MessageChannel/d
 
       return channel;
     };
+
+    // Helper to determine if this is a shim or native
+    MessageChannel._shim = true;
 
     MessageChannel.log = function (_channel) {
       if (MessageChannel.verbose) {
@@ -601,4 +607,5 @@ define(["thirdparty/MessageChannel/dist/uuid.core", "thirdparty/MessageChannel/d
     }
   }
 
+  return MessageChannel;
 });

@@ -3,28 +3,10 @@
 define(function (require, exports, module) {
     "use strict";
 
-    var nativeMessageChannel = MessageChannel && !MessageChannel.Window;
-
-    function postMsg(win, args) {
-        if(nativeMessageChannel) {
-            console.log('postMsg native', args);
-            win.postMessage.apply(win, args);
-        } else {
-            args.unshift(win);
-            console.log('postMsg shimmed', args);
-            MessageChannel.Window.postMessage.apply(MessageChannel.Window, args);
-        }
-    }
-
-    // Temporary MessageChannel shim for Firefox, see:
-    // https://bugzilla.mozilla.org/show_bug.cgi?id=952139
-    if(!nativeMessageChannel) {
-        require("thirdparty/MessageChannel/dist/message_channel");
-    }
-
     // If you need to debug Filer for some reason, drop the .min below
     // TODO: we shouldn't be loading this just to get Path, Buffer, etc.
     var Filer = require("thirdparty/filer/dist/filer.min");
+    var ChannelUtils = require("thirdparty/MessageChannel/ChannelUtils");
     var port;
 
     var callbackQueue = {};
@@ -40,7 +22,6 @@ define(function (require, exports, module) {
     }
 
     function receiveMessagePort(e) {
-        console.log('receiveMessagePort', e);
         var data = e.data;
         try {
             data = JSON.parse(data);
@@ -52,14 +33,15 @@ define(function (require, exports, module) {
         if (data.type === "bramble:filer") {
             window.removeEventListener("message", receiveMessagePort, false);
             port = e.ports[0];
-            port.onmessage = remoteFSHandler;
+            port.addEventListener("message", remoteFSHandler, false);
+            port.start && port.start();
             runQueued();
         }
     }
     window.addEventListener("message", receiveMessagePort, false);
 
     // Request the that remote FS be setup
-    postMsg(parent, [JSON.stringify({type: "bramble:filer"}), "*"]); 
+    ChannelUtils.postMessage(parent, [JSON.stringify({type: "bramble:filer"}), "*"]);
 //    window.parent.postMessage(JSON.stringify({type: "bramble:filer"}), "*");
 
     var queue = [];
@@ -72,7 +54,6 @@ define(function (require, exports, module) {
     }
 
     function runQueued() {
-        console.log('runQueued');
         queue.forEach(function(operation) {
             operation.call(null);
         })
@@ -86,9 +67,8 @@ define(function (require, exports, module) {
             persist: !!persist
         };
 
-        console.log("proxyCall", fn, id, args);
         queueOrRun(function() {
-            port.postMessage({method: fn, callback: id, args: args});    
+            port.postMessage({method: fn, callback: id, args: args});
         })
     }
 

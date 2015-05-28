@@ -209,7 +209,13 @@ define(function(require, exports, module) {
   var serialize = function (property, object, callback, properties, whitespace, indentation, stack) {
     var value = object[property], originalClassName, className, year, month, date, time, hours, minutes, seconds, milliseconds, results, element, index, length, prefix, any, result,
         regExpSource, regExpModifiers = "";
-    if( value instanceof Error || value instanceof Function) {
+    if( value instanceof Error ) {
+      // Let Filer errors get through
+      if ( !value.errno ) {
+        throw new KaminoException();
+      }
+    }
+    if( value instanceof Function ) {
       throw new KaminoException();
     }
     if( isElement( value ) ) {
