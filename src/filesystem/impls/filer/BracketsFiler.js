@@ -34,7 +34,7 @@ define(function (require, exports, module) {
             window.removeEventListener("message", receiveMessagePort, false);
             port = e.ports[0];
             port.addEventListener("message", remoteFSHandler, false);
-            port.start && port.start();
+            port.start();
             runQueued();
         }
     }

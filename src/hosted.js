@@ -20,7 +20,7 @@ function RemoteFiler(Filer, ChannelUtils) {
 //        bramble.contentWindow.postMessage(JSON.stringify({type: "bramble:filer"}), "*", [channel.port2]);
         port = channel.port1
         port.addEventListener("message", fsHandler, false);
-        port.start && port.start();
+        port.start();
     }
 
     function parseEventData(data) {
