@@ -1,7 +1,8 @@
 define(function (require, exports, module) {
     "use strict";
 
-     var nativeMessageChannel = window.MessageChannel && !window.MessageChannel._shim;
+    var UUID = require("thirdparty/MessageChannel/uuid.core");
+    var nativeMessageChannel = window.MessageChannel && !window.MessageChannel._shim;
 
      function postMsg(win, args) {
          if(nativeMessageChannel) {
@@ -15,4 +16,5 @@ define(function (require, exports, module) {
      }
 
      exports.postMessage = postMsg;
+     exports.UUID = UUID;
 });

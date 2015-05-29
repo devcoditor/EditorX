@@ -1,9 +1,4 @@
-define([
-  "thirdparty/MessageChannel/uuid.core",
-  "thirdparty/MessageChannel/kamino"
-],
-function(UUID, Kamino) {
-
+define(["thirdparty/MessageChannel/uuid.core"], function(UUID) {
   var root = window;
 
   var self = root,
@@ -241,8 +236,6 @@ function(UUID, Kamino) {
     /**
         Encode the event to be sent.
 
-        messageEvent.data contains a fake Event encoded with Kamino.js
-
         It contains:
         * data: the content that the MessagePort should send
         * ports: The targeted MessagePorts.
@@ -262,9 +255,7 @@ function(UUID, Kamino) {
       }
 
       messageEvent = { event: MessageChannel._messageEvent(data, strippedPorts, messageChannel) };
-      encodedMessage = Kamino.stringify(messageEvent);
-
-      return encodedMessage;
+      return messageEvent;
     };
 
     MessageChannel._messageEvent = function(data, ports, messageChannel) {
@@ -304,8 +295,6 @@ function(UUID, Kamino) {
     /**
         Extract the event from the message.
 
-        messageEvent.data contains a fake Event encoded with Kamino.js
-
         It contains:
         * data: the content that the MessagePort should use
         * ports: The targeted MessagePorts.
@@ -322,9 +311,8 @@ function(UUID, Kamino) {
           },
           data, event, ports;
 
-        data = Kamino.parse( messageEvent.data );
-        event = data && data.event;
-//        ports = event.ports;
+      data = messageEvent.data;
+      event = data && data.event;
 
       if( event ) {
         ports = event.ports;
@@ -337,7 +325,7 @@ function(UUID, Kamino) {
         fakeEvent.source = messageEvent.source;
         fakeEvent.messageChannel = event.messageChannel;
       } else {
-        return MessageEvent;
+        return messageEvent;
       }
 
       return fakeEvent;
@@ -345,8 +333,6 @@ function(UUID, Kamino) {
 
     /**
         Extract the event from the message if possible.
-
-        A user agent can received events that are not encoded using Kamino.
 
         @param {MessageEvent} messageEvent
         @param {Boolean} copyEvents: copy or not the events from the cloned port to the local one

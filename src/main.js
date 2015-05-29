@@ -73,12 +73,16 @@ define(function (require) {
     // Load compatibility shims--these need to load early, be careful moving this
     require([
         "utils/Compatibility",
-        // Temporary MessageChannel shim for Firefox, see:
+        // XXXBramble: temporary MessageChannel shim for Firefox, see:
         // https://bugzilla.mozilla.org/show_bug.cgi?id=952139
         "thirdparty/MessageChannel/message_channel"
     ],
     function () {
-        // Load the brackets module. This is a self-running module that loads and runs the entire application.
-        require(["brackets"]);
+        require([
+            // XXXBramble: get the filesystem loading ASAP for connection with parent window
+            "filesystem/impls/filer/BracketsFiler",
+            // Load the brackets module. This is a self-running module that loads and runs the entire application.
+            "brackets"
+        ]);
     });
 });

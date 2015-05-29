@@ -3,16 +3,18 @@
 define(function (require, exports, module) {
     "use strict";
 
-    // If you need to debug Filer for some reason, drop the .min below
     // TODO: we shouldn't be loading this just to get Path, Buffer, etc.
     var Filer = require("thirdparty/filer/dist/filer.min");
+    var FilerBuffer = Filer.Buffer;
     var ChannelUtils = require("thirdparty/MessageChannel/ChannelUtils");
+    var fnQueue = require("filesystem/impls/filer/lib/queue");
+    var UUID = ChannelUtils.UUID;
     var port;
 
+    // Remote filesystem callbacks
     var callbackQueue = {};
-    var callbackID = 1;
 
-    function remoteFSHandler(e) {
+    function remoteFSCallbackHandler(e) {
         var data = e.data;
         var callbackItem = callbackQueue[data.callback];
         if(!callbackItem.persist) {
@@ -33,43 +35,26 @@ define(function (require, exports, module) {
         if (data.type === "bramble:filer") {
             window.removeEventListener("message", receiveMessagePort, false);
             port = e.ports[0];
-            port.addEventListener("message", remoteFSHandler, false);
+            port.addEventListener("message", remoteFSCallbackHandler, false);
             port.start();
-            runQueued();
+            fnQueue.ready();
         }
     }
     window.addEventListener("message", receiveMessagePort, false);
 
     // Request the that remote FS be setup
-    ChannelUtils.postMessage(parent, [JSON.stringify({type: "bramble:filer"}), "*"]);
-//    window.parent.postMessage(JSON.stringify({type: "bramble:filer"}), "*");
-
-    var queue = [];
-    function queueOrRun(operation) {
-        if(port) {
-            operation.call(null);
-        } else {
-            queue.push(operation);
-        }
-    }
-
-    function runQueued() {
-        queue.forEach(function(operation) {
-            operation.call(null);
-        })
-        queue = null;
-    }
+    parent.postMessage(JSON.stringify({type: "bramble:filer"}), "*");
 
     function proxyCall(fn, args, callback, persist) {
-        var id = callbackID++;
+        var id = UUID.generate();
         callbackQueue[id] = {
             callback: callback,
             persist: !!persist
         };
 
-        queueOrRun(function() {
+        fnQueue.exec(function() {
             port.postMessage({method: fn, callback: id, args: args});
-        })
+        });
     }
 
     var proxyFS = {
@@ -89,10 +74,28 @@ define(function (require, exports, module) {
             proxyCall("rename", [path], callback);
         },
         readFile: function(path, options, callback) {
-            proxyCall("readFile", [path, options], callback);
+            // Always do binary reads, and decode in callback if necessary
+            proxyCall("readFile", [path, {encoding: null}], function(err, data) {
+                if(err) {
+                    callback(err);
+                    return;
+                }
+
+                data = new FilerBuffer(data);
+                if(options === "utf8" || options.encoding === "utf8") {
+                    data = data.toString("utf8");
+                }
+
+                callback(null, data);
+            });
         },
         writeFile: function(path, data, encoding, callback) {
-            proxyCall("writeFile", [path, data, encoding], callback);
+            // Always do binary write, and send ArrayBuffer over transport
+            if (typeof(data) === "string") {
+                data = new FilerBuffer(data, "utf8");
+            }
+
+            proxyCall("writeFile", [path, data.buffer, {encoding: null}], callback);
         },
         watch: function(path, options, callback) {
             proxyCall("watch", [path, options], callback, true);

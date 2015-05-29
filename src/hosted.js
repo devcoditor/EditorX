@@ -8,18 +8,20 @@ require.config({
 function RemoteFiler(Filer, ChannelUtils) {
     "use strict";
 
-    // If you need to debug Filer for some reason, drop the .min below
+    var FilerBuffer = Filer.Buffer;
     var fs = new Filer.FileSystem({provider: new Filer.FileSystem.providers.Memory()});
     var slice = Array.prototype.slice;
     var port;
-    var bramble;
+    var brambleWindow;
 
     function setupChannel() {
         var channel = new MessageChannel();
-        ChannelUtils.postMessage(bramble.contentWindow, [JSON.stringify({type: "bramble:filer"}), "*", [channel.port2]]);
-//        bramble.contentWindow.postMessage(JSON.stringify({type: "bramble:filer"}), "*", [channel.port2]);
+        ChannelUtils.postMessage(brambleWindow,
+                                 [JSON.stringify({type: "bramble:filer"}),
+                                 "*",
+                                 [channel.port2]]);
         port = channel.port1
-        port.addEventListener("message", fsHandler, false);
+        port.addEventListener("message", remoteFSCall, false);
         port.start();
     }
 
@@ -32,7 +34,7 @@ function RemoteFiler(Filer, ChannelUtils) {
         }
     }
 
-    function fsHandler(e) {
+    function remoteFSCall(e) {
         var data = e.data;
 
         function remoteCallback() {
@@ -40,15 +42,24 @@ function RemoteFiler(Filer, ChannelUtils) {
             port.postMessage({callback: data.callback, result: args});
         }
 
-        fs[data.method].apply(fs, data.args.concat(remoteCallback));
-    }
-
-    function send(message) {
-        if(typeof(message) !== "string") {
-            message = JSON.stringify(message);
+        // Most fs methods can just get run normally, but we have to deal with
+        // ArrayBuffer vs. Filer.Buffer for readFile and writeFile.
+        switch(data.method) {
+        case "writeFile":
+            // Convert the passed ArrayBuffer back to a FilerBuffer
+            data.args[1] = new FilerBuffer(data.args[1]);
+            fs[data.method].apply(fs, data.args.concat(remoteCallback));
+            break;
+        case "readFile":
+            fs[data.method].apply(fs, data.args.concat(function(err, data) {
+                // Convert the FilerBuffer to an ArrayBuffer for transport
+                remoteCallback(err, data ? data.buffer : null);
+            }));
+            break;
+        default:
+            fs[data.method].apply(fs, data.args.concat(remoteCallback));
         }
-        ChannelUtils.postMessage(bramble.contentWindow, [message, "*"]);
-//        bramble.contentWindow.postMessage(message, "*");
+
     }
 
     $(function() {
@@ -57,7 +68,7 @@ function RemoteFiler(Filer, ChannelUtils) {
 
             // When Bramble asks for initial content, reply but don't bother providing any
             if (data.type === "bramble:init") {
-                send({type: "bramble:init", source: null});
+                brambleWindow.postMessage(JSON.stringify({type: "bramble:init", source: null}), "*");
             }
             // Listen for requests to setup the fs
             else if (data.type === "bramble:filer") {
@@ -66,13 +77,15 @@ function RemoteFiler(Filer, ChannelUtils) {
         });
 
         // Load Bramble, passing search params from this window down.
-        bramble = $("#bramble")[0];
+        var bramble = $("#bramble")[0];
         bramble.src = "index.html" + window.location.search;
+        brambleWindow = bramble.contentWindow;
     });
 }
 
 define([
-    "thirdparty/filer/dist/filer.min",
+    // Change this to filer vs. filer.min if you need to debug Filer
+    "thirdparty/filer/dist/filer",
     "thirdparty/MessageChannel/ChannelUtils",
     "thirdparty/MessageChannel/message_channel"
 ], function(Filer, ChannelUtils) {
