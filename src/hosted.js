@@ -13,6 +13,7 @@ function RemoteFiler(Filer, ChannelUtils) {
     var slice = Array.prototype.slice;
     var port;
     var brambleWindow;
+    var allowArrayBufferTransfer;
 
     function setupChannel() {
         var channel = new MessageChannel();
@@ -21,8 +22,12 @@ function RemoteFiler(Filer, ChannelUtils) {
                                  "*",
                                  [channel.port2]]);
         port = channel.port1
-        port.addEventListener("message", remoteFSCall, false);
         port.start();
+
+        ChannelUtils.checkArrayBufferTransfer(port, function(err, isAllowed) {
+            allowArrayBufferTransfer = isAllowed;
+            port.addEventListener("message", remoteFSCallbackHandler, false);
+        });
     }
 
     function parseEventData(data) {
@@ -34,16 +39,14 @@ function RemoteFiler(Filer, ChannelUtils) {
         }
     }
 
-    function remoteFSCall(e) {
+    function remoteFSCallbackHandler(e) {
         var data = e.data;
 
         function remoteCallback() {
             var args = slice.call(arguments);
 
-            // NOTE: Chrome currently doesn't support transfer of ArrayBuffer, see:
-            // https://code.google.com/p/chromium/issues/detail?id=334408&q=transferable&colspec=ID%20Pri%20M%20Week%20ReleaseBlock%20Cr%20Status%20Owner%20Summary%20OS%20Modified
             var transferable
-            if (ChannelUtils.allowArrayBufferTransfer && FilerBuffer.isBuffer(data[1])) {
+            if (allowArrayBufferTransfer && FilerBuffer.isBuffer(data[1])) {
                 transferable = [data[1]];
             }
             port.postMessage({callback: data.callback, result: args}, transferable);

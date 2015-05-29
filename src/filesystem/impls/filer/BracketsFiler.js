@@ -9,6 +9,7 @@ define(function (require, exports, module) {
     var ChannelUtils = require("thirdparty/MessageChannel/ChannelUtils");
     var fnQueue = require("filesystem/impls/filer/lib/queue");
     var UUID = ChannelUtils.UUID;
+    var allowArrayBufferTransfer;
     var port;
 
     // Remote filesystem callbacks
@@ -35,9 +36,13 @@ define(function (require, exports, module) {
         if (data.type === "bramble:filer") {
             window.removeEventListener("message", receiveMessagePort, false);
             port = e.ports[0];
-            port.addEventListener("message", remoteFSCallbackHandler, false);
             port.start();
-            fnQueue.ready();
+
+            ChannelUtils.checkArrayBufferTransfer(port, function(err, isAllowed) {
+                allowArrayBufferTransfer = isAllowed;
+                port.addEventListener("message", remoteFSCallbackHandler, false);
+                fnQueue.ready();
+            });
         }
     }
     window.addEventListener("message", receiveMessagePort, false);
@@ -53,10 +58,8 @@ define(function (require, exports, module) {
         };
 
         fnQueue.exec(function() {
-            // NOTE: Chrome currently doesn't support transfer of ArrayBuffer, see:
-            // https://code.google.com/p/chromium/issues/detail?id=334408&q=transferable&colspec=ID%20Pri%20M%20Week%20ReleaseBlock%20Cr%20Status%20Owner%20Summary%20OS%20Modified
             var transferable
-            if (ChannelUtils.allowArrayBufferTransfer && options.transfer) {
+            if (allowArrayBufferTransfer && options.transfer) {
                 transferable = [options.transfer];
             }
             port.postMessage({method: fn, callback: id, args: options.args}, transferable);
