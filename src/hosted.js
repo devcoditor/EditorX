@@ -39,7 +39,14 @@ function RemoteFiler(Filer, ChannelUtils) {
 
         function remoteCallback() {
             var args = slice.call(arguments);
-            port.postMessage({callback: data.callback, result: args});
+
+            // NOTE: Chrome currently doesn't support transfer of ArrayBuffer, see:
+            // https://code.google.com/p/chromium/issues/detail?id=334408&q=transferable&colspec=ID%20Pri%20M%20Week%20ReleaseBlock%20Cr%20Status%20Owner%20Summary%20OS%20Modified
+            var transferable
+            if (ChannelUtils.allowArrayBufferTransfer && FilerBuffer.isBuffer(data[1])) {
+                transferable = [data[1]];
+            }
+            port.postMessage({callback: data.callback, result: args}, transferable);
         }
 
         // Most fs methods can just get run normally, but we have to deal with

@@ -45,37 +45,43 @@ define(function (require, exports, module) {
     // Request the that remote FS be setup
     parent.postMessage(JSON.stringify({type: "bramble:filer"}), "*");
 
-    function proxyCall(fn, args, callback, persist) {
+    function proxyCall(fn, options, callback) {
         var id = UUID.generate();
         callbackQueue[id] = {
             callback: callback,
-            persist: !!persist
+            persist: options.persist
         };
 
         fnQueue.exec(function() {
-            port.postMessage({method: fn, callback: id, args: args});
+            // NOTE: Chrome currently doesn't support transfer of ArrayBuffer, see:
+            // https://code.google.com/p/chromium/issues/detail?id=334408&q=transferable&colspec=ID%20Pri%20M%20Week%20ReleaseBlock%20Cr%20Status%20Owner%20Summary%20OS%20Modified
+            var transferable
+            if (ChannelUtils.allowArrayBufferTransfer && options.transfer) {
+                transferable = [options.transfer];
+            }
+            port.postMessage({method: fn, callback: id, args: options.args}, transferable);
         });
     }
 
     var proxyFS = {
         stat: function(path, callback) {
-            proxyCall("stat", [path], callback);
+            proxyCall("stat", {args: [path]}, callback);
         },
         exists: function(path, callback) {
-            proxyCall("exists", [path], callback);
+            proxyCall("exists", {args: [path]}, callback);
         },
         readdir: function(path, callback) {
-            proxyCall("readdir", [path], callback);
+            proxyCall("readdir", {args: [path]}, callback);
         },
         mkdir: function(path, callback) {
-            proxyCall("mkdir", [path], callback);
+            proxyCall("mkdir", {args: [path]}, callback);
         },
         rename: function(path, callback) {
-            proxyCall("rename", [path], callback);
+            proxyCall("rename", {args: [path]}, callback);
         },
         readFile: function(path, options, callback) {
             // Always do binary reads, and decode in callback if necessary
-            proxyCall("readFile", [path, {encoding: null}], function(err, data) {
+            proxyCall("readFile", {args: [path, {encoding: null}]}, function(err, data) {
                 if(err) {
                     callback(err);
                     return;
@@ -95,10 +101,19 @@ define(function (require, exports, module) {
                 data = new FilerBuffer(data, "utf8");
             }
 
-            proxyCall("writeFile", [path, data.buffer, {encoding: null}], callback);
+            var buffer = data.buffer;
+            var options = {
+                args: [
+                    path,
+                    buffer,
+                    {encoding: null}
+                ],
+                transfer: buffer
+            };
+            proxyCall("writeFile", options, callback);
         },
         watch: function(path, options, callback) {
-            proxyCall("watch", [path, options], callback, true);
+            proxyCall("watch", {args: [path, options], persist: true}, callback);
         }
     };
 
