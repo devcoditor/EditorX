@@ -288,7 +288,7 @@ define(function (require, exports, module) {
             }
 
             // Deal with dir vs. file
-            var fnName = stats.isDirectory() ? 'rmdir' : 'unlink';
+            var fnName = stats.type === "DIRECTORY" ? 'rmdir' : 'unlink';
             fs[fnName](path, function(err) {
                 // TODO: deal with the symlink case (i.e., only remove cache
                 // item if file is really going away).

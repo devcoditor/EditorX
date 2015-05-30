@@ -79,6 +79,12 @@ define(function (require, exports, module) {
         mkdir: function(path, callback) {
             proxyCall("mkdir", {args: [path]}, callback);
         },
+        rmdir: function(path, callback) {
+            proxyCall("rmdir", {args: [path]}, callback);
+        },
+        unlink: function(path, callback) {
+            proxyCall("unlink", {args: [path]}, callback);
+        },
         rename: function(path, callback) {
             proxyCall("rename", {args: [path]}, callback);
         },
