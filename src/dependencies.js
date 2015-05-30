@@ -40,7 +40,7 @@ window.setTimeout(function () {
     }
     
     if (missingDeps.length > 0) {
-      str = "<h1>Missing libraries</h1>" +
+        str = "<h1>Missing libraries</h1>" +
             "<p>Oops! One or more required libraries could not be found.</p>" +
             "<ul>" + missingDeps + "</ul>" +
             "<p>If you're running from a local copy of the Brackets source, please make sure submodules are updated by running:</p>" +
@@ -53,8 +53,8 @@ window.setTimeout(function () {
     // we're loaded within an iframe, and warn if not.
     if (window.location === window.parent.location) {
         str = "<h1>Bramble must be hosted</h1>" +
-              "<p>Oops! Bramble was loaded directly, outside of an iframe. For security it must be hosted in an iframe.</p>" +
-              "<p>For local development, you can run Bramble in an iframe by using <a href=\"hosted.html\">hosted.html</a> instead of <a href=\"index.html\">index.html</a>.</p>";
+            "<p>Oops! Bramble was loaded directly, outside of an iframe. For security it must be hosted in an iframe.</p>" +
+            "<p>For local development, you can run Bramble in an iframe by using <a href=\"hosted.html\">hosted.html</a> instead of <a href=\"index.html\">index.html</a>.</p>";
     }
 
     if (str) {              

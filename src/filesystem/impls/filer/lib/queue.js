@@ -24,11 +24,11 @@ define(function (require, exports, module) {
 
         this.items.forEach(function(fn) {
             fn.call(null);
-        })
+        });
 
         this.items = null;
         this.exec = runFn;
-    }
+    };
 
     module.exports = new Queue();
 });

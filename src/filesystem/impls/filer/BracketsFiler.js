@@ -48,7 +48,7 @@ define(function (require, exports, module) {
     window.addEventListener("message", receiveMessagePort, false);
 
     // Request the that remote FS be setup
-    parent.postMessage(JSON.stringify({type: "bramble:filer"}), "*");
+    window.parent.postMessage(JSON.stringify({type: "bramble:filer"}), "*");
 
     function proxyCall(fn, options, callback) {
         var id = UUID.generate();
@@ -58,7 +58,7 @@ define(function (require, exports, module) {
         };
 
         fnQueue.exec(function() {
-            var transferable
+            var transferable;
             if (allowArrayBufferTransfer && options.transfer) {
                 transferable = [options.transfer];
             }

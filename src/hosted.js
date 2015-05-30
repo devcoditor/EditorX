@@ -1,3 +1,6 @@
+/*jslint vars: true, plusplus: true, devel: true, nomen: true, regexp: true, indent: 4, maxerr: 50 */
+/*global define, MessageChannel */
+
 require.config({
     paths: {
         "text"              : "thirdparty/text/text",
@@ -5,7 +8,13 @@ require.config({
     }
 });
 
-function RemoteFiler(Filer, ChannelUtils) {
+
+define([
+    // Change this to filer vs. filer.min if you need to debug Filer
+    "thirdparty/filer/dist/filer.min",
+    "thirdparty/MessageChannel/ChannelUtils",
+    "thirdparty/MessageChannel/message_channel"
+], function(Filer, ChannelUtils) {
     "use strict";
 
     var FilerBuffer = Filer.Buffer;
@@ -21,7 +30,7 @@ function RemoteFiler(Filer, ChannelUtils) {
                                  [JSON.stringify({type: "bramble:filer"}),
                                  "*",
                                  [channel.port2]]);
-        port = channel.port1
+        port = channel.port1;
         port.start();
 
         ChannelUtils.checkArrayBufferTransfer(port, function(err, isAllowed) {
@@ -45,7 +54,7 @@ function RemoteFiler(Filer, ChannelUtils) {
         function remoteCallback() {
             var args = slice.call(arguments);
 
-            var transferable
+            var transferable;
             if (allowArrayBufferTransfer && FilerBuffer.isBuffer(data[1])) {
                 transferable = [data[1]];
             }
@@ -91,13 +100,4 @@ function RemoteFiler(Filer, ChannelUtils) {
         bramble.src = "index.html" + window.location.search;
         brambleWindow = bramble.contentWindow;
     });
-}
-
-define([
-    // Change this to filer vs. filer.min if you need to debug Filer
-    "thirdparty/filer/dist/filer.min",
-    "thirdparty/MessageChannel/ChannelUtils",
-    "thirdparty/MessageChannel/message_channel"
-], function(Filer, ChannelUtils) {
-    RemoteFiler(Filer, ChannelUtils);
 });
