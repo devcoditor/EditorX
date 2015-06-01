@@ -8,7 +8,6 @@ require.config({
     }
 });
 
-
 define([
     // Change this to filer vs. filer.min if you need to debug Filer
     "thirdparty/filer/dist/filer.min",
@@ -23,6 +22,9 @@ define([
     var port;
     var brambleWindow;
     var allowArrayBufferTransfer;
+
+    // Long-running callbacks for fs watch events
+    var watches = {};
 
     function setupChannel() {
         var channel = new MessageChannel();
@@ -48,37 +50,62 @@ define([
         }
     }
 
+    function getCallbackFn(id) {
+        // If we have a long-running callback (fs.watch()) use that,
+        // otherwise generate a new one.
+        if(watches[id]) {
+            return watches[id];
+        }
+
+        return function callback(err, result) {
+            var transferable;
+
+            // If the second arg is a Filer Buffer (i.e., wrapped Uint8Array),
+            // get a reference to the underlying ArrayBuffer for transport.
+            if (FilerBuffer.isBuffer(result)) {
+                result = result.buffer;
+
+                // If the browser allows transfer of ArrayBuffer objects over
+                // postMessage, add a reference to the transferables list.
+                if (allowArrayBufferTransfer) {
+                    transferable = [result];
+                }
+            }
+
+            port.postMessage({callback: id, result: [err, result]}, transferable);
+        };
+    }
+
     function remoteFSCallbackHandler(e) {
         var data = e.data;
-
-        function remoteCallback() {
-            var args = slice.call(arguments);
-
-            var transferable;
-            if (allowArrayBufferTransfer && FilerBuffer.isBuffer(data[1])) {
-                transferable = [data[1]];
-            }
-            port.postMessage({callback: data.callback, result: args}, transferable);
-        }
+        var method = data.method;
+        var callbackId = data.callback;
+        var callback = getCallbackFn(callbackId);
+        var args = data.args;
 
         // Most fs methods can just get run normally, but we have to deal with
-        // ArrayBuffer vs. Filer.Buffer for readFile and writeFile.
-        switch(data.method) {
+        // ArrayBuffer vs. Filer.Buffer for readFile and writeFile, and persist
+        // watch callbacks.
+        switch(method) {
         case "writeFile":
             // Convert the passed ArrayBuffer back to a FilerBuffer
-            data.args[1] = new FilerBuffer(data.args[1]);
-            fs[data.method].apply(fs, data.args.concat(remoteCallback));
+            args[1] = new FilerBuffer(args[1]);
+            fs.writeFile.apply(fs, args.concat(callback));
             break;
         case "readFile":
-            fs[data.method].apply(fs, data.args.concat(function(err, data) {
+            fs.readFile.apply(fs, args.concat(function(err, data) {
                 // Convert the FilerBuffer to an ArrayBuffer for transport
-                remoteCallback(err, data ? data.buffer : null);
+                callback(err, data ? data.buffer : null);
             }));
             break;
+        case "watch":
+            // Persist watch callback until we get an unwatch();
+            watches[callbackId] = callback;
+            fs.watch.apply(fs, data.args.concat(callback));
+            break;
         default:
-            fs[data.method].apply(fs, data.args.concat(remoteCallback));
+            fs[data.method].apply(fs, data.args.concat(callback));
         }
-
     }
 
     $(function() {
