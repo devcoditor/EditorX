@@ -3,13 +3,9 @@
 define(function (require, exports, module) {
     "use strict";
 
-    var RemoteFiler = require("filesystem/impls/filer/RemoteFiler");
-    var proxyCall = RemoteFiler.proxyCall;
-
-    // TODO: we shouldn't be loading this just to get Path, Buffer, etc.
-    var Filer = require("thirdparty/filer/dist/filer.min");
-    var Path = Filer.Path;
-    var FilerBuffer = Filer.Buffer;
+    var proxyCall = require("filesystem/impls/filer/RemoteFiler").proxyCall;
+    var Path = require("filesystem/impls/filer/FilerUtils").Path;
+    var FilerBuffer = require("filesystem/impls/filer/FilerUtils").Buffer;
 
     var Handlers = require("filesystem/impls/filer/lib/handlers");
     var Content = require("filesystem/impls/filer/lib/content");

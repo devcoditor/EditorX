@@ -7,7 +7,7 @@ define(function (require, exports, module) {
     var HTMLRewriter = require("filesystem/impls/filer/lib/HTMLRewriter");
     var MarkdownRewriter = require("filesystem/impls/filer/lib/MarkdownRewriter");
     var CSSRewriter = require("filesystem/impls/filer/lib/CSSRewriter");
-    var Path  = require("filesystem/impls/filer/RemoteFiler").Path;
+    var Path = require("filesystem/impls/filer/FilerUtils").Path;
     var BlobUtils = require("filesystem/impls/filer/BlobUtils");
 
     /**

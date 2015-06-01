@@ -7,7 +7,7 @@ define(function (require, exports, module) {
     var Content = require("filesystem/impls/filer/lib/content");
     var CSSRewriter = require("filesystem/impls/filer/lib/CSSRewriter");
     var BlobUtils = require("filesystem/impls/filer/BlobUtils");
-    var Path = require("filesystem/impls/filer/RemoteFiler").Path;
+    var Path = require("filesystem/impls/filer/FilerUtils").Path;
 
     /**
      * This variable controls whether or not we want scripts to be run in the preview window or not

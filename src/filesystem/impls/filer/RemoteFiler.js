@@ -9,9 +9,6 @@ define(function (require, exports, module) {
      * early, so that fs operations run quickly on startup.
      */
 
-    // TODO: we shouldn't be loading this just to get Path, Buffer, etc.
-    var Filer = require("thirdparty/filer/dist/filer.min");
-
     var fnQueue = require("filesystem/impls/filer/lib/queue");
     var ChannelUtils = require("thirdparty/MessageChannel/ChannelUtils");
     var UUID = ChannelUtils.UUID;
@@ -76,6 +73,4 @@ define(function (require, exports, module) {
 
     exports.init = init;
     exports.proxyCall = proxyCall;
-    exports.Path = Filer.Path;
-    exports.Buffer = Filer.Buffer;
 });

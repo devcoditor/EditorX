@@ -8,7 +8,7 @@ define(function (require, exports, module) {
     // which can be looked-up synchronously.
     var Content = require("filesystem/impls/filer/lib/content");
     var Filer = require("filesystem/impls/filer/BracketsFiler");
-    var Path = require("filesystem/impls/filer/RemoteFiler").Path;
+    var Path = require("filesystem/impls/filer/FilerUtils").Path;
 
     // 2-way cache for blob URL to path for looking up either way:
     // * paths - paths keyed on blobUrls

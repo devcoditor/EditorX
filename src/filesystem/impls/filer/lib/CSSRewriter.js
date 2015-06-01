@@ -4,7 +4,7 @@ define(function (require, exports, module) {
     "use strict";
 
     var Content = require("filesystem/impls/filer/lib/content");
-    var Path = require("filesystem/impls/filer/RemoteFiler").Path;
+    var Path = require("filesystem/impls/filer/FilerUtils").Path;
     var BlobUtils = require("filesystem/impls/filer/BlobUtils");
 
     /**
