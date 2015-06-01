@@ -5,8 +5,12 @@ define(function (require, exports, module) {
 
     // TODO: we shouldn't be loading this just to get Path, Buffer, etc.
     var Filer = require("thirdparty/filer/dist/filer.min");
+    var Path = Filer.Path;
     var FilerBuffer = Filer.Buffer;
     var ChannelUtils = require("thirdparty/MessageChannel/ChannelUtils");
+    var Handlers = require("filesystem/impls/filer/lib/handlers");
+    var Content = require("filesystem/impls/filer/lib/content");
+    var Async = require("utils/Async");
     var fnQueue = require("filesystem/impls/filer/lib/queue");
     var UUID = ChannelUtils.UUID;
     var allowArrayBufferTransfer;
@@ -119,7 +123,43 @@ define(function (require, exports, module) {
                 ],
                 transfer: buffer
             };
-            proxyCall("writeFile", options, callback);
+
+            // We run the remote FS operation in parallel to rewriting and creating
+            // a BLOB URL in Bramble, such that resources are ready when needed later.
+            function runStep(fn) {
+                var result = new $.Deferred();
+
+                fn(function(err) {
+                    if(err) {
+                        result.reject(err);
+                        return;
+                    }
+                    result.resolve();
+                });
+
+                return result.promise();
+            }
+
+            Async.doInParallel([
+                function(callback) {
+                    proxyCall("writeFile", options, callback);                    
+                },
+                function(callback) {
+                    // Add a BLOB cache record for this filename
+                    // only if it's not an HTML file
+                    if(Content.isHTML(Path.extname(path))) {
+                        callback();
+                    }
+
+                    Handlers.handleFile(path, data, function(err) {
+                        if(err) {
+                            callback(err);
+                            return;
+                        }
+                        callback();
+                    });
+                }
+            ], runStep, true);
         },
         watch: function(path, options, callback) {
             proxyCall("watch", {args: [path, options], persist: true}, callback);

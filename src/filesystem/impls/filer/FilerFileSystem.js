@@ -7,8 +7,7 @@ define(function (require, exports, module) {
     var FileSystemError = require("filesystem/FileSystemError"),
         FileSystemStats = require("filesystem/FileSystemStats"),
         Filer           = require("filesystem/impls/filer/BracketsFiler"),
-        BlobUtils       = require("filesystem/impls/filer/BlobUtils"),
-        Handlers        = require("filesystem/impls/filer/lib/handlers");
+        BlobUtils       = require("filesystem/impls/filer/BlobUtils");
 
     var fs              = Filer.fs(),
         Path            = Filer.Path,
@@ -235,9 +234,6 @@ define(function (require, exports, module) {
                     callback(_mapError(err));
                     return;
                 }
-
-                // Cache a Blob URL for the file
-                Handlers.handleFile(path, data);
 
                 stat(path, function (err, stat) {
                     callback(_mapError(err), stat, created);

@@ -18,7 +18,6 @@ define([
 
     var FilerBuffer = Filer.Buffer;
     var fs = new Filer.FileSystem({provider: new Filer.FileSystem.providers.Memory()});
-    var slice = Array.prototype.slice;
     var port;
     var brambleWindow;
     var allowArrayBufferTransfer;
