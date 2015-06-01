@@ -30,7 +30,15 @@ define(function (require, exports, module) {
             // Convert Markdown to HTML, then rewrite the resulting HTML
             HTMLRewriter.rewrite(path, MarkdownRewriter.rewrite(path, data), callback);
         } else if(Content.isCSS(ext)) {
-            CSSRewriter.rewrite(path, data, callback);
+            CSSRewriter.rewrite(path, data, function(err, css) {
+                if(err) {
+                    console.error("[Handler.handleFile() Error", path, err);
+                    callback(err);
+                    return;
+                }
+                BlobUtils.createURL(path, css, mimeType);
+                callback();
+            });
         } else {
             BlobUtils.createURL(path, data, mimeType);
             callback();
