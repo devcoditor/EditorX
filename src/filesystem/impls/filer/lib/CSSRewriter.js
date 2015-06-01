@@ -4,7 +4,7 @@ define(function (require, exports, module) {
     "use strict";
 
     var Content = require("filesystem/impls/filer/lib/content");
-    var Path = require("filesystem/impls/filer/BracketsFiler").Path;
+    var Path = require("filesystem/impls/filer/RemoteFiler").Path;
     var BlobUtils = require("filesystem/impls/filer/BlobUtils");
 
     /**
@@ -68,7 +68,7 @@ define(function (require, exports, module) {
                 urls.push(url);
             });
 
-            fetchFiles(urls);
+            fetchFiles(urls, callback);
         }
 
         aggregate(css, function(err, replacements) {

@@ -1,13 +1,13 @@
 /*jslint vars: true, plusplus: true, devel: true, nomen: true, regexp: true, indent: 4, maxerr: 50 */
 /*global define, DOMParser */
 define(function (require, exports, module) {
-    'use strict';
+    "use strict";
 
     var Async = require("filesystem/impls/filer/lib/async");
-    var Content = require('filesystem/impls/filer/lib/content');
-    var CSSRewriter = require('filesystem/impls/filer/lib/CSSRewriter');
-    var BlobUtils = require('filesystem/impls/filer/BlobUtils');
-    var Path = require('filesystem/impls/filer/BracketsFiler').Path;
+    var Content = require("filesystem/impls/filer/lib/content");
+    var CSSRewriter = require("filesystem/impls/filer/lib/CSSRewriter");
+    var BlobUtils = require("filesystem/impls/filer/BlobUtils");
+    var Path = require("filesystem/impls/filer/RemoteFiler").Path;
 
     /**
      * This variable controls whether or not we want scripts to be run in the preview window or not
@@ -25,10 +25,10 @@ define(function (require, exports, module) {
 
         // Turn this html into a DOM, process it
         var parser = new DOMParser();
-        this.doc = parser.parseFromString(html, 'text/html');
+        this.doc = parser.parseFromString(html, "text/html");
     }
 
-    HTMLRewriter.prototype.elements = function(type, urlType, callback) {
+    HTMLRewriter.prototype.elements = function(type, urlType, mime, callback) {
         var elements = this.doc.querySelectorAll(type);
         var dir = this.dir;
 
@@ -36,7 +36,8 @@ define(function (require, exports, module) {
             // Skip any links for protocols (we only want relative paths)
             var path = element.getAttribute(urlType);
             if(!Content.isRelativeURL(path)) {
-                return callback();
+                callback();
+                return;
             }
 
             BlobUtils.getUrl(Path.resolve(dir, path), function(err, cachedUrl) {
@@ -50,7 +51,7 @@ define(function (require, exports, module) {
             });
         }, function eachSeriesfinished(err) {
             if(err) {
-                console.error('[HTMLRewriter Error]', err);
+                console.error("[HTMLRewriter Error]", err);
             }
             callback();
         });
@@ -58,7 +59,7 @@ define(function (require, exports, module) {
 
     HTMLRewriter.prototype.styles = function(callback) {
         var path = this.path;
-        var elements = this.doc.querySelectorAll('style');
+        var elements = this.doc.querySelectorAll("style");
 
         Async.eachSeries(elements, function(element, callback) {
             var content = element.innerHTML;
@@ -76,7 +77,7 @@ define(function (require, exports, module) {
             });
         }, function(err) {
             if(err) {
-                console.error('HTMLRewriter Error]', err);
+                console.error("HTMLRewriter Error]", err);
             }
             callback();
         });
@@ -84,7 +85,7 @@ define(function (require, exports, module) {
 
     HTMLRewriter.prototype.styleAttributes = function(callback) {
         var path = this.path;
-        var elements = this.doc.querySelectorAll('[style]');
+        var elements = this.doc.querySelectorAll("[style]");
 
         Async.eachSeries(elements, function(element, callback) {
             var content = element.innerHTML;
@@ -97,32 +98,32 @@ define(function (require, exports, module) {
                     callback(err);
                     return;
                 }
-                element.setAttribute('style', css);
+                element.setAttribute("style", css);
                 callback();
             });
         }, function(err) {
             if(err) {
-                console.error('HTMLRewriter Error]', err);
+                console.error("HTMLRewriter Error]", err);
             }
             callback();
         });
     };
 
     HTMLRewriter.prototype.scripts = function(callback) {
-        var elements = this.doc.querySelectorAll('script');
+        var elements = this.doc.querySelectorAll("script");
 
         function maybeDisable(element) {
-            // Skip any scripts we've injected for live dev.
-            if(!element.getAttribute('data-brackets-id')) {
+            // Skip any scripts we"ve injected for live dev.
+            if(!element.getAttribute("data-brackets-id")) {
                 return;
             }
 
             if(jsEnabled) {
-                if(element.getAttribute('type') === 'text/x-scripts-disabled') {
-                    element.removeAttribute('type');
+                if(element.getAttribute("type") === "text/x-scripts-disabled") {
+                    element.removeAttribute("type");
                 }
             } else {
-                element.setAttribute('type', 'text/x-scripts-disabled');
+                element.setAttribute("type", "text/x-scripts-disabled");
             }
         }
 
@@ -145,13 +146,13 @@ define(function (require, exports, module) {
         Async.series([
             iterator("styles"),
             iterator("styleAttributes"),
-            iterator("elements", 'link', 'href', null),
-            iterator("elements", 'iframe', 'src', null),
-            iterator("elements", 'img', 'src', null),
-            iterator("elements", 'script', 'src', 'text/javascript'),
-            iterator("elements", 'source', 'src', null),
-            iterator("elements", 'video', 'src', null),
-            iterator("elements", 'audio', 'src', null),            
+            iterator("elements", "link", "href", null),
+            iterator("elements", "iframe", "src", null),
+            iterator("elements", "img", "src", null),
+            iterator("elements", "script", "src", "text/javascript"),
+            iterator("elements", "source", "src", null),
+            iterator("elements", "video", "src", null),
+            iterator("elements", "audio", "src", null),            
             iterator("scripts")
         ], function finishedRewriteSeries(err) {
             // Return the processed HTML

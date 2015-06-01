@@ -78,11 +78,10 @@ define(function (require) {
         "thirdparty/MessageChannel/message_channel"
     ],
     function () {
-        require([
-            // XXXBramble: get the filesystem loading ASAP for connection with parent window
-            "filesystem/impls/filer/BracketsFiler",
-            // Load the brackets module. This is a self-running module that loads and runs the entire application.
-            "brackets"
-        ]);
+        // XXXBramble: get the filesystem loading ASAP for connection with parent window
+        require(["filesystem/impls/filer/RemoteFiler"], function(RemoteFiler) {
+            RemoteFiler.init();
+            require("brackets");
+        });
     });
 });

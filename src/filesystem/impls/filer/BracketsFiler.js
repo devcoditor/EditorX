@@ -3,72 +3,17 @@
 define(function (require, exports, module) {
     "use strict";
 
+    var RemoteFiler = require("filesystem/impls/filer/RemoteFiler");
+    var proxyCall = RemoteFiler.proxyCall;
+
     // TODO: we shouldn't be loading this just to get Path, Buffer, etc.
     var Filer = require("thirdparty/filer/dist/filer.min");
     var Path = Filer.Path;
     var FilerBuffer = Filer.Buffer;
-    var ChannelUtils = require("thirdparty/MessageChannel/ChannelUtils");
+
     var Handlers = require("filesystem/impls/filer/lib/handlers");
     var Content = require("filesystem/impls/filer/lib/content");
     var Async = require("utils/Async");
-    var fnQueue = require("filesystem/impls/filer/lib/queue");
-    var UUID = ChannelUtils.UUID;
-    var allowArrayBufferTransfer;
-    var port;
-
-    // Remote filesystem callbacks
-    var callbackQueue = {};
-
-    function remoteFSCallbackHandler(e) {
-        var data = e.data;
-        var callbackItem = callbackQueue[data.callback];
-        if(!callbackItem.persist) {
-            delete callbackQueue[data.callback];
-        }
-        callbackItem.callback.apply(null, data.result);
-    }
-
-    function receiveMessagePort(e) {
-        var data = e.data;
-        try {
-            data = JSON.parse(data);
-            data = data || {};
-        } catch(err) {
-            data = {};
-        }
-
-        if (data.type === "bramble:filer") {
-            window.removeEventListener("message", receiveMessagePort, false);
-            port = e.ports[0];
-            port.start();
-
-            ChannelUtils.checkArrayBufferTransfer(port, function(err, isAllowed) {
-                allowArrayBufferTransfer = isAllowed;
-                port.addEventListener("message", remoteFSCallbackHandler, false);
-                fnQueue.ready();
-            });
-        }
-    }
-    window.addEventListener("message", receiveMessagePort, false);
-
-    // Request the that remote FS be setup
-    window.parent.postMessage(JSON.stringify({type: "bramble:filer"}), "*");
-
-    function proxyCall(fn, options, callback) {
-        var id = UUID.generate();
-        callbackQueue[id] = {
-            callback: callback,
-            persist: options.persist
-        };
-
-        fnQueue.exec(function() {
-            var transferable;
-            if (allowArrayBufferTransfer && options.transfer) {
-                transferable = [options.transfer];
-            }
-            port.postMessage({method: fn, callback: id, args: options.args}, transferable);
-        });
-    }
 
     var proxyFS = {
         stat: function(path, callback) {
@@ -166,9 +111,11 @@ define(function (require, exports, module) {
         }
     };
 
-    Filer.fs = function() {
-        return proxyFS;
+    module.exports = {
+        Path: Path,
+        Buffer: FilerBuffer,
+        fs: function() {
+            return proxyFS;
+        }
     };
-
-    module.exports = Filer;
 });

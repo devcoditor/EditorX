@@ -8,8 +8,7 @@ define(function (require, exports, module) {
     // which can be looked-up synchronously.
     var Content = require("filesystem/impls/filer/lib/content");
     var Filer = require("filesystem/impls/filer/BracketsFiler");
-    var Path = Filer.Path;
-    var fs = Filer.fs();
+    var Path = require("filesystem/impls/filer/RemoteFiler").Path;
 
     // 2-way cache for blob URL to path for looking up either way:
     // * paths - paths keyed on blobUrls
@@ -75,7 +74,7 @@ define(function (require, exports, module) {
             return;
         }
 
-        fs.readFile(filename, null, function(err, data) {
+        Filer.fs.readFile(filename, null, function(err, data) {
             if(err) {
                 callback(err);
                 return;
