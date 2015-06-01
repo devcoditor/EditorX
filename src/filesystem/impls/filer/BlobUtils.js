@@ -3,7 +3,7 @@
 
 define(function (require, exports, module) {
     "use strict";
-debugger;
+
     // BlobUtils provides an opportunistic cache for BLOB Object URLs
     // which can be looked-up synchronously.
     var Content = require("filesystem/impls/filer/lib/content");
