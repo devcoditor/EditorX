@@ -104,7 +104,7 @@ define(function (require, exports, module) {
                         callback();
                     });
                 }
-            ], runStep, true);
+            ], runStep, true).then(callback);
         },
         watch: function(path, options, callback) {
             proxyCall("watch", {args: [path, options], persist: true}, callback);
