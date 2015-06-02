@@ -4,12 +4,9 @@ define(function (require, exports, module) {
     "use strict";
 
     var proxyCall = require("filesystem/impls/filer/RemoteFiler").proxyCall;
-    var Path = require("filesystem/impls/filer/FilerUtils").Path;
-    var FilerBuffer = require("filesystem/impls/filer/FilerUtils").Buffer;
-
-    var Handlers = require("filesystem/impls/filer/lib/handlers");
-    var Content = require("filesystem/impls/filer/lib/content");
-    var Async = require("utils/Async");
+    var FilerUtils = require("filesystem/impls/filer/FilerUtils");
+    var Path = FilerUtils.Path;
+    var FilerBuffer = FilerUtils.Buffer;
 
     var proxyFS = {
         stat: function(path, callback) {
@@ -65,42 +62,7 @@ define(function (require, exports, module) {
                 transfer: buffer
             };
 
-            // We run the remote FS operation in parallel to rewriting and creating
-            // a BLOB URL in Bramble, such that resources are ready when needed later.
-            function runStep(fn) {
-                var result = new $.Deferred();
-
-                fn(function(err) {
-                    if(err) {
-                        result.reject(err);
-                        return;
-                    }
-                    result.resolve();
-                });
-
-                return result.promise();
-            }
-
-            Async.doInParallel([
-                function(callback) {
-                    proxyCall("writeFile", options, callback);                    
-                },
-                function(callback) {
-                    // Add a BLOB cache record for this filename
-                    // only if it's not an HTML file
-                    if(Content.isHTML(Path.extname(path))) {
-                        callback();
-                    }
-
-                    Handlers.handleFile(path, data, function(err) {
-                        if(err) {
-                            callback(err);
-                            return;
-                        }
-                        callback();
-                    });
-                }
-            ], runStep, true).then(callback);
+            proxyCall("writeFile", options, callback);
         },
         watch: function(path, options, callback) {
             proxyCall("watch", {args: [path, options], persist: true}, callback);

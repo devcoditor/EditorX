@@ -7,7 +7,10 @@ define(function (require, exports, module) {
     var FileSystemError = require("filesystem/FileSystemError"),
         FileSystemStats = require("filesystem/FileSystemStats"),
         Filer           = require("filesystem/impls/filer/BracketsFiler"),
-        BlobUtils       = require("filesystem/impls/filer/BlobUtils");
+        BlobUtils       = require("filesystem/impls/filer/BlobUtils"),
+        Handlers = require("filesystem/impls/filer/lib/handlers"),
+        Content = require("filesystem/impls/filer/lib/content"),
+        Async = require("utils/Async");
 
     var fs              = Filer.fs(),
         Path            = Filer.Path,
@@ -229,15 +232,54 @@ define(function (require, exports, module) {
         options.encoding = options.encoding === null ? null : "utf8";
 
         function _finishWrite(created) {
-            fs.writeFile(path, data, options.encoding, function (err) {
-                if (err) {
+            // We run the remote FS operation in parallel to rewriting and creating
+            // a BLOB URL in Bramble, such that resources are ready when needed later.
+            function runStep(fn) {
+                var result = new $.Deferred();
+
+                fn(function(err) {
+                    if(err) {
+                        result.reject(err);
+                        return;
+                    }
+                    result.resolve();
+                });
+
+                return result.promise();
+            }
+
+            var result = {};
+
+            Async.doInParallel([
+                function doRemoteWriteFile(callback) {
+                    fs.writeFile(path, data, options.encoding, function (err) {
+                        if (err) {
+                            callback(err);
+                            return;
+                        }
+
+                        stat(path, function (err, stat) {
+                            result.stat = stat;
+                            result.created = created;
+                            callback(err);
+                        });
+                    });
+                },
+                function doRewriteAndCache(callback) {
+                    // Add a BLOB cache record for this filename
+                    // only if it's not an HTML file
+                    if(Content.isHTML(Path.extname(path))) {
+                        callback();
+                    }
+
+                    Handlers.handleFile(path, data, callback);
+                }
+            ], runStep, true).then(function(err) {
+                if(err) {
                     callback(_mapError(err));
                     return;
                 }
-
-                stat(path, function (err, stat) {
-                    callback(_mapError(err), stat, created);
-                });
+                callback(null, result.stat, result.created);
             });
         }
 

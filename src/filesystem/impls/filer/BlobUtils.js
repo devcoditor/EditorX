@@ -7,8 +7,8 @@ define(function (require, exports, module) {
     // BlobUtils provides an opportunistic cache for BLOB Object URLs
     // which can be looked-up synchronously.
     var Content = require("filesystem/impls/filer/lib/content");
-    var Filer = require("filesystem/impls/filer/BracketsFiler");
     var Path = require("filesystem/impls/filer/FilerUtils").Path;
+    var fs = require("filesystem/impls/filer/BracketsFiler").fs();
 
     // 2-way cache for blob URL to path for looking up either way:
     // * paths - paths keyed on blobUrls
@@ -74,7 +74,7 @@ define(function (require, exports, module) {
             return;
         }
 
-        Filer.fs.readFile(filename, null, function(err, data) {
+        fs.readFile(filename, null, function(err, data) {
             if(err) {
                 callback(err);
                 return;
