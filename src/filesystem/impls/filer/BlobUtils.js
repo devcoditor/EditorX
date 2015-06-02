@@ -87,7 +87,7 @@ define(function (require, exports, module) {
     }
 
     // Support sync and async calls to the URL cache. Also check to see
-    // if async calls can by run async regardless (i.e., no disk access).
+    // if async calls can by run immediately regardless (i.e., no disk access).
     function getUrl(filename, maybeCallback) {
         if(typeof maybeCallback === "function") {
             _getUrlAsync(filename, maybeCallback);

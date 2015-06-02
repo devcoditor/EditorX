@@ -1,6 +1,6 @@
 define(["thirdparty/MessageChannel/MessageChannel"], function(MessageChannel) {
 
-  var nativeMessageChannel = MessageChannel && !MessageChannel._shim;
+  var nativeMessageChannel = !MessageChannel._shim;
 
   function postMsg(win, args) {
     if(nativeMessageChannel) {

@@ -113,7 +113,7 @@ define(function (require, exports, module) {
         var elements = this.doc.querySelectorAll("script");
 
         function maybeDisable(element) {
-            // Skip any scripts we"ve injected for live dev.
+            // Skip any scripts we've injected for live dev.
             if(!element.getAttribute("data-brackets-id")) {
                 return;
             }
