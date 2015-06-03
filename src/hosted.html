@@ -33,6 +33,7 @@ This page is a helper for local development.
         require(["bramble-api"], function(Bramble) {
             var bramble = Bramble.createInstance("#bramble", {
                 hideUntilReady: true,
+                url: "index.html",
                 ready: function() { console.log('ready!'); }
             });
         });

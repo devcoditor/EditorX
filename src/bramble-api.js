@@ -8,6 +8,9 @@ define([
 ], function(Filer, ChannelUtils) {
     "use strict";    
 
+    // PROD URL for Bramble, which can be changed below
+    var PROD_BRAMBLE_URL = "https://mozillathimblelivepreview.net/bramble/dist/index.html";
+
     var FilerBuffer = Filer.Buffer;
     var UUID = ChannelUtils.UUID;
 
@@ -135,7 +138,8 @@ define([
                 search = window.location.search;
             }
 
-            iframe.src = "index.html" + search;
+            // Allow custom URL to Bramble's index.html, default to prod
+            iframe.src = (options.url ? options.url : PROD_BRAMBLE_URL) + search;
         }
 
         if (document.readyState === "complete") {
