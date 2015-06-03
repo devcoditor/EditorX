@@ -26,6 +26,8 @@ define(function (require, exports, module) {
         "QuickOpenJavaScript",
         "QuickView",
         "UrlCodeHints",
+        "DarkTheme",
+        "LightTheme",
 
         // Custom extensions we want loaded by default
         "bramble",

@@ -31,8 +31,7 @@
 define(function (require, exports, module) {
     "use strict";
     
-    var FileSystem = require("filesystem/FileSystem"),
-        FileUtils  = require("file/FileUtils");
+    var FileSystem = require("filesystem/FileSystem");
 
     /**
      * Appends a <style> tag to the document's head.
@@ -242,18 +241,16 @@ define(function (require, exports, module) {
     function loadPackageJson(folder) {
         var file = FileSystem.getFileForPath(folder + "/package.json"),
             result = new $.Deferred();
-        FileUtils.readAsText(file)
-            .done(function (text) {
-                try {
-                    var json = JSON.parse(text);
-                    result.resolve(json);
-                } catch (e) {
-                    result.reject();
-                }
-            })
-            .fail(function () {
-                result.reject();
-            });
+
+        require(['text!' + file.fullPath], function(text) {
+            try {
+                var json = JSON.parse(text);
+                result.resolve(json);
+            } catch (e) {
+                result.resolve({});//reject();
+            }
+        });
+
         return result.promise();
     }
     
