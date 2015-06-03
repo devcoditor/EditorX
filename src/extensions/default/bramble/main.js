@@ -361,7 +361,7 @@ define(function (require, exports, module) {
             var fileJS   = FileSystem.getFileForPath("/script.js");
 
             // Write the HTML file and block on it being done.
-            fileHTML.write(data.source ? data.source : defaultHTML,
+            fileHTML.write(data.source ? data.source : defaultHTML, {blind: true},
                 function(err) {
                     if (err) {
                         deferred.reject();
@@ -373,13 +373,13 @@ define(function (require, exports, module) {
             );
 
             // Write the CSS and JS file without blocking.
-            fileCSS.write(defaultCSS, function(err) {
+            fileCSS.write(defaultCSS, {blind: true}, function(err) {
                 if (err) {
                     console.error("Couldn't write /style.css");
                     return;
                 }
 
-                fileJS.write(defaultJS, function(err) {
+                fileJS.write(defaultJS, {blind: true}, function(err) {
                     if (err) {
                         console.error("Couldn't write /script.js");
                     }
