@@ -71,7 +71,7 @@ define([
         self.id = "bramble-" + UUID.generate();
 
         var provider = options.provider || new Filer.FileSystem.providers.Memory();
-        var fs = self.fs = new Filer.FileSystem(provider);
+        var fs = self.fs = new Filer.FileSystem({provider: provider});
 
         function startEvents(win) {
             window.addEventListener("message", function(e) {
