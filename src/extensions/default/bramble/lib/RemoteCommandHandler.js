@@ -1,11 +1,13 @@
 /*jslint vars: true, plusplus: true, devel: true, nomen: true, indent: 4, maxerr: 50 */
-/*global define, brackets: true, $*/
+/*global define, brackets: true */
 
 define(function (require, exports, module) {
     "use strict";
 
     var CommandManager = brackets.getModule("command/CommandManager");
     var EditorManager  = brackets.getModule("editor/EditorManager");
+// todo - needed?
+//    var Editor               = brackets.getModule("editor/Editor").Editor;
     var Commands       = brackets.getModule("command/Commands");
     var HTMLRewriter   = brackets.getModule("filesystem/impls/filer/lib/HTMLRewriter");
     var SidebarView    = brackets.getModule("project/SidebarView");
@@ -85,7 +87,7 @@ define(function (require, exports, module) {
             _brambleCommand(remoteRequest.command);
             break;
         default:
-            console.error('[Bramble] unknown remote command request:' remoteRequest);
+            console.error('[Bramble] unknown remote command request:', remoteRequest);
             break;
         }
     }

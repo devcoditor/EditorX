@@ -1,4 +1,4 @@
-/*global require, define, test, expect, strictEqual, location */
+/*global define, HTMLElement, MessageChannel */
 
 define([
     // Change this to filer vs. filer.min if you need to debug Filer
@@ -121,7 +121,7 @@ define([
             var search;
             if (options.extensions) {
                 // Override the extension list with what's in options
-                var search = "";
+                search = "";
 
                 var enable = options.extensions.enable;
                 if (enable && enable.length) {
@@ -141,7 +141,7 @@ define([
 
             if (options.locale) {
                 search += search.length ? "&" : "?";
-                search += options.locale    
+                search += options.locale;
             }
 
             // Allow custom URL to Bramble's index.html, default to prod

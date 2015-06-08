@@ -12,16 +12,12 @@ define(function (require, exports, module) {
 
     // Load dependencies
     var AppInit              = brackets.getModule("utils/AppInit"),
-        CommandManager       = brackets.getModule("command/CommandManager"),
-        Commands             = brackets.getModule("command/Commands"),
         EditorManager        = brackets.getModule("editor/EditorManager"),
         LiveDevServerManager = brackets.getModule("LiveDevelopment/LiveDevServerManager"),
         PreferencesManager   = brackets.getModule("preferences/PreferencesManager"),
         ProjectManager       = brackets.getModule("project/ProjectManager"),
         LiveDevelopment      = brackets.getModule("LiveDevelopment/LiveDevMultiBrowser"),
         UrlParams            = brackets.getModule("utils/UrlParams").UrlParams,
-        Editor               = brackets.getModule("editor/Editor").Editor,
-        Rewriter             = brackets.getModule("filesystem/impls/filer/lib/HTMLRewriter"),
         Browser              = require("lib/iframe-browser"),
         UI                   = require("lib/UI"),
         Launcher             = require("lib/launcher"),
@@ -33,7 +29,7 @@ define(function (require, exports, module) {
         Path                 = brackets.getModule("filesystem/impls/filer/BracketsFiler").Path,
         BlobUtils            = brackets.getModule("filesystem/impls/filer/BlobUtils"),
         XHRHandler           = require("lib/xhr/XHRHandler"),
-        Theme                = require("lib/Theme");
+        Theme                = require("lib/Theme"),
         RemoteCommandHandler = require("lib/RemoteCommandHandler");
 
     ExtensionUtils.loadStyleSheet(module, "stylesheets/style.css");
