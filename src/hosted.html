@@ -30,11 +30,14 @@ This page is a helper for local development.
             baseUrl: './'
         });
         
-        require(["bramble-api"], function(Bramble) {
+        require(["bramble/api"], function(Bramble) {
+            // Expose Bramble for debugging
+            window.Bramble = Bramble;
+
             var bramble = Bramble.createInstance("#bramble", {
                 hideUntilReady: true,
                 url: "index.html",
-                ready: function() { console.log('ready!'); }
+                ready: function() { console.log('Bramble ready!'); }
             });
         });
     </script>
