@@ -237,7 +237,7 @@ define([
             }
 
             options.type = "bramble:remoteCommand";
-            brambleWindow.postMessage(JSON.stringify(options));
+            brambleWindow.postMessage(JSON.stringify(options), self._iframe.src);
         };
     }
 
@@ -308,7 +308,8 @@ define([
     // We only support having a single instance in the page.
     var _instance;
 
-    return {
+    // Expose a global API
+    window.Bramble = {
         // Expose Filer for Path, Buffer, providers, etc.
         Filer: Filer,
         createInstance: function(div, options) {
@@ -318,4 +319,7 @@ define([
             return _instance;
         }
     };
+
+    // Require version
+    return window.Bramble;
 });

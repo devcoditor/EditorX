@@ -18,7 +18,7 @@ define(function (require, exports, module) {
 
     // Built-in Brackets Commands
     function _bracketsCommand(command) {
-        // TODO - is this focus() call necessary?
+        // Make sure the last-focused editor gets focus before executing
         EditorManager.getActiveEditor().focus();
         CommandManager.execute(Commands[command]);
     }
@@ -30,10 +30,10 @@ define(function (require, exports, module) {
             PostMessageTransport.reload();
             break;
         case "BRAMBLE_MOBILE_PREVIEW":
-            UI.showMobile();
+            UI.showMobileView();
             break;
         case "BRAMBLE_DESKTOP_PREVIEW":
-            UI.hideMobile();
+            UI.showDesktopView();
             break;
         case "BRAMBLE_ENABLE_SCRIPTS":
             HTMLRewriter.enableScripts();
