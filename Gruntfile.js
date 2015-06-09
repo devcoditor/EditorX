@@ -80,6 +80,7 @@ module.exports = function (grunt) {
                         '!**/unittest-files/**',
                         '!extensions/default/JavaScriptCodeHints/thirdparty/*/test/**/*',
                         '!extensions/default/**/node_modules/**/*',
+                        '!extensions/extra/**/node_modules/**/*',
                         'thirdparty/CodeMirror/addon/{,*/}*.js',
                         'thirdparty/CodeMirror/keymap/{,*/}*.js',
                         'thirdparty/CodeMirror/lib/{,*/}*.js',
