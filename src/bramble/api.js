@@ -292,6 +292,30 @@ define([
         this._executeRemoteCommand({commandCategory: "brackets", command: "FILE_SAVE_ALL"});
     };
 
+    Bramble.prototype.useHorizontalSplitView = function() {
+        this._executeRemoteCommand({commandCategory: "brackets", command: "CMD_SPLITVIEW_HORIZONTAL"});
+    };
+
+    Bramble.prototype.useVerticalSplitView = function() {
+        this._executeRemoteCommand({commandCategory: "brackets", command: "CMD_SPLITVIEW_VERTICAL"});
+    };
+
+    Bramble.prototype.find = function() {
+        this._executeRemoteCommand({commandCategory: "brackets", command: "CMD_FIND"});
+    };
+
+    Bramble.prototype.findInFiles = function() {
+        this._executeRemoteCommand({commandCategory: "brackets", command: "CMD_FIND_IN_FILES"});
+    };
+
+    Bramble.prototype.replace = function() {
+        this._executeRemoteCommand({commandCategory: "brackets", command: "CMD_REPLACE"});
+    };
+
+    Bramble.prototype.replaceInFiles = function() {
+        this._executeRemoteCommand({commandCategory: "brackets", command: "CMD_REPLACE_IN_FILES"});
+    };
+
     Bramble.prototype.useLightTheme = function() {
         this._executeRemoteCommand({commandCategory: "bramble", command: "BRAMBLE_LIGHT_THEME"});
     };

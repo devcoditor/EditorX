@@ -18,9 +18,18 @@ define(function (require, exports, module) {
 
     // Built-in Brackets Commands
     function _bracketsCommand(command) {
+        function executeCommand() {
+            CommandManager.execute(Commands[command]);
+        }
+
         // Make sure the last-focused editor gets focus before executing
-        EditorManager.getActiveEditor().focus();
-        CommandManager.execute(Commands[command]);
+        var editor = EditorManager.getActiveEditor();
+        if (editor && !editor.hasFocus()) {
+            editor.one("focus", executeCommand);
+            editor.focus();
+        } else {
+            executeCommand();
+        }
     }
 
     // Custom Bramble commands
