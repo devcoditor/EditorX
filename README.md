@@ -142,14 +142,14 @@ to an actual DOM element, or leave it blank, and `document.body` will be used.
 
 The `options` object allows you to configure Bramble:
 
- * url: <String> a URL to use when loading the Bramble iframe (defaults to prod)
- * locale: <String> the locale Brackets should use
- * extensions <Object>
-     * enable: <Array(String)> a list of extensions to enable
-     * disable: <Array(String)> a list of extensions to disable
- * hideUntilReady: <Boolean> whether to hide Bramble until it's fully loaded.
- * ready: <Function> a function to be called when Bramble is fully loaded.
- * provider: <Bramble.Filer.FileSystem.providers.*> a provider to use for the fs, defaults to Memory
+ * `url`: `<String>` a URL to use when loading the Bramble iframe (defaults to prod)
+ * `locale`: `<String>` the locale Brackets should use
+ * `extensions:` `<Object>` with the following optional properties
+     * `enable`: `<Array(String)>` a list of extensions to enable
+     * `disable`: `<Array(String)>` a list of extensions to disable
+ * `hideUntilReady`: `<Boolean>` whether to hide Bramble until it's fully loaded.
+ * `ready`: `<Function>` a function to be called when Bramble is fully loaded.
+ * `provider`: `<Bramble.Filer.FileSystem.providers.*>` a provider to use for the fs, defaults to `Memory`
 
 Here's an example:
 
