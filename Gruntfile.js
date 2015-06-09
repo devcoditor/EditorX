@@ -220,10 +220,10 @@ module.exports = function (grunt) {
             iframe: {
                 // Standalone dist/bramble.js iframe api
                 options: {
-                    name: 'bramble/almond',
+                    name: 'thirdparty/almond',
                     baseUrl: 'src',
                     optimize: 'uglify2',
-                    preserveLicenseComments: true,
+                    preserveLicenseComments: false,
                     useStrict: true,
                     wrap: {
                         startFile: 'src/bramble/bramble-start.frag',
