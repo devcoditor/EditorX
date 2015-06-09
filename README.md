@@ -161,7 +161,7 @@ var bramble = Bramble.getInstance("#bramble", {
   hideUntilReady: true,
   ready: function() {
     // Get a reference to the filesystem
-    var fs = bramble.fs();
+    var fs = bramble.fs;
     var html = "<html>...</html>";
     // Assuming we've gotten a project name and filename from the user somehow
     var path = Path.join("/", projectName, filename);
