@@ -28,7 +28,7 @@ define(function (require, exports, module) {
         this.doc = parser.parseFromString(html, "text/html");
     }
 
-    HTMLRewriter.prototype.elements = function(type, urlType, mime, callback) {
+    HTMLRewriter.prototype.elements = function(type, urlType, callback) {
         var elements = this.doc.querySelectorAll(type);
         var dir = this.dir;
 
@@ -146,13 +146,13 @@ define(function (require, exports, module) {
         Async.series([
             iterator("styles"),
             iterator("styleAttributes"),
-            iterator("elements", "link", "href", null),
-            iterator("elements", "iframe", "src", null),
-            iterator("elements", "img", "src", null),
-            iterator("elements", "script", "src", "text/javascript"),
-            iterator("elements", "source", "src", null),
-            iterator("elements", "video", "src", null),
-            iterator("elements", "audio", "src", null),            
+            iterator("elements", "link", "href"),
+            iterator("elements", "iframe", "src"),
+            iterator("elements", "img", "src"),
+            iterator("elements", "script", "src"),
+            iterator("elements", "source", "src"),
+            iterator("elements", "video", "src"),
+            iterator("elements", "audio", "src"),
             iterator("scripts")
         ], function finishedRewriteSeries(err) {
             // Return the processed HTML

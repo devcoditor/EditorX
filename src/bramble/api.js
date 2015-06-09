@@ -141,15 +141,12 @@ define([
 
             startEvents(brambleWindow);
 
-            var search;
+            var search = "";
             if (options.extensions) {
                 // Override the extension list with what's in options
-                search = "";
-
                 var enable = options.extensions.enable;
                 if (enable && enable.length) {
-                    search = "?";
-                    search += "enableExtensions=" + enable.join(",");
+                    search += "?enableExtensions=" + enable.join(",");
                 }
 
                 var disable = options.extensions.disable;
@@ -158,8 +155,10 @@ define([
                     search += "disableExtensions=" + disable.join(",");
                 }
             } else {
-                // Default to passing whatever is on the hosting window's search string
-                search = window.location.search;
+                // If the user requests it, copy the search string from the hosting window
+                if (options.useLocationSearch) {
+                    search = window.location.search;
+                }
             }
 
             if (options.locale) {

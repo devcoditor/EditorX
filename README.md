@@ -144,6 +144,7 @@ The `options` object allows you to configure Bramble:
 
  * `url`: `<String>` a URL to use when loading the Bramble iframe (defaults to prod)
  * `locale`: `<String>` the locale Brackets should use
+ * `useLocationSearch`: `<Boolean>` whether to copy the window's location.search string to the iframe's url
  * `extensions:` `<Object>` with the following optional properties
      * `enable`: `<Array(String)>` a list of extensions to enable
      * `disable`: `<Array(String)>` a list of extensions to disable
