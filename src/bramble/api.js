@@ -359,7 +359,7 @@ define([
     return {
         // Expose Filer for Path, Buffer, providers, etc.
         Filer: Filer,
-        createInstance: function(div, options) {
+        getInstance: function(div, options) {
             if (!_instance) {
                 _instance = new Bramble(div, options);
             }

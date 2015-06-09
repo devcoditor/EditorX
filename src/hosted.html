@@ -34,7 +34,7 @@ This page is a helper for local development.
             // Expose Bramble for debugging
             window.Bramble = Bramble;
 
-            var bramble = Bramble.createInstance("#bramble", {
+            var bramble = Bramble.getInstance("#bramble", {
                 hideUntilReady: true,
                 url: "index.html",
                 ready: function() { console.log('Bramble ready!'); }
