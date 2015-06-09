@@ -332,6 +332,14 @@ define([
         this._executeRemoteCommand({commandCategory: "bramble", command: "BRAMBLE_HIDE_SIDEBAR"});
     };
 
+    Bramble.prototype.showStatusbar = function() {
+        this._executeRemoteCommand({commandCategory: "bramble", command: "BRAMBLE_SHOW_STATUSBAR"});
+    };
+
+    Bramble.prototype.hideStatusbar = function() {
+        this._executeRemoteCommand({commandCategory: "bramble", command: "BRAMBLE_HIDE_STATUSBAR"});
+    };
+
     Bramble.prototype.refreshPreview = function() {
         this._executeRemoteCommand({commandCategory: "bramble", command: "BRAMBLE_RELOAD"});        
     };

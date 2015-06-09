@@ -195,6 +195,8 @@ Bramble editor and preview:
 * `useDarkTheme()` - sets the editor to use the dark theme
 * `showSidebar()` - opens the file tree sidebar
 * `hideSidebar()` - hides the file tree sidebar
+* `showStatusbar()` - enables and shows the statusbar
+* `hideStatusbar()` - disables and hides the statusbar
 * `refreshPreview()` - reloads the preview with the latest content in the editor and filesystem
 * `useMobilePreview()` - uses a Mobile view in the preview, as it would look on a smartphone
 * `useDesktopPreview()` - uses a Desktop view in the preview, as it would look on a desktop computer (default)

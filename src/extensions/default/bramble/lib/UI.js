@@ -29,6 +29,7 @@ define(function (require, exports, module) {
                 removeMainToolBar();
                 removeLeftSideToolBar();
                 removeRightSideToolBar();
+                removeStatusBar();
             }
 
             callback();
@@ -43,6 +44,13 @@ define(function (require, exports, module) {
         var params = new UrlParams();
         params.parse();
         return params.get("ui") !== "1";
+    }
+
+    /**
+     * By default we disable/hide the StatusBar
+     */
+    function removeStatusBar() {
+        StatusBar.disable();
     }
 
     /**
