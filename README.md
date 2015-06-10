@@ -121,7 +121,7 @@ an AMD module, or as a browser global:
 <script src="bramble.js"></script>
 <script>
   // Option 1: AMD loading, assumes requirejs is loaded already
-  require(["bramble/api"], function(Bramble) {
+  require(["bramble"], function(Bramble) {
     ...
   });
 
