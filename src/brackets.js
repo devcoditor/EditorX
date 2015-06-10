@@ -280,8 +280,10 @@ define(function (require, exports, module) {
             }());
         }
         
-        // Localize MainViewHTML and inject into <BODY> tag
-        $("body").html(Mustache.render(MainViewHTML, Strings));
+        // Localize MainViewHTML and inject.
+        // XXXBramble: we don't use <body> here, so that we can do a loading spinner first
+        // that will get turned off, and this div shown, in bramble UI.initUI().
+        $("#main-view").html(Mustache.render(MainViewHTML, Strings));
         
         // Update title
         $("title").text(brackets.config.app_title);

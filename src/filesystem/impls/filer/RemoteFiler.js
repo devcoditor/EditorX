@@ -10,7 +10,7 @@ define(function (require, exports, module) {
      */
 
     var fnQueue = require("filesystem/impls/filer/lib/queue");
-    var ChannelUtils = require("thirdparty/MessageChannel/ChannelUtils");
+    var ChannelUtils = require("bramble/ChannelUtils");
     var UUID = ChannelUtils.UUID;
     var allowArrayBufferTransfer;
     var port;

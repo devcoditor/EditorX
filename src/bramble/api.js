@@ -26,8 +26,8 @@
 define([
     // Change this to filer vs. filer.min if you need to debug Filer
     "thirdparty/filer/dist/filer.min",
-    "thirdparty/MessageChannel/ChannelUtils",
-    "thirdparty/MessageChannel/message_channel"
+    "bramble/ChannelUtils",
+    "bramble/thirdparty/MessageChannel/message_channel"
 ], function(Filer, ChannelUtils) {
     "use strict";    
 

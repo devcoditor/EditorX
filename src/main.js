@@ -75,7 +75,7 @@ define(function (require) {
         "utils/Compatibility",
         // XXXBramble: temporary MessageChannel shim for Firefox, see:
         // https://bugzilla.mozilla.org/show_bug.cgi?id=952139
-        "thirdparty/MessageChannel/message_channel"
+        "bramble/thirdparty/MessageChannel/message_channel"
     ],
     function () {
         // XXXBramble: get the filesystem loading ASAP for connection with parent window

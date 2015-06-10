@@ -32,6 +32,10 @@ define(function (require, exports, module) {
                 removeStatusBar();
             }
 
+            // Show the editor, remove spinner
+            $("#spinner-container").remove();
+            $("#main-view").css("visibility", "visible");
+
             callback();
         });
     }

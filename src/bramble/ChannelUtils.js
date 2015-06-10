@@ -1,7 +1,8 @@
+/* global Window, Uint8Array */
 define(function (require, exports, module) {
     "use strict";
 
-    var UUID = require("thirdparty/MessageChannel/uuid.core");
+    var UUID = require("bramble/thirdparty/MessageChannel/uuid.core");
     var nativeMessageChannel = window.MessageChannel && !window.MessageChannel._shim;
 
     // This papers over the differences between postMessage'ing the

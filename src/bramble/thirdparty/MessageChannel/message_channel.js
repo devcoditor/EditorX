@@ -1,4 +1,4 @@
-define(["thirdparty/MessageChannel/uuid.core"], function(UUID) {
+define(["bramble/thirdparty/MessageChannel/uuid.core"], function(UUID) {
   var root = window;
 
   var self = root,

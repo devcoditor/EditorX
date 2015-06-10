@@ -37,7 +37,6 @@ define(function (require, exports, module) {
     };
 
     HTMLServer.prototype.readyToServe = function () {
-        var self = this;
         var deferred = new $.Deferred();
 
         // Decide if we can use Blob URLs or need to document.write()

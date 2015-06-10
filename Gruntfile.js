@@ -207,7 +207,11 @@ module.exports = function (grunt) {
                     optimize: 'uglify2',
                     // brackets.js should not be loaded until after polyfills defined in "utils/Compatibility"
                     // so explicitly include it in main.js
-                    include: ["utils/Compatibility", "brackets"],
+                    include: [
+                        "utils/Compatibility",
+                        "bramble/thirdparty/MessageChannel/message_channel",
+                        "brackets"
+                    ],
                     // required to support SourceMaps
                     // http://requirejs.org/docs/errors.html#sourcemapcomments
                     preserveLicenseComments: false,
@@ -378,13 +382,8 @@ module.exports = function (grunt) {
                 '<%= meta.grunt %>',
                 '<%= meta.src %>',
                 '<%= meta.test %>',
-                // These modules include lots of third-party code, so we skip them
-                '!src/extensions/default/HTMLHinter/slowparse/**',
-                '!src/extensions/default/HTMLHinter/tooltipsy.source.js',
-                '!src/extensions/default/bramble/nohost/**',
                 '!src/extensions/extra/**',
-                //With Previous skip statement, this file was ignored, so we specify it directly for jshinting
-                'src/extensions/default/bramble/nohost/src/NoHostServer.js'
+                '!src/bramble/thirdparty/**'
             ],
             grunt:  '<%= meta.grunt %>',
             src:    [
@@ -392,10 +391,8 @@ module.exports = function (grunt) {
                 // These modules include lots of third-party code, so we skip them
                 '!src/extensions/default/HTMLHinter/slowparse/**',
                 '!src/extensions/default/HTMLHinter/tooltipsy.source.js',
-                '!src/extensions/default/bramble/nohost/**',
                 '!src/extensions/extra/**',
-                //With Previous skip statement, this file was ignored, so we specify it directly for jshinting
-                'src/extensions/default/bramble/nohost/src/NoHostServer.js'
+                '!src/bramble/thirdparty/**'
             ],
             test:   '<%= meta.test %>',
             /* use strict options to mimic JSLINT until we migrate to JSHINT in Brackets */
