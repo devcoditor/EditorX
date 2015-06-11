@@ -170,13 +170,13 @@ define([
             iframe.src = (options.url ? options.url : PROD_BRAMBLE_URL) + search;
         }
 
-        if (document.readyState === "complete") {
-            createIFrame();
-        } else {
+        if (document.readyState === "loading") {
             document.addEventListener("DOMContentLoaded", function waitForDOM() {
                 document.removeEventListener("DOMContentLoaded", waitForDOM, false);
                 createIFrame();
             }, false);
+        } else {
+            createIFrame();
         }
 
         function setupChannel(win) {
