@@ -30,7 +30,8 @@ define(function (require, exports, module) {
         BlobUtils            = brackets.getModule("filesystem/impls/filer/BlobUtils"),
         XHRHandler           = require("lib/xhr/XHRHandler"),
         Theme                = require("lib/Theme"),
-        RemoteCommandHandler = require("lib/RemoteCommandHandler");
+        RemoteCommandHandler = require("lib/RemoteCommandHandler"),
+        RemoteEvents         = require("lib/RemoteEvents");
 
     ExtensionUtils.loadStyleSheet(module, "stylesheets/style.css");
 
@@ -163,9 +164,7 @@ define(function (require, exports, module) {
         Theme.init();
 
         function attachListeners() {
-            parentWindow.postMessage(JSON.stringify({
-                type: "bramble:loaded"
-            }), "*");
+            RemoteEvents.loaded();
 
             // Below are methods to change the preferences of brackets, more available at:
             // https://github.com/adobe/brackets/wiki/How-to-Use-Brackets#list-of-supported-preferences
@@ -327,11 +326,7 @@ define(function (require, exports, module) {
 
         window.addEventListener("message", _getInitialDocument, false);
 
-        // Signal to thimble that we're waiting for the
-        // initial make source code
-        window.parent.postMessage(JSON.stringify({
-            type: "bramble:init"
-        }), "*");
+        RemoteEvents.start();
 
         return deferred.promise();
     };

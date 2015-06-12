@@ -9,12 +9,15 @@ define(function (require, exports, module) {
         UrlParams           = brackets.getModule("utils/UrlParams").UrlParams,
         StatusBar           = brackets.getModule("widgets/StatusBar"),
         Strings             = brackets.getModule("strings"),
-        MainViewManager     = brackets.getModule("view/MainViewManager");
+        MainViewManager     = brackets.getModule("view/MainViewManager"),
+        BrambleEvents       = brackets.getModule("bramble/BrambleEvents");
 
     var PhonePreview  = require("text!lib/Mobile.html");
     var PostMessageTransport = require("lib/PostMessageTransport");
     var IframeBrowser = require("lib/iframe-browser");
     var Compatibility = require("lib/compatibility");
+
+    var isMobileViewOpen = false;
 
     /**
      * This function calls all the hide functions and listens
@@ -119,6 +122,10 @@ define(function (require, exports, module) {
     }
 
     function showDesktopView() {
+        if(!isMobileViewOpen) {
+            return;
+        }
+
         // Switch the icon
         $("#mobileViewButton").removeClass("desktopButton");
         $("#mobileViewButton").addClass("mobileButton");
@@ -131,10 +138,16 @@ define(function (require, exports, module) {
         $("#second-pane").removeClass("second-pane-scroll");
         $("#second-pane").off("click", stealFocus);
 
+        isMobileViewOpen = false;
+        BrambleEvents.triggerPreviewModeChange("desktop");
         PostMessageTransport.reload();
     }
 
     function showMobileView() {
+        if(isMobileViewOpen) {
+            return;
+        }
+
         // Switch the icon
         $("#mobileViewButton").removeClass("mobileButton");
         $("#mobileViewButton").addClass("desktopButton");
@@ -151,6 +164,8 @@ define(function (require, exports, module) {
         // Prevents the status bar from disappearing.
         $("#second-pane").on("click", stealFocus);
 
+        isMobileViewOpen = true;
+        BrambleEvents.triggerPreviewModeChange("mobile");
         PostMessageTransport.reload();
     }
 
@@ -159,8 +174,6 @@ define(function (require, exports, module) {
      * between mobile view and desktop view.
      */
     function toggleMobileViewButton() {
-        var isMobileViewOpen = false;
-
         var mobileView = Mustache.render("<div><a id='mobileViewButton' href=#></a></div>", Strings);
         StatusBar.addIndicator("mobileViewButtonBox", $(mobileView), true, "",
                                "Click to open preview in a mobile view", "status-overwrite");
@@ -169,10 +182,8 @@ define(function (require, exports, module) {
         $("#mobileViewButton").click(function () {
             if(!isMobileViewOpen) {
                 showMobileView();
-                isMobileViewOpen = true;
             } else {
                 showDesktopView();
-                isMobileViewOpen = false;
             }
         });
     }
@@ -221,10 +232,18 @@ define(function (require, exports, module) {
         });
     }
 
+    /**
+     * Which preview mode we're in, "desktop" or "mobile"
+     */
+    function getPreviewMode() {
+        return isMobileViewOpen ? "mobile" : "desktop";
+    }
+
     // Define public API
     exports.initUI                 = initUI;
     exports.showMobileView         = showMobileView;
     exports.showDesktopView        = showDesktopView;
+    exports.getPreviewMode         = getPreviewMode;
     exports.removeLeftSideToolBar  = removeLeftSideToolBar;
     exports.removeMainToolBar      = removeMainToolBar;
     exports.removeRightSideToolBar = removeRightSideToolBar;

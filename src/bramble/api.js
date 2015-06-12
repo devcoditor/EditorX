@@ -27,8 +27,9 @@ define([
     // Change this to filer vs. filer.min if you need to debug Filer
     "thirdparty/filer/dist/filer.min",
     "bramble/ChannelUtils",
+    "bramble/thirdparty/EventEmitter/EventEmitter.min",
     "bramble/thirdparty/MessageChannel/message_channel"
-], function(Filer, ChannelUtils) {
+], function(Filer, ChannelUtils, EventEmitter) {
     "use strict";    
 
     // PROD URL for Bramble, which can be changed below
@@ -85,6 +86,28 @@ define([
         // Whether to transfer ownership of ArrayBuffers or not
         var allowArrayBufferTransfer;
 
+        // Various bits of private state we want to track, updated via events
+        var _currentFullPath;
+        var _currentFilename;
+        var _sidebarVisible;
+        var _sidebarWidth;
+        var _firstPaneWidth;
+        var _secondPaneWidth;
+        var _currentPreviewMode;
+
+        // Public getters for state
+        self.getFullPath = function() { return _currentFullPath; };
+        self.getFilename = function() { return _currentFilename; };
+        self.getPreviewMode = function() { return _currentPreviewMode; };
+        self.getSidebarVisible = function() { return _sidebarVisible; };
+        self.getLayout = function() {
+            return {
+                sidebarWidth: _sidebarWidth,
+                firstPaneWidth: _firstPaneWidth,
+                secondPaneWidth: _secondPaneWidth
+            };
+        };
+
         if (typeof div === "object"  && !(div instanceof HTMLElement)) {
             options = div;
             div = null;
@@ -116,6 +139,38 @@ define([
                     if (typeof options.ready === "function") {
                         options.ready();
                     }
+
+                    // Set intial state
+                    _currentFullPath = data.fullPath;
+                    _currentFilename = data.filename;
+                    _sidebarVisible = data.sidebarVisible;
+                    _sidebarWidth = data.sidebarWidth;
+                    _firstPaneWidth = data.firstPaneWidth;
+                    _secondPaneWidth = data.secondPaneWidth;
+                    _currentPreviewMode = data.previewMode;
+                }
+                // Anything else is some kind of event we need to re-trigger
+                // and alter internal state.
+                else {
+                    // Strip the "bramble:*" namespace off event name
+                    var eventName = data.type.replace(/^bramble:/, '');
+                    delete data.type;
+
+                    // Update internal state before firing event
+                    if (eventName === "layout") {
+                        _sidebarWidth = data.sidebarWidth;
+                        _firstPaneWidth = data.firstPaneWidth;
+                        _secondPaneWidth = data.secondPaneWidth;
+                    } else if (eventName === "activeEditorChange") {
+                        _currentFullPath = data.fullPath;
+                        _currentFilename = data.filename;
+                    } else if (eventName === "previewModeChange") {
+                        _currentPreviewMode = data.mode;
+                    } else if (eventName === "sidebarChange") {
+                        _sidebarVisible = data.visible;
+                    }
+
+                    self.trigger(eventName, [data]);
                 }
             });
         }
@@ -262,6 +317,9 @@ define([
             brambleWindow.postMessage(JSON.stringify(options), self._iframe.src);
         };
     }
+
+    Bramble.prototype = new EventEmitter();
+    Bramble.prototype.constructor = Bramble;
 
     Bramble.prototype.undo = function() {
         this._executeRemoteCommand({commandCategory: "brackets", command: "EDIT_UNDO"});
