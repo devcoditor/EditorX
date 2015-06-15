@@ -21,7 +21,7 @@
  *
  */
 
-/*global define, HTMLElement, MessageChannel */
+/*global define, HTMLElement, MessageChannel, addEventListener, removeEventListener */
 
 define([
     // Change this to filer vs. filer.min if you need to debug Filer
@@ -38,11 +38,16 @@ define([
     var FilerBuffer = Filer.Buffer;
     var UUID = ChannelUtils.UUID;
 
+    // Logging function, replaced in Bramble.load() if options.debug is true
+    var debug = function(){};
+
     function parseEventData(data) {
+        debug("parseEventData", data);
         try {
             data = JSON.parse(data);
             return data || {};
         } catch(err) {
+            debug("parseEventData error", err);
             return {};
         }
     }
@@ -106,6 +111,14 @@ define([
         var _secondPaneWidth;
         var _currentPreviewMode;
 
+        var _readyState;
+        function setReadyState(newState) {
+            debug("setReadyState", _readyState, newState);
+            _readyState = newState;
+        }
+        self.getReadyState = function() { return _readyState; };
+        setReadyState(Bramble.NOT_LOADED);
+
         // Public getters for state. Most of these aren't useful until bramble.ready()
         self.getID = function() { return _id; };
         self.getIFrame = function() { return _iframe; };
@@ -128,23 +141,33 @@ define([
         options = options || {};
 
         function startEvents(win) {
-            window.addEventListener("message", function(e) {
+            addEventListener("message", function(e) {
                 var data = parseEventData(e.data);
 
-                // When Bramble asks for initial content, reply but don't bother providing any
-                if (data.type === "bramble:init") {
-                    win.postMessage(JSON.stringify({type: "bramble:init", source: null}), "*");
+                // When Bramble is ready for the filesystem to be mounted, it will let us know
+                if (data.type === "bramble:readyToMount") {
+                    debug("bramble:readyToMount");
+                    setReadyState(Bramble.MOUNTABLE);
+
+                    // See if we have a cached mount function that we can run
+                    if (typeof self._mount === "function") {
+                        self._mount();
+                        delete self._mount;
+                    }
                 }
                 // Listen for requests to setup the fs
                 else if (data.type === "bramble:filer") {
+                    debug("bramble:filer");
                     setupChannel(win);
                 }
                 // Listen for Bramble to become ready/fully-loaded
                 else if (data.type === "bramble:loaded") {
+                    debug("bramble:loaded");
                     if (options.hideUntilReady) {
                         _iframe.style.visibility = "visible";
                     }
                     if (typeof options.ready === "function") {
+                        setReadyState(Bramble.READY);
                         options.ready();
                     }
 
@@ -178,6 +201,7 @@ define([
                         _sidebarVisible = data.visible;
                     }
 
+                    debug("triggering remote event", eventName, data);
                     self.trigger(eventName, [data]);
                 }
             });
@@ -195,7 +219,7 @@ define([
             div.innerHTML = "<iframe id='" + _id +
                             "' frameborder='0' width='100%' height='100%'></iframe>";
             
-            _iframe = document.getElementById(_id);
+            _iframe = document.getElementById(_id);            
             if (options.hideUntilReady) {
                 _iframe.style.visibility = "hidden";
             }
@@ -228,8 +252,12 @@ define([
                 search += options.locale;
             }
 
+            setReadyState(Bramble.LOADING);
+
             // Allow custom URL to Bramble's index.html, default to prod
-            _iframe.src = (options.url ? options.url : PROD_BRAMBLE_URL) + search;
+            var iframeUrl = (options.url ? options.url : PROD_BRAMBLE_URL) + search;
+            debug("setting iframe src", iframeUrl);
+            _iframe.src = iframeUrl;
         }
 
         if (document.readyState === "loading") {
@@ -241,6 +269,63 @@ define([
             createIFrame();
         }
 
+        self.mount = function(path, callback) {
+            function _mount() {
+                setReadyState(Bramble.MOUNTING);
+
+                // Make sure the path we were given exists in the filesystem, and is a dir
+                _fs.stat(path, function(err, stats) {
+                    if (err) {
+                        debug("mount stat error", err);
+                        setReadyState(Bramble.ERROR);
+                        if (err.code === "ENOENT") {
+                            callback(new Error("mount path does not exist: " + path));
+                        } else {
+                            callback(err);
+                        }
+                        return;
+                    }
+
+                    if (!stats.isDirectory()) {
+                        setReadyState(Bramble.ERROR);
+                        callback(new Error("mount path is not a directory: " + path));
+                    } else {
+                        // Tell Bramble the path to mount, and wait for a response
+                        addEventListener("message", function mountedMessage(e) {
+                            var data = parseEventData(e.data);
+                            if (data.type !== "bramble:mounted") {
+                                return;
+                            }
+
+                            removeEventListener("message", mountedMessage, false);
+                            debug("bramble:mounted");
+                            setReadyState(Bramble.MOUNTED);
+                            callback(null, _instance);
+                        }, false);
+
+                        var mountMessage = {
+                            type: "bramble:mountPath",
+                            path: path
+                        };
+                        _brambleWindow.postMessage(JSON.stringify(mountMessage), _iframe.src);
+                    }
+                });
+            }
+
+            var readyState = self.getReadyState();
+            if (readyState > Bramble.MOUNTABLE) {
+                setReadyState(Bramble.ERROR);
+                callback(new Error("Bramble.mount() while already mounted, or attempting to mount."));
+                return;
+            } else if (readyState < Bramble.MOUNTABLE) {
+                // We can't mount yet, cache the function to be called when we are ready
+                _instance._mount = _mount;
+            } else {
+                // MOUNTABLE, mount right now
+                _mount();
+            }
+        };
+
         function setupChannel(win) {
             var channel = new MessageChannel();
             ChannelUtils.postMessage(win,
@@ -251,6 +336,7 @@ define([
             _port.start();
 
             ChannelUtils.checkArrayBufferTransfer(_port, function(err, isAllowed) {
+                debug("checkArrayBufferTransfer", isAllowed);
                 _allowArrayBufferTransfer = isAllowed;
                 _port.addEventListener("message", remoteFSCallbackHandler, false);
             });
@@ -321,6 +407,7 @@ define([
             }
 
             options.type = "bramble:remoteCommand";
+            debug("executeRemoteCommand", options);
             _brambleWindow.postMessage(JSON.stringify(options), _iframe.src);
         };
     }
@@ -424,6 +511,14 @@ define([
         this._executeRemoteCommand({commandCategory: "bramble", command: "BRAMBLE_DISABLE_SCRIPTS"});
     };
 
+    // Bramble instance ready states
+    Bramble.ERROR      = -1;// Bramble is in an error state
+    Bramble.NOT_LOADED = 0; // Bramble.load() has not been called
+    Bramble.LOADING    = 1; // Bramble.load() has been called, loading resources
+    Bramble.MOUNTABLE  = 2; // Bramble.mount() can be executed, loading is done
+    Bramble.MOUNTING   = 3; // Bramble.mount() has been called, mounting
+    Bramble.READY      = 4; // Bramble.mount() has finished, Bramble is fully ready
+
     // We only support having a single instance in the page.
     var _instance;
 
@@ -434,11 +529,25 @@ define([
         getFileSystem: function() {
             return _fs;
         },
-        getInstance: function(div, options) {
-            if (!_instance) {
-                _instance = new Bramble(div, options);
+        load: function(div, options) {
+            if (_instance) {
+                throw new Error("Bramble.load() called more than once.");
             }
-            return _instance;
+
+            // Turn on logging if in debug mode
+            if (options.debug) {
+                debug = console.log.bind(console);
+            }
+
+            _instance = new Bramble(div, options);
+        },
+        mount: function(path, callback) {
+            if (!_instance) {
+                callback(new Error("Bramble.mount() called before Bramble.load()."));
+                return;
+            }
+
+            _instance.mount(path, callback);
         }
     };
 });

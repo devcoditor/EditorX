@@ -12,12 +12,11 @@ define(function (require, exports, module) {
 
     // Load dependencies
     var AppInit              = brackets.getModule("utils/AppInit"),
-        EditorManager        = brackets.getModule("editor/EditorManager"),
         LiveDevServerManager = brackets.getModule("LiveDevelopment/LiveDevServerManager"),
         PreferencesManager   = brackets.getModule("preferences/PreferencesManager"),
         ProjectManager       = brackets.getModule("project/ProjectManager"),
         LiveDevelopment      = brackets.getModule("LiveDevelopment/LiveDevMultiBrowser"),
-        UrlParams            = brackets.getModule("utils/UrlParams").UrlParams,
+        BrambleStartupProject = brackets.getModule("bramble/BrambleStartupProject"),
         Browser              = require("lib/iframe-browser"),
         UI                   = require("lib/UI"),
         Launcher             = require("lib/launcher"),
@@ -25,7 +24,6 @@ define(function (require, exports, module) {
         StaticServer         = require("nohost/src/StaticServer").StaticServer,
         ExtensionUtils       = brackets.getModule("utils/ExtensionUtils"),
         PostMessageTransport = require("lib/PostMessageTransport"),
-        FileSystem           = brackets.getModule("filesystem/FileSystem"),
         Path                 = brackets.getModule("filesystem/impls/filer/BracketsFiler").Path,
         BlobUtils            = brackets.getModule("filesystem/impls/filer/BlobUtils"),
         XHRHandler           = require("lib/xhr/XHRHandler"),
@@ -37,20 +35,18 @@ define(function (require, exports, module) {
 
     var _HTMLServer,
         _staticServer,
-        codeMirror,
-        parentWindow = window.parent,
-        params       = new UrlParams();
+        parentWindow = window.parent;
 
     // Load initial document
-    var defaultHTML = brackets.getModule("text!filesystem/impls/filer/lib/default.html");
-    var defaultCSS  = require("text!lib/default-files/style.css");
-    var defaultJS   = require("text!lib/default-files/script.txt");
+//    var defaultHTML = brackets.getModule("text!filesystem/impls/filer/lib/default.html");
+//    var defaultCSS  = require("text!lib/default-files/style.css");
+//    var defaultJS   = require("text!lib/default-files/script.txt");
 
 
     // Force entry to if statments on line 262 of brackets.js to create
     // a new project
-    PreferencesManager.setViewState("afterFirstLaunch", false);
-    params.remove("skipSampleProjectLoad");
+//    PreferencesManager.setViewState("afterFirstLaunch", false);
+//    params.remove("skipSampleProjectLoad");
 
     // Server for HTML files only
     function _getHTMLServer() {
@@ -126,6 +122,7 @@ define(function (require, exports, module) {
         Browser.init();
 
         function _configureModules() {
+            console.log("configureModules statusChange", arguments);
             // Set up our transport and plug it into live-dev
             PostMessageTransport.setIframe(Browser.getBrowserIframe());
             LiveDevelopment.setTransport(PostMessageTransport);
@@ -141,6 +138,12 @@ define(function (require, exports, module) {
         LiveDevelopment.one("statusChange", _configureModules);
     }
     ProjectManager.one("projectOpen", _configureLiveDev);
+
+    // Let the host app know we're mounted, and have loaded the project
+    ProjectManager.one("projectOpen", function() {
+        parentWindow.postMessage(JSON.stringify({type: "bramble:mounted"}), "*");
+//        RemoteEvents.loaded();
+    });
 
     // We configure Brackets to run the experimental live dev
     // with our nohost server and iframe combination. This has to
@@ -164,8 +167,6 @@ define(function (require, exports, module) {
         Theme.init();
 
         function attachListeners() {
-            RemoteEvents.loaded();
-
             // Below are methods to change the preferences of brackets, more available at:
             // https://github.com/adobe/brackets/wiki/How-to-Use-Brackets#list-of-supported-preferences
             PreferencesManager.set("insertHintOnTab", true);
@@ -174,7 +175,7 @@ define(function (require, exports, module) {
             PreferencesManager.set("tabSize", 2);
             // Allows the closeTags to indent consistently
             PreferencesManager.set("closeTags", true);
-
+/**
             // Once the app has loaded our file,
             // and we can be confident the editor is open,
             // get a reference to it and attach our "onchange"
@@ -202,9 +203,10 @@ define(function (require, exports, module) {
                     scrollInfo: codeMirror.getScrollInfo()
                 }), "*");
             });
-
+**/
             window.addEventListener("message", function(e) {
                 var data = parseData(e.data);
+/**                
                 var value;
                 var mark;
                 var type;
@@ -213,13 +215,15 @@ define(function (require, exports, module) {
                     return;
                 }
 
-                type = data.type;
+**/
+// TODO: this needs to get done better -- xhr handing from preview.
+                var type = data.type;
 
                 if(type === "message") {
                     handleMessage(data.message);
                     return;
                 }
-
+/**
                 if(type === "themeToggle") {
                     Theme.toggle(data.theme);
                     return;
@@ -264,6 +268,7 @@ define(function (require, exports, module) {
                     fn: data.fn,
                     value: typeof value !== "object" ? value : undefined
                 }), "*");
+**/
             }, false);
         }
 
@@ -271,28 +276,32 @@ define(function (require, exports, module) {
         UI.initUI(attachListeners);
     });
 
-    // We listen for a message from Thimble containing
-    // the make's initial code.
-    // For now, we have a default html make for testing
-    // with just Brackets.
+    // We expect the hosting app to setup the filesystem, and give us a
+    // path as a mount point for the project we open.  We block loading of the rest of the
+    // app on the filesystem being setup and mounted.
     exports.initExtension = function() {
         var deferred = new $.Deferred();
 
-        function _getInitialDocument(e) {
+        function mountFileSystem(e) {
             var data = parseData(e.data, deferred);
-
-            // Remove the listener after we confirm the event is the
-            // one we're waiting for
-            if (!data || data.type !== "bramble:init") {
+            if (!(data && data.type === "bramble:mountPath")) {
                 return;
             }
 
+            window.removeEventListener("message", mountFileSystem, false);
+
             // Set initial theme
+            // XXXhumph: why is this here? we don't have data.theme in this message
             Theme.setTheme(data.theme);
 
-            window.removeEventListener("message", _getInitialDocument, false);
             window.addEventListener("message", RemoteCommandHandler.handleRequest, false);
 
+            // Set the mount point for the project we want to open and signal
+            // to Brackets that it can keep going, which will pick this up.
+            BrambleStartupProject.setPath(data.path);
+            deferred.resolve();
+
+/** We don't write these now...
             var fileHTML = FileSystem.getFileForPath("/index.html");
             var fileCSS  = FileSystem.getFileForPath("/style.css");
             var fileJS   = FileSystem.getFileForPath("/script.js");
@@ -322,9 +331,10 @@ define(function (require, exports, module) {
                     }
                 });
             });
+**/
         }
 
-        window.addEventListener("message", _getInitialDocument, false);
+        window.addEventListener("message", mountFileSystem, false);
 
         RemoteEvents.start();
 

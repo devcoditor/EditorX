@@ -42,9 +42,8 @@ define(function (require, exports, module) {
     }
 
     function start() {
-        // Signal to the hosting app that we're waiting for the
-        // initial make source code
-        sendEvent({type: "bramble:init"});
+        // Signal to the hosting app that we're ready to mount a filesystem
+        sendEvent({type: "bramble:readyToMount"});
 
         // Listen for layout changes. We currently consolidate start/end
         // events into one single "bramble:layout" event for the hosting app.
