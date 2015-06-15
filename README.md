@@ -165,7 +165,6 @@ The `options` object allows you to configure Bramble:
      * `disable`: `<Array(String)>` a list of extensions to disable
  * `hideUntilReady`: `<Boolean>` whether to hide Bramble until it's fully loaded.
  * `ready`: `<Function>` a function to be called when Bramble is fully loaded.
- * `provider`: `<Bramble.Filer.FileSystem.providers.*>` a provider to use for the fs, defaults to `Memory`
 
 Here's an example:
 
