@@ -14,9 +14,9 @@ define(function (require, exports, module) {
         parent.postMessage(JSON.stringify(data), "*");
     }
 
-    // XXXBramble: when the main view's layout changes, trigger an event
-    // that indicates the widths of the sidebar, first editor pane, and second
-    // editor pane.  There is no clean way to do this with the Brackets API.
+    // When the main view's layout changes, trigger an event that indicates
+    // the widths of the sidebar, first editor pane, and second editor pane.
+    // There is no clean way to do this with the Brackets API.
     function sendLayoutEvent() {
         var $firstPane = $("#first-pane");
         var $secondPane = $("#second-pane");

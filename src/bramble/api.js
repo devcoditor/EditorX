@@ -48,6 +48,12 @@ define([
     }
 
     /**
+     * The Filer FileSystem for Bramble is created early, and exposed statically
+     * on Bramble below.
+     */
+    var _fs = new Filer.FileSystem();
+
+    /**
      * The `div` is the element, or id of an element to use when creating
      * the Bramble iframe. All existing contents of this element will be removed:
      *
@@ -69,22 +75,27 @@ define([
      *   }
      *   hideUntilReady: <Boolean> whether to hide Bramble until it's fully loaded.
      *   ready: <Function> a function to be called when Bramble is fully loaded.
-     *   provider: <Filer.FileSystem.providers.*> a provider to use for the fs, defaults to Memory
      */
     function Bramble(div, options) {
         var self = this;
 
+        // The id used for the iframe element
+        var _id = "bramble-" + UUID.generate();
+
+        // The iframe that will host Bramble
+        var _iframe;
+
         // Long-running callbacks for fs watch events
-        var watches = {};
+        var _watches = {};
 
         // The channel port for communication with this instance
-        var port;
+        var _port;
 
         // The iframe's window, for postMessage
-        var brambleWindow;
+        var _brambleWindow;
 
         // Whether to transfer ownership of ArrayBuffers or not
-        var allowArrayBufferTransfer;
+        var _allowArrayBufferTransfer;
 
         // Various bits of private state we want to track, updated via events
         var _currentFullPath;
@@ -95,7 +106,9 @@ define([
         var _secondPaneWidth;
         var _currentPreviewMode;
 
-        // Public getters for state
+        // Public getters for state. Most of these aren't useful until bramble.ready()
+        self.getID = function() { return _id; };
+        self.getIFrame = function() { return _iframe; };
         self.getFullPath = function() { return _currentFullPath; };
         self.getFilename = function() { return _currentFilename; };
         self.getPreviewMode = function() { return _currentPreviewMode; };
@@ -114,11 +127,6 @@ define([
         }
         options = options || {};
 
-        var id = self._id = "bramble-" + UUID.generate();
-
-        var provider = options.provider || new Filer.FileSystem.providers.Memory();
-        var fs = self.fs = new Filer.FileSystem({provider: provider});
-
         function startEvents(win) {
             window.addEventListener("message", function(e) {
                 var data = parseEventData(e.data);
@@ -134,7 +142,7 @@ define([
                 // Listen for Bramble to become ready/fully-loaded
                 else if (data.type === "bramble:loaded") {
                     if (options.hideUntilReady) {
-                        self._iframe.style.visibility = "visible";
+                        _iframe.style.visibility = "visible";
                     }
                     if (typeof options.ready === "function") {
                         options.ready();
@@ -184,17 +192,16 @@ define([
                 div = document.body;
             }
 
-            div.innerHTML = "<iframe id='" + id +
+            div.innerHTML = "<iframe id='" + _id +
                             "' frameborder='0' width='100%' height='100%'></iframe>";
             
-            var iframe = self._iframe = document.getElementById(id);
+            _iframe = document.getElementById(_id);
             if (options.hideUntilReady) {
-                iframe.style.visibility = "hidden";
+                _iframe.style.visibility = "hidden";
             }
 
-            brambleWindow = iframe.contentWindow;
-
-            startEvents(brambleWindow);
+            _brambleWindow = _iframe.contentWindow;
+            startEvents(_brambleWindow);
 
             var search = "";
             if (options.extensions) {
@@ -222,7 +229,7 @@ define([
             }
 
             // Allow custom URL to Bramble's index.html, default to prod
-            iframe.src = (options.url ? options.url : PROD_BRAMBLE_URL) + search;
+            _iframe.src = (options.url ? options.url : PROD_BRAMBLE_URL) + search;
         }
 
         if (document.readyState === "loading") {
@@ -240,20 +247,20 @@ define([
                                      [JSON.stringify({type: "bramble:filer"}),
                                      "*",
                                      [channel.port2]]);
-            port = self._port = channel.port1;
-            port.start();
+            _port = channel.port1;
+            _port.start();
 
-            ChannelUtils.checkArrayBufferTransfer(port, function(err, isAllowed) {
-                allowArrayBufferTransfer = isAllowed;
-                port.addEventListener("message", remoteFSCallbackHandler, false);                
+            ChannelUtils.checkArrayBufferTransfer(_port, function(err, isAllowed) {
+                _allowArrayBufferTransfer = isAllowed;
+                _port.addEventListener("message", remoteFSCallbackHandler, false);
             });
         }
 
         function getCallbackFn(id) {
             // If we have a long-running callback (fs.watch()) use that,
             // otherwise generate a new one.
-            if(watches[id]) {
-                return watches[id];
+            if(_watches[id]) {
+                return _watches[id];
             }
 
             return function callback(err, result) {
@@ -266,12 +273,12 @@ define([
 
                     // If the browser allows transfer of ArrayBuffer objects over
                     // postMessage, add a reference to the transferables list.
-                    if (allowArrayBufferTransfer) {
+                    if (_allowArrayBufferTransfer) {
                         transferable = [result];
                     }
                 }
 
-                port.postMessage({callback: id, result: [err, result]}, transferable);
+                _port.postMessage({callback: id, result: [err, result]}, transferable);
             };
         }
 
@@ -289,32 +296,32 @@ define([
             case "writeFile":
                 // Convert the passed ArrayBuffer back to a FilerBuffer
                 args[1] = new FilerBuffer(args[1]);
-                fs.writeFile.apply(fs, args.concat(callback));
+                _fs.writeFile.apply(_fs, args.concat(callback));
                 break;
             case "readFile":
-                fs.readFile.apply(fs, args.concat(function(err, data) {
+                _fs.readFile.apply(_fs, args.concat(function(err, data) {
                     // Convert the FilerBuffer to an ArrayBuffer for transport
                     callback(err, data ? data.buffer : null);
                 }));
                 break;
             case "watch":
                 // Persist watch callback until we get an unwatch();
-                watches[callbackId] = callback;
-                fs.watch.apply(fs, data.args.concat(callback));
+                _watches[callbackId] = callback;
+                _fs.watch.apply(_fs, data.args.concat(callback));
                 break;
             default:
-                fs[data.method].apply(fs, data.args.concat(callback));
+                _fs[data.method].apply(_fs, data.args.concat(callback));
             }
         }
 
         self._executeRemoteCommand = function(options) {
-            if (!brambleWindow) {
+            if (!_brambleWindow) {
                 console.error("[Bramble Error] No active instance, unable to execute command");
                 return;
             }
 
             options.type = "bramble:remoteCommand";
-            brambleWindow.postMessage(JSON.stringify(options), self._iframe.src);
+            _brambleWindow.postMessage(JSON.stringify(options), _iframe.src);
         };
     }
 
@@ -424,6 +431,9 @@ define([
     return {
         // Expose Filer for Path, Buffer, providers, etc.
         Filer: Filer,
+        getFileSystem: function() {
+            return _fs;
+        },
         getInstance: function(div, options) {
             if (!_instance) {
                 _instance = new Bramble(div, options);

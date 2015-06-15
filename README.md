@@ -113,6 +113,8 @@ via `postMessage` and `MessageChannel`.  In order to simplify this, a convenienc
 for creating and managing the iframe, as well as providing JavaScript functions for interacting
 with the editor, preview, etc.
 
+## Loading the API
+
 The hosting app must include the Bramble IFrame API (i.e., `dist/bramble.js`).  Note: in
 development you can use `src/hosted.html`, which does this).  This script can either be used as
 an AMD module, or as a browser global:
@@ -129,6 +131,19 @@ an AMD module, or as a browser global:
   var Bramble = window.Bramble;
 </script>
 ```
+
+## Bramble FileSystem
+
+The FileSystem is owned by the hosting application, and can be obtained at any time by calling:
+
+```js
+var fs = Bramble.getFileSystem();
+```
+
+This `fs` instance can be used to setup the filesystem for the Bramble editor prior to
+loading.  You can access things like `Path` and `Buffer` via `Bramble.Filer.*`.
+
+## Creating the Bramble instance
 
 Once you have a reference to the `Bramble` object, you use it to create an instance:
 
@@ -158,23 +173,45 @@ Here's an example:
 // Get the Filer Path object
 var Path = Bramble.Filer.Path;
 
-var bramble = Bramble.getInstance("#bramble", {
-  hideUntilReady: true,
-  ready: function() {
-    // Get a reference to the filesystem
-    var fs = bramble.fs;
-    var html = "<html>...</html>";
-    // Assuming we've gotten a project name and filename from the user somehow
-    var path = Path.join("/", projectName, filename);
+// Get a reference to the filesystem
+var fs = Bramble.getFileSystem();
 
-    fs.writeFile(path, html, function(err) {
-      if(err) return console.error("Unable to write file", err);
-    });
-  }
+// Write an HTML file to the filesystem
+var html = "<html>...</html>";
+// Assuming we've gotten a project name and filename from the user somehow
+var path = Path.join("/", projectName, filename);
+
+fs.writeFile(path, html, function(err) {
+  if(err) return console.error("Unable to write file", err);
+
+  var bramble = Bramble.getInstance("#bramble", {
+    hideUntilReady: true,
+    ready: function() {
+      // Bramble is ready and fully loaded
+    }
+  });
 });
 ```
 
 Repeated calls to `getInstance()` will all return the same instance--there is only ever one.
+
+## Bramble Instance Getters
+
+Once the Bramble instance is created, a number of read-only getters are available in order
+to access state information in the Bramble editor:
+
+* `getID()` - returns the iframe element's `id` in the DOM
+* `getIFrame()` - returns a reference to the iframe that hosts Bramble
+* `getFullPath()` - returns the absolute path of the file currently being edited
+* `getFilename()` - returns the filename portion (i.e., no dir info) of the file currently being edited
+* `getPreviewMode()` - returns one of `"mobile"` or `"desktop"`, depending on current preview mode
+* `getSidebarVisible()` - returns `true` or `false` depending on whether the sidebar (file tree) is visible
+* `getLayout()` - returns an `Object` with three integer properties: `sidebarWidth`, `firstPaneWidth`, `secondPathWidth`.  The `firstPaneWidth` refers to the editor, where `secondPaneWidth` is the preview.
+
+**NOTE**: calling these getters before the `ready()` callback on the bramble instance
+won't do what you want.
+
+## Bramble Instance Methods
 
 The Bramble instance has a number of methods you can call in order to interact with the
 Bramble editor and preview:
@@ -203,3 +240,13 @@ Bramble editor and preview:
 * `useDesktopPreview()` - uses a Desktop view in the preview, as it would look on a desktop computer (default)
 * `enableJavaScript()` - turns on JavaScript execution for the preview (default)
 * `disableJavaScript()` - turns off JavaScript execution for the preview
+
+## Bramble Instance Events
+
+The Bramble instance is also an [`EventEmitter`](https://github.com/Wolfy87/EventEmitter/) and raises
+the following events:
+
+* `"layout"` - triggered whenever the sidebar, editor, or preview panes are changed. It includes an `Object` that returns the same infor as the `getLayout()` getter: : `sidebarWidth`, `firstPaneWidth`, `secondPathWidth`
+* `"activeEditorChange"` - triggered whenever the editor changes from one file to another. It includs an `Object` with the current file's `fullPath` and `filename`.
+* `"previewModeChange"` - triggered whenever the preview mode is changed. It includes an `Object` with the new `mode`
+* `"sidebarChange"` - triggered whenever the sidebar is hidden or shown. It includes an `Object` with a `visible` property set to `true` or `false`
