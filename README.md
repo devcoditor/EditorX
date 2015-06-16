@@ -143,12 +143,17 @@ var fs = Bramble.getFileSystem();
 This `fs` instance can be used to setup the filesystem for the Bramble editor prior to
 loading.  You can access things like `Path` and `Buffer` via `Bramble.Filer.*`.
 
-## Creating the Bramble instance
+## Bramble.load(elem, options)
 
-Once you have a reference to the `Bramble` object, you use it to create an instance:
+Once you have a reference to the `Bramble` object, you use it to starting loading the editor:
 
 ```js
-var bramble = Bramble.getInstance(elem, options);
+// Start loading Bramble
+Bramble.load("#webmaker-bramble", {
+  url: "http://localhost:8000/src/index.html",
+  hideUntilReady: false,
+  debug: true
+});
 ```
 
 The `elem` argument specifies which element in the DOM should be used to hold the iframe.
@@ -164,35 +169,52 @@ The `options` object allows you to configure Bramble:
      * `enable`: `<Array(String)>` a list of extensions to enable
      * `disable`: `<Array(String)>` a list of extensions to disable
  * `hideUntilReady`: `<Boolean>` whether to hide Bramble until it's fully loaded.
- * `ready`: `<Function>` a function to be called when Bramble is fully loaded.
+ * `debug`: `<Boolean>` whether to log debug info.
 
-Here's an example:
+## Bramble.mount(root, filename, callback)
+
+After calling `Bramble.load()`, you can tell Bramble which project root directory
+to open, and which file to load into the editor.  Bramble will use this information
+when it is ready to mount the filesystem, and the callback will be called when mounting
+is completed, and the project and file are open in the editor.  The callback passes
+back the `bramble` instance:
 
 ```js
-// Get the Filer Path object
-var Path = Bramble.Filer.Path;
-
-// Get a reference to the filesystem
+// Setup the filesystem while Bramble is loading
 var fs = Bramble.getFileSystem();
 
-// Write an HTML file to the filesystem
-var html = "<html>...</html>";
-// Assuming we've gotten a project name and filename from the user somehow
-var path = Path.join("/", projectName, filename);
+fs.mkdir("/project", function(err) {
+  // If we run this multiple times, the dir will already exist
+  if (err & !err.code === "EEXISTS") {
+    throw err;
+  }
 
-fs.writeFile(path, html, function(err) {
-  if(err) return console.error("Unable to write file", err);
+  var html = ""                    +
+    "<html>\n"                     +
+    "  <head>\n"                   +
+    "    <title>Bramble</title>\n" +
+    "  </head>\n"                  +
+    "  <body>\n"                   +
+    "    <p>Hello World</p>\n"     +
+    "  </body>\n"                  +
+    "</html>";
 
-  var bramble = Bramble.getInstance("#bramble", {
-    hideUntilReady: true,
-    ready: function() {
-      // Bramble is ready and fully loaded
+  fs.writeFile("/project/index.html", html, function(err) {
+    if (err) {
+      throw err;
     }
+
+    // Now that fs is setup, tell Bramble which root dir to mount
+    // and which file within that root to open on startup.
+    Bramble.mount("/project", "index.html", function(err, bramble) {
+      if (err) {
+        throw err;
+      }
+
+      // bramble is now usable
   });
 });
 ```
-
-Repeated calls to `getInstance()` will all return the same instance--there is only ever one.
 
 ## Bramble Instance Getters
 
