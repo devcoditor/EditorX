@@ -36,6 +36,7 @@ define([
     var PROD_BRAMBLE_URL = "https://mozillathimblelivepreview.net/bramble/dist/index.html";
 
     var FilerBuffer = Filer.Buffer;
+    var Path = Filer.Path;
     var UUID = ChannelUtils.UUID;
 
     // Logging function, replaced in Bramble.load() if options.debug is true
@@ -269,17 +270,17 @@ define([
             createIFrame();
         }
 
-        self.mount = function(path, callback) {
+        self.mount = function(root, filename, callback) {
             function _mount() {
                 setReadyState(Bramble.MOUNTING);
 
                 // Make sure the path we were given exists in the filesystem, and is a dir
-                _fs.stat(path, function(err, stats) {
+                _fs.stat(root, function(err, stats) {
                     if (err) {
                         debug("mount stat error", err);
                         setReadyState(Bramble.ERROR);
                         if (err.code === "ENOENT") {
-                            callback(new Error("mount path does not exist: " + path));
+                            callback(new Error("mount path does not exist: " + root));
                         } else {
                             callback(err);
                         }
@@ -288,7 +289,7 @@ define([
 
                     if (!stats.isDirectory()) {
                         setReadyState(Bramble.ERROR);
-                        callback(new Error("mount path is not a directory: " + path));
+                        callback(new Error("mount path is not a directory: " + root));
                     } else {
                         // Tell Bramble the path to mount, and wait for a response
                         addEventListener("message", function mountedMessage(e) {
@@ -299,13 +300,14 @@ define([
 
                             removeEventListener("message", mountedMessage, false);
                             debug("bramble:mounted");
-                            setReadyState(Bramble.MOUNTED);
+                            setReadyState(Bramble.READY);
                             callback(null, _instance);
                         }, false);
 
                         var mountMessage = {
                             type: "bramble:mountPath",
-                            path: path
+                            root: root,
+                            filename: filename
                         };
                         _brambleWindow.postMessage(JSON.stringify(mountMessage), _iframe.src);
                     }
@@ -541,13 +543,23 @@ define([
 
             _instance = new Bramble(div, options);
         },
-        mount: function(path, callback) {
+        mount: function(root, filename, callback) {
             if (!_instance) {
                 callback(new Error("Bramble.mount() called before Bramble.load()."));
                 return;
             }
 
-            _instance.mount(path, callback);
+            // Assume index.html if no filename provided.
+            if (typeof filename === "function") {
+                callback = filename;
+                filename = "index.html";
+                debug("no filename passed to Bramble.mount(), assuming `index.html`");
+            }
+
+            // Make sure filename is a basename only, not absolute
+            filename = Path.basename(filename);
+
+            _instance.mount(root, filename, callback);
         }
     };
 });

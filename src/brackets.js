@@ -65,7 +65,10 @@ define(function (require, exports, module) {
         ProjectManager      = require("project/ProjectManager"),
         FileViewController  = require("project/FileViewController"),
         FileSyncManager     = require("project/FileSyncManager"),
+        Commands            = require("command/Commands"),
+        CommandManager      = require("command/CommandManager"),
         PerfUtils           = require("utils/PerfUtils"),
+        FileSystem          = require("filesystem/FileSystem"),
         Strings             = require("strings"),
         Dialogs             = require("widgets/Dialogs"),
         DefaultDialogs      = require("widgets/DefaultDialogs"),
@@ -183,58 +186,49 @@ define(function (require, exports, module) {
 
                 // Finish UI initialization
                 ViewCommandHandlers.restoreFontSize();
+
                 // XXXBramble: get path passed into iframe from hosting app
-                var initialProjectPath = BrambleStartupProject.getPath();
-                ProjectManager.openProject(initialProjectPath).always(function () {
-//                    var deferred = new $.Deferred();
-/** pretty sure we don't need this now...                    
-                    if (!params.get("skipSampleProjectLoad") && !PreferencesManager.getViewState("afterFirstLaunch")) {
-                        PreferencesManager.setViewState("afterFirstLaunch", "true");
-                        if (ProjectManager.isWelcomeProjectPath(initialProjectPath)) {
-                            FileSystem.resolve(initialProjectPath + "index.html", function (err, file) {
-                                if (!err) {
-                                    var promise = CommandManager.execute(Commands.CMD_ADD_TO_WORKINGSET_AND_OPEN, { fullPath: file.fullPath });
-                                    promise.then(deferred.resolve, deferred.reject);
-                                } else {
-                                    deferred.reject();
-                                }
-                            });
+                var startupProjectInfo = BrambleStartupProject.getInfo();
+                ProjectManager.openProject(startupProjectInfo.root).always(function () {
+                    var deferred = new $.Deferred();
+                    FileSystem.resolve(startupProjectInfo.fullPath, function (err, file) {
+                        if (!err) {
+                            var promise = CommandManager.execute(Commands.CMD_ADD_TO_WORKINGSET_AND_OPEN, { fullPath: file.fullPath });
+                            promise.then(deferred.resolve, deferred.reject);
                         } else {
-                            deferred.resolve();
+                            deferred.reject();
                         }
-                    } else {
-                        deferred.resolve();
-                    }
-**/                    
-//                    deferred.always(function () {
+                    });
+
+                    deferred.always(function () {
                         // Signal that Brackets is loaded
-                    AppInit._dispatchReady(AppInit.APP_READY);
-                    
-                    PerfUtils.addMeasurement("Application Startup");
-                    
-                    if (PreferencesManager._isUserScopeCorrupt()) {
-                        var userPrefFullPath = PreferencesManager.getUserPrefFile();
-                        // user scope can get corrupt only if the file exists, is readable,
-                        // but malformed. no need to check for its existance.
-                        var info = MainViewManager.findInAllWorkingSets(userPrefFullPath);
-                        var paneId;
-                        if (info.length) {
-                            paneId = info[0].paneId;
-                        }
-                        FileViewController.openFileAndAddToWorkingSet(userPrefFullPath, paneId)
-                            .done(function () {
-                                Dialogs.showModalDialog(
-                                    DefaultDialogs.DIALOG_ID_ERROR,
-                                    Strings.ERROR_PREFS_CORRUPT_TITLE,
-                                    Strings.ERROR_PREFS_CORRUPT
-                                ).done(function () {
-                                    // give the focus back to the editor with the pref file
-                                    MainViewManager.focusActivePane();
+                        AppInit._dispatchReady(AppInit.APP_READY);
+
+                        PerfUtils.addMeasurement("Application Startup");
+
+                        if (PreferencesManager._isUserScopeCorrupt()) {
+                            var userPrefFullPath = PreferencesManager.getUserPrefFile();
+                            // user scope can get corrupt only if the file exists, is readable,
+                            // but malformed. no need to check for its existance.
+                            var info = MainViewManager.findInAllWorkingSets(userPrefFullPath);
+                            var paneId;
+                            if (info.length) {
+                                paneId = info[0].paneId;
+                            }
+                            FileViewController.openFileAndAddToWorkingSet(userPrefFullPath, paneId)
+                                .done(function () {
+                                    Dialogs.showModalDialog(
+                                        DefaultDialogs.DIALOG_ID_ERROR,
+                                        Strings.ERROR_PREFS_CORRUPT_TITLE,
+                                        Strings.ERROR_PREFS_CORRUPT
+                                    ).done(function () {
+                                        // give the focus back to the editor with the pref file
+                                        MainViewManager.focusActivePane();
+                                    });
                                 });
-                            });
-                    }
+                        }
                         
-//                    });
+                    });
                     
                     // See if any startup files were passed to the application
                     if (brackets.app.getPendingFilesToOpen) {

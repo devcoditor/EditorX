@@ -17,6 +17,7 @@ define(function (require, exports, module) {
         ProjectManager       = brackets.getModule("project/ProjectManager"),
         LiveDevelopment      = brackets.getModule("LiveDevelopment/LiveDevMultiBrowser"),
         BrambleStartupProject = brackets.getModule("bramble/BrambleStartupProject"),
+        MainViewManager      = brackets.getModule("view/MainViewManager"),
         Browser              = require("lib/iframe-browser"),
         UI                   = require("lib/UI"),
         Launcher             = require("lib/launcher"),
@@ -36,17 +37,6 @@ define(function (require, exports, module) {
     var _HTMLServer,
         _staticServer,
         parentWindow = window.parent;
-
-    // Load initial document
-//    var defaultHTML = brackets.getModule("text!filesystem/impls/filer/lib/default.html");
-//    var defaultCSS  = require("text!lib/default-files/style.css");
-//    var defaultJS   = require("text!lib/default-files/script.txt");
-
-
-    // Force entry to if statments on line 262 of brackets.js to create
-    // a new project
-//    PreferencesManager.setViewState("afterFirstLaunch", false);
-//    params.remove("skipSampleProjectLoad");
 
     // Server for HTML files only
     function _getHTMLServer() {
@@ -114,47 +104,39 @@ define(function (require, exports, module) {
         }
     }
 
-    // We wait until the LiveDevelopment module is initialized and the project loaded
-    // so we can safely swap our transport and launcher modules for
-    // the defaults and start LiveDev.
-    function _configureLiveDev() {
+    function configureLiveDev() {
         // Turn preview iFrame On
         Browser.init();
 
-        function _configureModules() {
-            console.log("configureModules statusChange", arguments);
-            // Set up our transport and plug it into live-dev
-            PostMessageTransport.setIframe(Browser.getBrowserIframe());
-            LiveDevelopment.setTransport(PostMessageTransport);
+        // Set up our transport and plug it into live-dev
+        PostMessageTransport.setIframe(Browser.getBrowserIframe());
+        LiveDevelopment.setTransport(PostMessageTransport);
 
-            // Set up our launcher in a similar manner
-            LiveDevelopment.setLauncher(new Launcher({
-                browser: Browser,
-                server: _getHTMLServer()
-            }));
+        // Set up our launcher in a similar manner
+        LiveDevelopment.setLauncher(new Launcher({
+            browser: Browser,
+            server: _getHTMLServer()
+        }));
 
-            LiveDevelopment.open();
-        }
-        LiveDevelopment.one("statusChange", _configureModules);
+        LiveDevelopment.open();
     }
-    ProjectManager.one("projectOpen", _configureLiveDev);
 
-    // Let the host app know we're mounted, and have loaded the project
+    // Once the project is fully loaded, let the host app know
+    // we're fully mounted, and have loaded the project.
     ProjectManager.one("projectOpen", function() {
         parentWindow.postMessage(JSON.stringify({type: "bramble:mounted"}), "*");
-//        RemoteEvents.loaded();
     });
 
-    // We configure Brackets to run the experimental live dev
-    // with our nohost server and iframe combination. This has to
-    // occur before the project is loaded, triggering the start of
-    // the live preview.
+    // After we've populated the editor with the first file, we're done loading
+    // and can pass state info back to the host app.
+    MainViewManager.one("currentFileChange", function() {
+        RemoteEvents.loaded();
+    });
+
     AppInit.extensionsLoaded(function () {
         // Flip livedev.multibrowser to true
         var prefs = PreferencesManager.getExtensionPrefs("livedev");
         prefs.set("multibrowser", true);
-
-        ExtensionUtils.loadStyleSheet(module, "stylesheets/tutorials.css");
 
         // Register servers with highest priority
         LiveDevServerManager.registerServer({ create: _getStaticServer }, 9000);
@@ -166,6 +148,8 @@ define(function (require, exports, module) {
         // the ExtensionLoader logic (avoids circular dependencies)
         Theme.init();
 
+        configureLiveDev();
+
         function attachListeners() {
             // Below are methods to change the preferences of brackets, more available at:
             // https://github.com/adobe/brackets/wiki/How-to-Use-Brackets#list-of-supported-preferences
@@ -175,100 +159,23 @@ define(function (require, exports, module) {
             PreferencesManager.set("tabSize", 2);
             // Allows the closeTags to indent consistently
             PreferencesManager.set("closeTags", true);
-/**
-            // Once the app has loaded our file,
-            // and we can be confident the editor is open,
-            // get a reference to it and attach our "onchange"
-            // listener to codemirror
-            codeMirror = EditorManager.getActiveEditor()._codeMirror;
+            // Don't warn about opening file in split view (we steal second view for iframe)
+            PreferencesManager.setViewState("splitview.multipane-info", true);
 
-            parentWindow.postMessage(JSON.stringify({
-                type: "bramble:change",
-                sourceCode: codeMirror.getValue(),
-                lastLine: codeMirror.lastLine(),
-                scrollInfo: codeMirror.getScrollInfo()
-            }), "*");
-
-            codeMirror.on("change", function(){
-                parentWindow.postMessage(JSON.stringify({
-                    type: "bramble:change",
-                    sourceCode: codeMirror.getValue(),
-                    lastLine: codeMirror.lastLine()
-                }), "*");
-            });
-
-            codeMirror.on("viewportChange", function() {
-                parentWindow.postMessage(JSON.stringify({
-                    type: "bramble:viewportChange",
-                    scrollInfo: codeMirror.getScrollInfo()
-                }), "*");
-            });
-**/
             window.addEventListener("message", function(e) {
                 var data = parseData(e.data);
-/**                
-                var value;
-                var mark;
-                var type;
-
                 if(!data) {
                     return;
                 }
-
-**/
-// TODO: this needs to get done better -- xhr handing from preview.
+                // TODO: this needs to get done better -- xhr handing from preview.
                 var type = data.type;
-
                 if(type === "message") {
                     handleMessage(data.message);
                     return;
-                }
-/**
-                if(type === "themeToggle") {
+                } else if(type === "themeToggle") {
                     Theme.toggle(data.theme);
                     return;
                 }
-
-                if(type !== "bramble:edit") {
-                    return;
-                }
-
-                if(!data.fn) {
-                    console.error("No edit function sent from thimble to call on code mirror");
-                    return;
-                }
-
-
-                // QuickFix: Hack to create a DOM element as a marker since it cannot
-                // be passed in through postMessage as JSON's stringify cannot work for
-                // DOM elements (because it has circular references)
-                if(data.fn === "setGutterMarker" && data.params[2]) {
-                    mark = document.createElement(data.params[2].name);
-                    var attributes = data.params[2].attributes;
-                    Object.keys(attributes).forEach(function(attrName) {
-                        $(mark).attr(attrName, attributes[attrName]);
-                    });
-                    mark.innerHTML = data.params[2].innerHTML;
-                    data.params[2] = mark;
-                }
-
-                if(data.fn === "getLineHeight") {
-                    var codeMirrorLine = document.querySelector(data.params[0]);
-                    value = parseFloat(window.getComputedStyle(codeMirrorLine).height);
-                } else {
-                    value = codeMirror[data.fn].apply(codeMirror, data.params);
-                }
-
-                if(value === undefined || value === null) {
-                    return;
-                }
-
-                parentWindow.postMessage(JSON.stringify({
-                    type: "bramble:edit",
-                    fn: data.fn,
-                    value: typeof value !== "object" ? value : undefined
-                }), "*");
-**/
             }, false);
         }
 
@@ -298,40 +205,8 @@ define(function (require, exports, module) {
 
             // Set the mount point for the project we want to open and signal
             // to Brackets that it can keep going, which will pick this up.
-            BrambleStartupProject.setPath(data.path);
+            BrambleStartupProject.setInfo(data.root, data.filename);
             deferred.resolve();
-
-/** We don't write these now...
-            var fileHTML = FileSystem.getFileForPath("/index.html");
-            var fileCSS  = FileSystem.getFileForPath("/style.css");
-            var fileJS   = FileSystem.getFileForPath("/script.js");
-
-            // Write the HTML file and block on it being done.
-            fileHTML.write(data.source ? data.source : defaultHTML, {blind: true},
-                function(err) {
-                    if (err) {
-                        deferred.reject();
-                        return;
-                    }
-
-                    deferred.resolve();
-                }
-            );
-
-            // Write the CSS and JS file without blocking.
-            fileCSS.write(defaultCSS, {blind: true}, function(err) {
-                if (err) {
-                    console.error("Couldn't write /style.css");
-                    return;
-                }
-
-                fileJS.write(defaultJS, {blind: true}, function(err) {
-                    if (err) {
-                        console.error("Couldn't write /script.js");
-                    }
-                });
-            });
-**/
         }
 
         window.addEventListener("message", mountFileSystem, false);

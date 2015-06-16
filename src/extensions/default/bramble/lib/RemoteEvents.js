@@ -68,6 +68,9 @@ define(function (require, exports, module) {
 
         // Listen for the user changing the active editor
         EditorManager.on("activeEditorChange", function(e, currentEditor) {
+            if (!currentEditor) {
+                return;
+            }
             var file = currentEditor.document.file;
             sendActiveEditorChangeEvent(file);
         });

@@ -93,7 +93,7 @@ define(function (require, exports, module) {
      */
     HTMLServer.prototype.serveLiveDoc = function(url, callback) {
         var path = BlobUtils.getFilename(url);
-        var liveDocument = this._liveDocuments[path];
+        var liveDocument = this.get(path);
         Rewriter.rewrite(path, liveDocument.getResponseData().body, function(err, html) {
             if(err) {
                 callback(err);
