@@ -131,7 +131,6 @@ an AMD module, or as a browser global:
   var Bramble = window.Bramble;
 </script>
 ```
-
 ## Bramble FileSystem
 
 The FileSystem is owned by the hosting application, and can be obtained at any time by calling:
@@ -142,6 +141,8 @@ var fs = Bramble.getFileSystem();
 
 This `fs` instance can be used to setup the filesystem for the Bramble editor prior to
 loading.  You can access things like `Path` and `Buffer` via `Bramble.Filer.*`.
+
+## Bramble 
 
 ## Bramble.load(elem, options)
 
@@ -185,7 +186,7 @@ var fs = Bramble.getFileSystem();
 
 fs.mkdir("/project", function(err) {
   // If we run this multiple times, the dir will already exist
-  if (err & !err.code === "EEXISTS") {
+  if (err & err.code !== "EEXIST") {
     throw err;
   }
 
