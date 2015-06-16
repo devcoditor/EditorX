@@ -42,6 +42,9 @@ define([
     // Logging function, replaced in Bramble.load() if options.debug is true
     var debug = function(){};
 
+    // We only support having a single instance in the page.
+    var _instance;
+
     function parseEventData(data) {
         debug("parseEventData", data);
         try {
@@ -53,36 +56,98 @@ define([
         }
     }
 
-    /**
-     * The Filer FileSystem for Bramble is created early, and exposed statically
-     * on Bramble below.
-     */
+    var Bramble = new EventEmitter();
+
+    // Bramble ready state management
+    Bramble.ERROR      = -1;// Bramble is in an error state
+    Bramble.NOT_LOADED = 0; // Bramble.load() has not been called
+    Bramble.LOADING    = 1; // Bramble.load() has been called, loading resources
+    Bramble.MOUNTABLE  = 2; // Bramble.mount() can be executed, loading is done
+    Bramble.MOUNTING   = 3; // Bramble.mount() has been called, mounting
+    Bramble.READY      = 4; // Bramble.mount() has finished, Bramble is fully ready
+
+    var _readyState = Bramble.NOT_LOADED;
+
+    // The final err arg is optional.
+    function setReadyState(newState, err) {
+        var previousState = _readyState;
+        _readyState = newState;
+
+        debug("setReadyState", previousState, newState);
+        Bramble.trigger("readyStateChange", [previousState, newState]);
+
+        // When we hit the READY state, also trigger an event and pass instance up
+        if (_readyState === Bramble.READY) {
+            Bramble.trigger("ready", [_instance]);
+        }
+        // When we go into the ERROR state, also trigger an event and pass err
+        else if (_readyState === Bramble.ERROR) {
+            Bramble.trigger("error", [err]);
+        }
+    }
+    Bramble.getReadyState = function() { return _readyState; };
+
+    // Expose Filer for Path, Buffer, providers, etc.
+    Bramble.Filer = Filer;
     var _fs = new Filer.FileSystem();
+    Bramble.getFileSystem = function() {
+        return _fs;
+    };
+
+    // Start loading Bramble's resources, setup communication with iframe
+    Bramble.load = function(div, options) {
+        if (_instance) {
+            setReadyState(Bramble.ERROR, new Error("Bramble.load() called more than once."));
+            return;
+        }
+
+        // Turn on logging if in debug mode
+        if (options.debug) {
+            debug = console.log.bind(console);
+        }
+
+        _instance = new BrambleProxy(div, options);
+    };
+
+    // After calling Bramble.load(), Bramble.mount() specifies project root entry path info
+    Bramble.mount = function(root, filename, callback) {
+        // Assume index.html if no filename provided.
+        if (typeof filename === "function") {
+            callback = filename;
+            filename = null;
+        }
+
+        if (!filename) {
+            filename = "index.html";
+            debug("no filename passed to Bramble.mount(), assuming `index.html`");
+        }
+
+        if (typeof callback !== "function") {
+            debug("no callback to mount, using no-op");
+            callback = function(){};
+        }
+
+        if (!_instance) {
+            var err = new Error("Bramble.mount() called before Bramble.load().");
+            setReadyState(Bramble.ERROR, err);
+            callback(err);
+            return;
+        }
+
+        root = Path.normalize(root);
+
+        if (Path.isAbsolute(filename)) {
+            filename = Path.relative(root, filename);
+            debug("converted absolute filename path in mount() to relative", filename);
+        }
+
+        _instance.mount(root, filename, callback);
+    };
 
     /**
-     * The `div` is the element, or id of an element to use when creating
-     * the Bramble iframe. All existing contents of this element will be removed:
-     *
-     * var bramble = new Bramble(someDiv);        // expects someDiv to be an existing element
-     * var bramble = new Bramble('#some-div-id'); // selector for element
-     * var bramble = new Bramble();               // will use document.body
-     * 
-     * You can pass various options as well:
-     *
-     * var bramble = new Bramble({...}); // uses document.body with given options
-     * var bramble = new Bramble(elem, {...});
-     *
-     * Options available include:
-     *   url: <String> a URL to use when loading the Bramble iframe (defaults to prod)
-     *   locale: <String> the locale Brackets should use
-     *   extensions: {
-     *       enable: <Array(String)> a list of extensions to enable
-     *       disable: <Array(String)> a list of extensions to disable
-     *   }
-     *   hideUntilReady: <Boolean> whether to hide Bramble until it's fully loaded.
-     *   ready: <Function> a function to be called when Bramble is fully loaded.
+     * A proxy object to manage communication from/to the remote Bramble app.
      */
-    function Bramble(div, options) {
+    function BrambleProxy(div, options) {
         var self = this;
 
         // The id used for the iframe element
@@ -111,14 +176,6 @@ define([
         var _firstPaneWidth;
         var _secondPaneWidth;
         var _currentPreviewMode;
-
-        var _readyState;
-        function setReadyState(newState) {
-            debug("setReadyState", _readyState, newState);
-            _readyState = newState;
-        }
-        self.getReadyState = function() { return _readyState; };
-        setReadyState(Bramble.NOT_LOADED);
 
         // Public getters for state. Most of these aren't useful until bramble.ready()
         self.getID = function() { return _id; };
@@ -278,7 +335,7 @@ define([
                 _fs.stat(root, function(err, stats) {
                     if (err) {
                         debug("mount stat error", err);
-                        setReadyState(Bramble.ERROR);
+                        setReadyState(Bramble.ERROR, err);
                         if (err.code === "ENOENT") {
                             callback(new Error("mount path does not exist: " + root));
                         } else {
@@ -288,7 +345,7 @@ define([
                     }
 
                     if (!stats.isDirectory()) {
-                        setReadyState(Bramble.ERROR);
+                        setReadyState(Bramble.ERROR, err);
                         callback(new Error("mount path is not a directory: " + root));
                     } else {
                         // Tell Bramble the path to mount, and wait for a response
@@ -314,12 +371,12 @@ define([
                 });
             }
 
-            var readyState = self.getReadyState();
-            if (readyState > Bramble.MOUNTABLE) {
-                setReadyState(Bramble.ERROR);
-                callback(new Error("Bramble.mount() while already mounted, or attempting to mount."));
+            if (_readyState > Bramble.MOUNTABLE) {
+                var err = new Error("Bramble.mount() while already mounted, or attempting to mount.");
+                setReadyState(Bramble.ERROR, err);
+                callback(err);
                 return;
-            } else if (readyState < Bramble.MOUNTABLE) {
+            } else if (_readyState < Bramble.MOUNTABLE) {
                 // We can't mount yet, cache the function to be called when we are ready
                 _instance._mount = _mount;
             } else {
@@ -414,152 +471,104 @@ define([
         };
     }
 
-    Bramble.prototype = new EventEmitter();
-    Bramble.prototype.constructor = Bramble;
+    BrambleProxy.prototype = new EventEmitter();
+    BrambleProxy.prototype.constructor = BrambleProxy;
 
-    Bramble.prototype.undo = function() {
+    BrambleProxy.prototype.undo = function() {
         this._executeRemoteCommand({commandCategory: "brackets", command: "EDIT_UNDO"});
     };
 
-    Bramble.prototype.redo = function() {
+    BrambleProxy.prototype.redo = function() {
         this._executeRemoteCommand({commandCategory: "brackets", command: "EDIT_REDO"});
     };
 
-    Bramble.prototype.increaseFontSize = function() {
+    BrambleProxy.prototype.increaseFontSize = function() {
         this._executeRemoteCommand({commandCategory: "brackets", command: "VIEW_INCREASE_FONT_SIZE"});
     };
 
-    Bramble.prototype.decreaseFontSize = function() {
+    BrambleProxy.prototype.decreaseFontSize = function() {
         this._executeRemoteCommand({commandCategory: "brackets", command: "VIEW_DECREASE_FONT_SIZE"});
     };
 
-    Bramble.prototype.restoreFontSize = function() {
+    BrambleProxy.prototype.restoreFontSize = function() {
         this._executeRemoteCommand({commandCategory: "brackets", command: "VIEW_RESTORE_FONT_SIZE"});
     };
 
-    Bramble.prototype.save = function() {
+    BrambleProxy.prototype.save = function() {
         this._executeRemoteCommand({commandCategory: "brackets", command: "FILE_SAVE"});
     };
 
-    Bramble.prototype.saveAll = function() {
+    BrambleProxy.prototype.saveAll = function() {
         this._executeRemoteCommand({commandCategory: "brackets", command: "FILE_SAVE_ALL"});
     };
 
-    Bramble.prototype.useHorizontalSplitView = function() {
+    BrambleProxy.prototype.useHorizontalSplitView = function() {
         this._executeRemoteCommand({commandCategory: "brackets", command: "CMD_SPLITVIEW_HORIZONTAL"});
     };
 
-    Bramble.prototype.useVerticalSplitView = function() {
+    BrambleProxy.prototype.useVerticalSplitView = function() {
         this._executeRemoteCommand({commandCategory: "brackets", command: "CMD_SPLITVIEW_VERTICAL"});
     };
 
-    Bramble.prototype.find = function() {
+    BrambleProxy.prototype.find = function() {
         this._executeRemoteCommand({commandCategory: "brackets", command: "CMD_FIND"});
     };
 
-    Bramble.prototype.findInFiles = function() {
+    BrambleProxy.prototype.findInFiles = function() {
         this._executeRemoteCommand({commandCategory: "brackets", command: "CMD_FIND_IN_FILES"});
     };
 
-    Bramble.prototype.replace = function() {
+    BrambleProxy.prototype.replace = function() {
         this._executeRemoteCommand({commandCategory: "brackets", command: "CMD_REPLACE"});
     };
 
-    Bramble.prototype.replaceInFiles = function() {
+    BrambleProxy.prototype.replaceInFiles = function() {
         this._executeRemoteCommand({commandCategory: "brackets", command: "CMD_REPLACE_IN_FILES"});
     };
 
-    Bramble.prototype.useLightTheme = function() {
+    BrambleProxy.prototype.useLightTheme = function() {
         this._executeRemoteCommand({commandCategory: "bramble", command: "BRAMBLE_LIGHT_THEME"});
     };
 
-    Bramble.prototype.useDarkTheme = function() {
+    BrambleProxy.prototype.useDarkTheme = function() {
         this._executeRemoteCommand({commandCategory: "bramble", command: "BRAMBLE_DARK_THEME"});
     };
 
-    Bramble.prototype.showSidebar = function() {
+    BrambleProxy.prototype.showSidebar = function() {
         this._executeRemoteCommand({commandCategory: "bramble", command: "BRAMBLE_SHOW_SIDEBAR"});
     };
 
-    Bramble.prototype.hideSidebar = function() {
+    BrambleProxy.prototype.hideSidebar = function() {
         this._executeRemoteCommand({commandCategory: "bramble", command: "BRAMBLE_HIDE_SIDEBAR"});
     };
 
-    Bramble.prototype.showStatusbar = function() {
+    BrambleProxy.prototype.showStatusbar = function() {
         this._executeRemoteCommand({commandCategory: "bramble", command: "BRAMBLE_SHOW_STATUSBAR"});
     };
 
-    Bramble.prototype.hideStatusbar = function() {
+    BrambleProxy.prototype.hideStatusbar = function() {
         this._executeRemoteCommand({commandCategory: "bramble", command: "BRAMBLE_HIDE_STATUSBAR"});
     };
 
-    Bramble.prototype.refreshPreview = function() {
+    BrambleProxy.prototype.refreshPreview = function() {
         this._executeRemoteCommand({commandCategory: "bramble", command: "BRAMBLE_RELOAD"});        
     };
 
-    Bramble.prototype.useMobilePreview = function() {
+    BrambleProxy.prototype.useMobilePreview = function() {
         this._executeRemoteCommand({commandCategory: "bramble", command: "BRAMBLE_MOBILE_PREVIEW"});
     };
 
-    Bramble.prototype.useDesktopPreview = function() {
+    BrambleProxy.prototype.useDesktopPreview = function() {
         this._executeRemoteCommand({commandCategory: "bramble", command: "BRAMBLE_DESKTOP_PREVIEW"});
     };
 
-    Bramble.prototype.enableJavaScript = function() {
+    BrambleProxy.prototype.enableJavaScript = function() {
         this._executeRemoteCommand({commandCategory: "bramble", command: "BRAMBLE_ENABLE_SCRIPTS"});
     };
 
-    Bramble.prototype.disableJavaScript = function() {
+    BrambleProxy.prototype.disableJavaScript = function() {
         this._executeRemoteCommand({commandCategory: "bramble", command: "BRAMBLE_DISABLE_SCRIPTS"});
     };
 
-    // Bramble instance ready states
-    Bramble.ERROR      = -1;// Bramble is in an error state
-    Bramble.NOT_LOADED = 0; // Bramble.load() has not been called
-    Bramble.LOADING    = 1; // Bramble.load() has been called, loading resources
-    Bramble.MOUNTABLE  = 2; // Bramble.mount() can be executed, loading is done
-    Bramble.MOUNTING   = 3; // Bramble.mount() has been called, mounting
-    Bramble.READY      = 4; // Bramble.mount() has finished, Bramble is fully ready
-
-    // We only support having a single instance in the page.
-    var _instance;
-
-    // Require version
-    return {
-        // Expose Filer for Path, Buffer, providers, etc.
-        Filer: Filer,
-        getFileSystem: function() {
-            return _fs;
-        },
-        load: function(div, options) {
-            if (_instance) {
-                throw new Error("Bramble.load() called more than once.");
-            }
-
-            // Turn on logging if in debug mode
-            if (options.debug) {
-                debug = console.log.bind(console);
-            }
-
-            _instance = new Bramble(div, options);
-        },
-        mount: function(root, filename, callback) {
-            if (!_instance) {
-                callback(new Error("Bramble.mount() called before Bramble.load()."));
-                return;
-            }
-
-            // Assume index.html if no filename provided.
-            if (typeof filename === "function") {
-                callback = filename;
-                filename = "index.html";
-                debug("no filename passed to Bramble.mount(), assuming `index.html`");
-            }
-
-            // Make sure filename is a basename only, not absolute
-            filename = Path.basename(filename);
-
-            _instance.mount(root, filename, callback);
-        }
-    };
+    return Bramble;
 });

@@ -131,7 +131,37 @@ an AMD module, or as a browser global:
   var Bramble = window.Bramble;
 </script>
 ```
-## Bramble FileSystem
+
+## Bramble
+
+The Bramble module has a number of methods, properties, and events. During its lifetime,
+Bramble goes through a number of states, including:
+
+* `Bramble.ERROR` - Bramble is in an error state
+* `Bramble.NOT_LOADED` - Initial state, `Bramble.load()` has not been called
+* `Bramble.LOADING` - `Bramble.load()` has been called, loading resources has begun
+* `Bramble.MOUNTABLE` - Loading is done and `Bramble.mount()` can be begin, or is safe to start
+* `Bramble.MOUNTING` - `Bramble.mount()` is being called, mounting is in process
+* `Bramble.READY` - `Bramble.mount()` has finished, Bramble is fully ready
+
+The current state of Bramble can be obtained by calling `Bramble.getReadyState()`.  There are
+also a number of events you can listen for (i.e., `Bramble` is an [`EventEmitter`](https://github.com/Wolfy87/EventEmitter/)):
+
+```js
+Bramble.on("ready", function(bramble) {
+  // bramble is the Bramble proxy instance, see below.
+});
+
+Bramble.on("error", function(e, err) {
+  // Bramble is in an error state, and `err` is the error.
+})
+
+Bramble.on("readyStateChange", function(previous, current) {
+  // Bramble's readyState changed from `previous` to `current`
+});
+```
+
+## Bramble.getFileSystem()
 
 The FileSystem is owned by the hosting application, and can be obtained at any time by calling:
 
@@ -141,8 +171,6 @@ var fs = Bramble.getFileSystem();
 
 This `fs` instance can be used to setup the filesystem for the Bramble editor prior to
 loading.  You can access things like `Path` and `Buffer` via `Bramble.Filer.*`.
-
-## Bramble 
 
 ## Bramble.load(elem, options)
 
@@ -172,13 +200,14 @@ The `options` object allows you to configure Bramble:
  * `hideUntilReady`: `<Boolean>` whether to hide Bramble until it's fully loaded.
  * `debug`: `<Boolean>` whether to log debug info.
 
-## Bramble.mount(root, filename, callback)
+## Bramble.mount(root, [filename, callback])
 
 After calling `Bramble.load()`, you can tell Bramble which project root directory
-to open, and which file to load into the editor.  Bramble will use this information
-when it is ready to mount the filesystem, and the callback will be called when mounting
+to open, and which file to load into the editor.  NOTE: the optional `filename` argument,
+if provided, should be a relative path within the project root.  Bramble will use this information
+when it is ready to mount the filesystem, and the callback (if present) will be called when mounting
 is completed, and the project and file are open in the editor.  The callback passes
-back the `bramble` instance:
+back the `bramble` instance (you could also listen for the `ready` event):
 
 ```js
 // Setup the filesystem while Bramble is loading
@@ -219,8 +248,8 @@ fs.mkdir("/project", function(err) {
 
 ## Bramble Instance Getters
 
-Once the Bramble instance is created, a number of read-only getters are available in order
-to access state information in the Bramble editor:
+Once the Bramble instance is created (e.g., via `ready` event or `Bramble.mount()` callback),
+a number of read-only getters are available in order to access state information in the Bramble editor:
 
 * `getID()` - returns the iframe element's `id` in the DOM
 * `getIFrame()` - returns a reference to the iframe that hosts Bramble
