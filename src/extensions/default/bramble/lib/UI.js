@@ -10,7 +10,10 @@ define(function (require, exports, module) {
         StatusBar           = brackets.getModule("widgets/StatusBar"),
         Strings             = brackets.getModule("strings"),
         MainViewManager     = brackets.getModule("view/MainViewManager"),
-        BrambleEvents       = brackets.getModule("bramble/BrambleEvents");
+        BrambleEvents       = brackets.getModule("bramble/BrambleEvents"),
+        BrambleStartupProject = brackets.getModule("bramble/BrambleStartupProject"),
+        FileSystem          = brackets.getModule("filesystem/FileSystem"),
+        SidebarView         = brackets.getModule("project/SidebarView");
 
     var PhonePreview  = require("text!lib/Mobile.html");
     var PostMessageTransport = require("lib/PostMessageTransport");
@@ -27,19 +30,29 @@ define(function (require, exports, module) {
         addLivePreviewButton(function() {
             toggleMobileViewButton();
 
-            if(shouldHideUI()) {
-                removeTitleBar();
-                removeMainToolBar();
-                removeLeftSideToolBar();
-                removeRightSideToolBar();
-                removeStatusBar();
-            }
+            // Check to see if there is more than 1 file in the project folder
+            var root = BrambleStartupProject.getInfo().root;
+            FileSystem.getDirectoryForPath(root).getContents(function(err, contents) {
+                var hideSideBar = contents && contents.length === 1;
 
-            // Show the editor, remove spinner
-            $("#spinner-container").remove();
-            $("#main-view").css("visibility", "visible");
+                if(shouldHideUI()) {
+                    removeTitleBar();
+                    removeMainToolBar();
+                    removeLeftSideToolBar();
+                    removeRightSideToolBar();
+                    removeStatusBar();
 
-            callback();
+                    if(hideSideBar) {
+                        SidebarView.hide();
+                    }
+                }
+
+                // Show the editor, remove spinner
+                $("#spinner-container").remove();
+                $("#main-view").css("visibility", "visible");
+
+                callback();
+            });
         });
     }
 
@@ -68,7 +81,6 @@ define(function (require, exports, module) {
         $("#working-set-list-second-pane").addClass("hideLeftToolbar");
         //Remove splitview button
         $("#sidebar .working-set-splitview-btn").remove();
-        Resizer.hide("#sidebar");
     }
 
     /**
