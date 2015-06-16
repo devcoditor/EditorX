@@ -215,7 +215,7 @@ var fs = Bramble.getFileSystem();
 
 fs.mkdir("/project", function(err) {
   // If we run this multiple times, the dir will already exist
-  if (err & err.code !== "EEXIST") {
+  if (err && err.code !== "EEXIST") {
     throw err;
   }
 
