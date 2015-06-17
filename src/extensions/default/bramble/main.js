@@ -35,8 +35,7 @@ define(function (require, exports, module) {
     ExtensionUtils.loadStyleSheet(module, "stylesheets/style.css");
 
     var _HTMLServer,
-        _staticServer,
-        parentWindow = window.parent;
+        _staticServer;
 
     // Server for HTML files only
     function _getHTMLServer() {
@@ -120,12 +119,6 @@ define(function (require, exports, module) {
 
         LiveDevelopment.open();
     }
-
-    // Once the project is fully loaded, let the host app know
-    // we're fully mounted, and have loaded the project.
-    ProjectManager.one("projectOpen", function() {
-        parentWindow.postMessage(JSON.stringify({type: "bramble:mounted"}), "*");
-    });
 
     // After we've populated the editor with the first file, we're done loading
     // and can pass state info back to the host app.

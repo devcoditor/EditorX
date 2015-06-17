@@ -21,7 +21,7 @@
  *
  */
 
-/*global define, HTMLElement, MessageChannel, addEventListener, removeEventListener */
+/*global define, HTMLElement, MessageChannel, addEventListener*/
 
 define([
     // Change this to filer vs. filer.min if you need to debug Filer
@@ -110,27 +110,15 @@ define([
     };
 
     // After calling Bramble.load(), Bramble.mount() specifies project root entry path info
-    Bramble.mount = function(root, filename, callback) {
+    Bramble.mount = function(root, filename) {
         // Assume index.html if no filename provided.
-        if (typeof filename === "function") {
-            callback = filename;
-            filename = null;
-        }
-
         if (!filename) {
             filename = "index.html";
             debug("no filename passed to Bramble.mount(), assuming `index.html`");
         }
 
-        if (typeof callback !== "function") {
-            debug("no callback to mount, using no-op");
-            callback = function(){};
-        }
-
         if (!_instance) {
-            var err = new Error("Bramble.mount() called before Bramble.load().");
-            setReadyState(Bramble.ERROR, err);
-            callback(err);
+            setReadyState(Bramble.ERROR, new Error("Bramble.mount() called before Bramble.load()."));
             return;
         }
 
@@ -141,7 +129,7 @@ define([
             debug("converted absolute filename path in mount() to relative", filename);
         }
 
-        _instance.mount(root, filename, callback);
+        _instance.mount(root, filename);
     };
 
     /**
@@ -224,11 +212,6 @@ define([
                     if (options.hideUntilReady) {
                         _iframe.style.visibility = "visible";
                     }
-                    if (typeof options.ready === "function") {
-                        setReadyState(Bramble.READY);
-                        options.ready();
-                    }
-
                     // Set intial state
                     _currentFullPath = data.fullPath;
                     _currentFilename = data.filename;
@@ -237,6 +220,8 @@ define([
                     _firstPaneWidth = data.firstPaneWidth;
                     _secondPaneWidth = data.secondPaneWidth;
                     _currentPreviewMode = data.previewMode;
+
+                    setReadyState(Bramble.READY);
                 }
                 // Anything else is some kind of event we need to re-trigger
                 // and alter internal state.
@@ -327,7 +312,7 @@ define([
             createIFrame();
         }
 
-        self.mount = function(root, filename, callback) {
+        self.mount = function(root, filename) {
             function _mount() {
                 setReadyState(Bramble.MOUNTING);
 
@@ -335,32 +320,17 @@ define([
                 _fs.stat(root, function(err, stats) {
                     if (err) {
                         debug("mount stat error", err);
-                        setReadyState(Bramble.ERROR, err);
                         if (err.code === "ENOENT") {
-                            callback(new Error("mount path does not exist: " + root));
+                            setReadyState(Bramble.ERROR, new Error("mount path does not exist: " + root));
                         } else {
-                            callback(err);
+                            setReadyState(Bramble.ERROR, err);
                         }
                         return;
                     }
 
                     if (!stats.isDirectory()) {
-                        setReadyState(Bramble.ERROR, err);
-                        callback(new Error("mount path is not a directory: " + root));
+                        setReadyState(Bramble.ERROR, new Error("mount path is not a directory: " + root));
                     } else {
-                        // Tell Bramble the path to mount, and wait for a response
-                        addEventListener("message", function mountedMessage(e) {
-                            var data = parseEventData(e.data);
-                            if (data.type !== "bramble:mounted") {
-                                return;
-                            }
-
-                            removeEventListener("message", mountedMessage, false);
-                            debug("bramble:mounted");
-                            setReadyState(Bramble.READY);
-                            callback(null, _instance);
-                        }, false);
-
                         var mountMessage = {
                             type: "bramble:mountPath",
                             root: root,
@@ -370,14 +340,13 @@ define([
                     }
                 });
             }
-
             if (_readyState > Bramble.MOUNTABLE) {
-                var err = new Error("Bramble.mount() while already mounted, or attempting to mount.");
-                setReadyState(Bramble.ERROR, err);
-                callback(err);
+                setReadyState(Bramble.ERROR,
+                    new Error("Bramble.mount() while already mounted, or attempting to mount."));
                 return;
             } else if (_readyState < Bramble.MOUNTABLE) {
                 // We can't mount yet, cache the function to be called when we are ready
+                debug("mount pending, waiting on Bramble.MOUNTABLE");
                 _instance._mount = _mount;
             } else {
                 // MOUNTABLE, mount right now
