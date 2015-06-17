@@ -432,7 +432,28 @@ define([
             var method = data.method;
             var callbackId = data.callback;
             var callback = getCallbackFn(callbackId);
+            var wrappedCallback;
             var args = data.args;
+
+            // With successful fs operations that create, update, delete, or rename files,
+            // we also trigger events on the bramble instance.
+            function genericFileEventFn(type, filename, callback) {
+                return function(err) {
+                    if(!err) {
+                        self.trigger(type, [filename]);
+                    }
+                    callback(err);
+                };
+            }
+            // Renames are special, since we care about both filenames
+            function renameFileEventFn(type, oldFilename, newFilename, callback) {
+                return function(err) {
+                    if(!err) {
+                        self.trigger(type, [oldFilename, newFilename]);
+                    }
+                    callback(err);
+                };
+            }
 
             // Most fs methods can just get run normally, but we have to deal with
             // ArrayBuffer vs. Filer.Buffer for readFile and writeFile, and persist
@@ -441,7 +462,17 @@ define([
             case "writeFile":
                 // Convert the passed ArrayBuffer back to a FilerBuffer
                 args[1] = new FilerBuffer(args[1]);
-                _fs.writeFile.apply(_fs, args.concat(callback));
+                wrappedCallback = genericFileEventFn("fileChange", args[0], callback);
+                _fs.writeFile.apply(_fs, args.concat(wrappedCallback));
+                break;
+            case "rename":
+                console.log("rename", args);
+                wrappedCallback = renameFileEventFn("fileRename", args[0], args[1], callback);
+                _fs.rename.apply(_fs, args.concat(wrappedCallback));
+                break;
+            case "unlink":
+                wrappedCallback = genericFileEventFn("fileDelete", args[0], callback);
+                _fs.unlink.apply(_fs, args.concat(wrappedCallback));
                 break;
             case "readFile":
                 _fs.readFile.apply(_fs, args.concat(function(err, data) {

@@ -27,8 +27,8 @@ define(function (require, exports, module) {
         unlink: function(path, callback) {
             proxyCall("unlink", {args: [path]}, callback);
         },
-        rename: function(path, callback) {
-            proxyCall("rename", {args: [path]}, callback);
+        rename: function(oldPath, newPath, callback) {
+            proxyCall("rename", {args: [oldPath, newPath]}, callback);
         },
         readFile: function(path, options, callback) {
             // Always do binary reads, and decode in callback if necessary
