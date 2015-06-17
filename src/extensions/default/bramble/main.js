@@ -17,7 +17,6 @@ define(function (require, exports, module) {
         ProjectManager       = brackets.getModule("project/ProjectManager"),
         LiveDevelopment      = brackets.getModule("LiveDevelopment/LiveDevMultiBrowser"),
         BrambleStartupProject = brackets.getModule("bramble/BrambleStartupProject"),
-        MainViewManager      = brackets.getModule("view/MainViewManager"),
         Browser              = require("lib/iframe-browser"),
         UI                   = require("lib/UI"),
         Launcher             = require("lib/launcher"),
