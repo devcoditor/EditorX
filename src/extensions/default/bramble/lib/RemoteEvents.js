@@ -67,12 +67,17 @@ define(function (require, exports, module) {
         });
 
         // Listen for the user changing the active editor
+        var lastKnownEditorFilePath
         EditorManager.on("activeEditorChange", function(e, currentEditor) {
             if (!currentEditor) {
                 return;
             }
+
             var file = currentEditor.document.file;
-            sendActiveEditorChangeEvent(file);
+            if(file.fullPath !== lastKnownEditorFilePath) {
+                lastKnownEditorFilePath = file.fullPath;
+                sendActiveEditorChangeEvent(file);
+            }
         });
     }
 
