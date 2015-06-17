@@ -255,7 +255,7 @@ a number of read-only getters are available in order to access state information
 * `getFilename()` - returns the filename portion (i.e., no dir info) of the file currently being edited
 * `getPreviewMode()` - returns one of `"mobile"` or `"desktop"`, depending on current preview mode
 * `getSidebarVisible()` - returns `true` or `false` depending on whether the sidebar (file tree) is visible
-* `getLayout()` - returns an `Object` with three integer properties: `sidebarWidth`, `firstPaneWidth`, `secondPathWidth`.  The `firstPaneWidth` refers to the editor, where `secondPaneWidth` is the preview.
+* `getLayout()` - returns an `Object` with three integer properties: `sidebarWidth`, `firstPaneWidth`, `secondPaneWidth`.  The `firstPaneWidth` refers to the editor, where `secondPaneWidth` is the preview.
 
 **NOTE**: calling these getters before the `ready()` callback on the bramble instance
 won't do what you want.

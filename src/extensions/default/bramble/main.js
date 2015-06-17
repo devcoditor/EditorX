@@ -103,7 +103,7 @@ define(function (require, exports, module) {
         }
     }
 
-    function configureLiveDev() {
+    function startLiveDev() {
         // Turn preview iFrame On
         Browser.init();
 
@@ -120,11 +120,37 @@ define(function (require, exports, module) {
         LiveDevelopment.open();
     }
 
-    // After we've populated the editor with the first file, we're done loading
-    // and can pass state info back to the host app.
-    MainViewManager.one("currentFileChange", function() {
+    function finishStartup() {
+        // Below are methods to change the preferences of brackets, more available at:
+        // https://github.com/adobe/brackets/wiki/How-to-Use-Brackets#list-of-supported-preferences
+        PreferencesManager.set("insertHintOnTab", true);
+        // Make the spaceUnits and tabSize consistent
+        PreferencesManager.set("spaceUnits", 2);
+        PreferencesManager.set("tabSize", 2);
+        // Allows the closeTags to indent consistently
+        PreferencesManager.set("closeTags", true);
+        // Don't warn about opening file in split view (we steal second view for iframe)
+        PreferencesManager.setViewState("splitview.multipane-info", true);
+
+        window.addEventListener("message", function(e) {
+            var data = parseData(e.data);
+            if(!data) {
+                return;
+            }
+            // TODO: this needs to get done better -- xhr handing from preview.
+            var type = data.type;
+            if(type === "message") {
+                handleMessage(data.message);
+                return;
+            } else if(type === "themeToggle") {
+                Theme.toggle(data.theme);
+                return;
+            }
+        }, false);
+
+        // We're all done loading and can pass startup state info back to the host app.
         RemoteEvents.loaded();
-    });
+    }
 
     AppInit.extensionsLoaded(function () {
         // Flip livedev.multibrowser to true
@@ -136,44 +162,17 @@ define(function (require, exports, module) {
         LiveDevServerManager.registerServer({ create: _getHTMLServer }, 9001);
     });
 
-    AppInit.appReady(function (){
+    AppInit.appReady(function() {
         // Load the two theme extensions outside of
         // the ExtensionLoader logic (avoids circular dependencies)
         Theme.init();
 
-        configureLiveDev();
-
-        function attachListeners() {
-            // Below are methods to change the preferences of brackets, more available at:
-            // https://github.com/adobe/brackets/wiki/How-to-Use-Brackets#list-of-supported-preferences
-            PreferencesManager.set("insertHintOnTab", true);
-            // Make the spaceUnits and tabSize consistent
-            PreferencesManager.set("spaceUnits", 2);
-            PreferencesManager.set("tabSize", 2);
-            // Allows the closeTags to indent consistently
-            PreferencesManager.set("closeTags", true);
-            // Don't warn about opening file in split view (we steal second view for iframe)
-            PreferencesManager.setViewState("splitview.multipane-info", true);
-
-            window.addEventListener("message", function(e) {
-                var data = parseData(e.data);
-                if(!data) {
-                    return;
-                }
-                // TODO: this needs to get done better -- xhr handing from preview.
-                var type = data.type;
-                if(type === "message") {
-                    handleMessage(data.message);
-                    return;
-                } else if(type === "themeToggle") {
-                    Theme.toggle(data.theme);
-                    return;
-                }
-            }, false);
-        }
+        // Setup the iframe browser and Blob URL live dev servers and
+        // load the initial document into the preview.
+        startLiveDev();
 
         // When the app is loaded and ready, hide the menus/toolbars
-        UI.initUI(attachListeners);
+        UI.initUI(finishStartup);
     });
 
     // We expect the hosting app to setup the filesystem, and give us a
