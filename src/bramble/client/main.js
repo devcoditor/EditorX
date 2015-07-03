@@ -21,7 +21,7 @@
  *
  */
 
-/*global define, HTMLElement, MessageChannel, addEventListener*/
+/*global define, HTMLElement, MessageChannel, addEventListener, XMLHttpRequest*/
 
 define([
     // Change this to filer vs. filer.min if you need to debug Filer
@@ -38,6 +38,7 @@ define([
 
     var FilerBuffer = Filer.Buffer;
     var Path = Filer.Path;
+    var Errors = Filer.Errors;
     var UUID = ChannelUtils.UUID;
 
     // Logging function, replaced in Bramble.load() if options.debug is true
@@ -90,6 +91,54 @@ define([
 
     // Expose Filer for Path, Buffer, providers, etc.
     Bramble.Filer = Filer;
+
+    // Add wget to Filer's shell, if not present
+    Filer.Shell.prototype.wget = Filer.Shell.prototype.wget || function(url, options, callback) {
+        var sh = this;
+        var fs = sh.fs;
+
+        if(typeof options === "function") {
+            callback = options;
+            options = {};
+        }
+        options = options || {};
+        callback = callback || function(){};
+
+        if(!url) {
+            callback(new Errors.EINVAL('Missing url argument'));
+            return;
+        }
+
+        // Grab whatever is after the last / (assuming there is one). Like the real
+        // wget, we leave query string or hash portions in tact. This assumes a
+        // properly encoded URL.
+        // i.e. instead of "/foo?bar/" we would expect "/foo?bar%2F"
+        var path = options.filename || url.split('/').pop();
+        path = Path.resolve(sh.pwd(), path);
+
+        var xhr = new XMLHttpRequest();
+        xhr.open("GET", url, true);
+        xhr.responseType = "arraybuffer";
+
+        xhr.onload = function(e) {
+            var buffer = new FilerBuffer(this.response);
+
+            fs.writeFile(path, buffer, function(err) {
+                if(err) {
+                    callback(err);
+                } else {
+                    callback(null, path);
+                }
+            });
+        };
+        xhr.onerror = function(e) {
+            console.log("[Bramble] unable to get resource `" + url + "`", e);
+            callback(e);
+        };
+
+        xhr.send();
+    };
+
     var _fs = new Filer.FileSystem();
     Bramble.getFileSystem = function() {
         return _fs;
