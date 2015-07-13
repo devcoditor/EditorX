@@ -120,7 +120,14 @@ define([
         xhr.open("GET", url, true);
         xhr.responseType = "arraybuffer";
 
-        xhr.onload = function(e) {
+        function cleanup() {
+            delete xhr.onload;
+            delete xhr.onerror;
+        }
+
+        xhr.onload = function() {
+            cleanup();
+
             var buffer = new FilerBuffer(this.response);
 
             fs.writeFile(path, buffer, function(err) {
@@ -132,7 +139,7 @@ define([
             });
         };
         xhr.onerror = function(e) {
-            console.log("[Bramble] unable to get resource `" + url + "`", e);
+            cleanup();
             callback(e);
         };
 
