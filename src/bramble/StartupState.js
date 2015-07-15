@@ -5,6 +5,9 @@ define(function (require, exports, module) {
     "use strict";
 
     var Map = require("thirdparty/immutable").Map;
+    var CommandManager = require("command/CommandManager");
+    var FILE_REFRESH   = require("command/Commands").FILE_REFRESH;
+
     var _ui;
     var _project;
 
@@ -48,10 +51,13 @@ define(function (require, exports, module) {
         var renamedRoot = e.data.root;
         _project = _project.set("root", renamedRoot);
 
-        // Let the client-side know this is complete
-        var message = {
-            type: "bramble:mountRenamed"
-        };
-        parent.postMessage(JSON.stringify(message), "*");
+        // Update the file tree to show the new file
+        CommandManager.execute(FILE_REFRESH).always(function() {
+            // Let the client-side know this is complete
+            var message = {
+                type: "bramble:mountRenamed"
+            };
+            parent.postMessage(JSON.stringify(message), "*");
+        });
     };
 });
