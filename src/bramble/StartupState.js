@@ -1,4 +1,5 @@
-/* jslint newcap:true */
+/* jslintnewcap:true */
+/* global parent */
 
 define(function (require, exports, module) {
     "use strict";
@@ -29,5 +30,28 @@ define(function (require, exports, module) {
 
     exports.project.init = function(state) {
         _project = Map(state);
+    };
+
+    exports.project.handleRename = function(e) {
+        var remoteRequest;
+        try {
+            remoteRequest = JSON.parse(e.data);
+        } catch(err) {
+            console.log('[Bramble] unable to parse remote request:', e.data);
+            return;
+        }
+
+        if (remoteRequest.type !== "bramble:mountRename") {
+            return;
+        }
+
+        var renamedRoot = e.data.root;
+        _project = _project.set("root", renamedRoot);
+
+        // Let the client-side know this is complete
+        var message = {
+            type: "bramble:mountRenamed"
+        };
+        parent.postMessage(JSON.stringify(message), "*");
     };
 });
