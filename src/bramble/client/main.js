@@ -94,7 +94,6 @@ define([
 
     // Expose Filer for Path, Buffer, providers, etc.
     Bramble.Filer = Filer;
-    debugger;
     var _fs = new Filer.FileSystem({provider: new HybridIndexedDBProvider()});
     Bramble.getFileSystem = function() {
         return _fs;

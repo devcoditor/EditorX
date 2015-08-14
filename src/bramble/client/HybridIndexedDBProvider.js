@@ -7,7 +7,7 @@ define([
 ], function(Filer, RemoteIndexedDB) {
     "use strict";
 
-    var NonWorkerIndexedDB = Filer.providers.IndexedDB;
+    var NonWorkerIndexedDB = Filer.FileSystem.providers.IndexedDB;
     var FILE_SYSTEM_NAME = "local";
     var indexedDB = window.indexedDB       ||
                     window.mozIndexedDB    ||
@@ -42,7 +42,7 @@ define([
                 dbWorker = null;
             }
 
-            that.impl.open(callback);
+            that._impl.open(callback);
         }
         dbWorker.addEventListener("message", pickImplementation, false);
         dbWorker.postMessage({type: "INIT", name: that.name});
