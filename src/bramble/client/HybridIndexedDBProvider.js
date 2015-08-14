@@ -7,7 +7,8 @@ define([
 ], function(Filer, RemoteIndexedDB) {
     "use strict";
 
-    var NonWorkerIndexedDB = Filer.FileSystem.providers.IndexedDB;
+    // NOTE: I'm using Fallback vs. IndexedDB to keep older Safari happy here.
+    var FallbackProvider = Filer.FileSystem.providers.Fallback;
     var FILE_SYSTEM_NAME = "local";
     var indexedDB = window.indexedDB       ||
                     window.mozIndexedDB    ||
@@ -37,7 +38,7 @@ define([
             if(workerSupportsIndexedDB) {
                 that._impl = new RemoteIndexedDB(that.name, dbWorker);
             } else {
-                that._impl = new NonWorkerIndexedDB(that.name);
+                that._impl = new FallbackProvider(that.name);
                 dbWorker.terminate();
                 dbWorker = null;
             }
