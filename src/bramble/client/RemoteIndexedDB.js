@@ -12,9 +12,10 @@ define([
     // Remote callbacks
     var callbackQueue = {};
 
-    function RemoteIndexedDBContext(worker, mode) {
+    function RemoteIndexedDBContext(worker, mode, useTransferables) {
         this.worker = worker;
         this.mode = mode;
+        this.useTransferables = useTransferables;
     }
 
     RemoteIndexedDBContext.prototype.proxyCall = function(method, options, callback) {
@@ -64,9 +65,10 @@ define([
     };
 
 
-    function RemoteIndexedDB(name, worker) {
+    function RemoteIndexedDB(name, worker, useTransferables) {
         this.name = name;
         this.worker = worker;
+        this.useTransferables = useTransferables;
     }
     RemoteIndexedDB.isSupported = function() {
         // Callers need to check before using this.
@@ -105,9 +107,11 @@ define([
         that.worker.addEventListener("message", handleOpen, false);
         that.worker.postMessage({type: "OPEN", name: that.name});
     };
-    RemoteIndexedDB.prototype.getReadOnlyContext  = 
+    RemoteIndexedDB.prototype.getReadOnlyContext  = function() {
+        return new RemoteIndexedDBContext(this.worker, "readonly", this.useTransferables);
+    };
     RemoteIndexedDB.prototype.getReadWriteContext = function() {
-        return new RemoteIndexedDBContext(this.worker);
+        return new RemoteIndexedDBContext(this.worker, "readwrite", this.useTransferables);
     };
 
     return RemoteIndexedDB;

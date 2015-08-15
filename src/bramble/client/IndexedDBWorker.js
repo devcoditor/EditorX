@@ -1,4 +1,4 @@
-/*global self */
+/*global self, ArrayBuffer */
 /*jslint bitwise: true */
 (function() {
     "use strict";
@@ -134,37 +134,53 @@
         return new IndexedDBContext(this.db, "readwrite");
     };
 
-
-    function execRemoteCall(options) {
-        var context = options.mode === "readonly" ?
-            provider.getReadOnlyContext() : provider.getReadWriteContext();
-
-        function callback(err, result) {
-            self.postMessage({
-                callback: options.callback,
-                result: [err, result]
-            });
-        }
-
-        var args = options.args.concat(callback);
-        context[options.method].apply(context, args);
+    function isArrayBuffer(value) {
+        return value                               &&
+               value.buffer instanceof ArrayBuffer &&
+               value.byteLength !== undefined;
     }
 
-    function onMessage(e) {
+    function setupRemoteHandler(useTransferables) {
+        return function execRemoteCall(e) {
+            var options = e.data;
+            var context = options.mode === "readonly" ?
+                provider.getReadOnlyContext() : provider.getReadWriteContext();
+
+            function callback(err, result) {
+                // If the browser supports it, and result is an ArrayBuffer, transfer it.
+                var transferable;
+                if(isArrayBuffer(result) && useTransferables) {
+                    transferable = [result];
+                    console.log('transfer');
+                }
+
+                self.postMessage({
+                    callback: options.callback,
+                    result: [err, result]
+                }, transferable);
+            }
+
+            var args = options.args.concat(callback);
+            context[options.method].apply(context, args);
+        };
+    }
+
+    function onStartupMessage(e) {
         var data = e.data;
         var type = data.type;
 
         if(type === "INIT") {
             provider = new IndexedDB(data.name);
-            self.postMessage({supported: !!indexedDB});
+            self.postMessage({supported: !!indexedDB, buffer: data.buffer}, [data.buffer]);
         } else if (type === "OPEN") {
             provider.open(function(err) {
+                // From this point on, all calls are remote db calls to be executed.
+                self.removeEventListener("message", onStartupMessage, false);
+                self.addEventListener("message", setupRemoteHandler(data.useTransferables), false);
                 self.postMessage({type: "OPEN_CALLBACK", err: err});
             });
-        } else {
-            execRemoteCall(data);
         }
     }
 
-    self.addEventListener("message", onMessage, false);
+    self.addEventListener("message", onStartupMessage, false);
 }());
