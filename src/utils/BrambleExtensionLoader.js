@@ -64,7 +64,8 @@ define(function (require, exports, module) {
         "brackets-cdn-suggestions",    // https://github.com/szdc/brackets-cdn-suggestions
         "HTMLHinter",
         "MDNDocs",
-        "SVGasXML"
+        "SVGasXML",
+        "Brackets-wsSanitizer"
     ];
 
     // Disable any extensions we found on the query string's disableExtensions param
