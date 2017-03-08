@@ -47,11 +47,15 @@ define(function (require, exports, module) {
         Content         = require("filesystem/impls/filer/lib/content"),
         LanguageManager = require("language/LanguageManager"),
         StartupState    = require("bramble/StartupState"),
-        ArchiveUtils    = require("filesystem/impls/filer/ArchiveUtils");
+        ArchiveUtils    = require("filesystem/impls/filer/ArchiveUtils"),
+        FilerUtils      = require('filesystem/impls/filer/FilerUtils');
 
     // 3MB size limit for imported files. If you change this, also change the
     // error message we generate in rejectImport() below!
     var byteLimit = 3145728;
+
+    // 5MB size limit for imported archives (zip & tar)
+    var archiveByteLimit = 5242880;
 
     /**
      * Returns true if the drag and drop items contains valid drop objects.
@@ -332,13 +336,16 @@ define(function (require, exports, module) {
          * or not a mime type we care about, reject it.
          */
         function rejectImport(item) {
-            if (item.size > byteLimit) {
-                return new Error(Strings.DND_MAX_FILE_SIZE_EXCEEDED);
-            }
+            var ext = Path.extname(item.name);
+            var sizeLimit = Content.isArchive(ext) ? archiveByteLimit : byteLimit;
+            var sizeLimitMb = (sizeLimit / (1024 * 1024)).toString();
+
+            if (item.size > sizeLimit) {
+                return new Error(StringUtils.format(Strings.DND_MAX_SIZE_EXCEEDED, sizeLimitMb));
+            } 
 
             // If we don't know about this language type, or the OS doesn't think
             // it's text, reject it.
-            var ext = Path.extname(item.name).replace(/^\./, "").toLowerCase();
             var languageIsSupported = !!LanguageManager.getLanguageForExtension(ext);
             var typeIsText = Content.isTextType(item.type);
 
@@ -400,7 +407,7 @@ define(function (require, exports, module) {
 
                 var filename = Path.join(StartupState.project("root"), item.name);
                 var file = FileSystem.getFileForPath(filename);
-                var ext = Path.extname(filename).toLowerCase();
+                var ext = Path.extname(filename);
 
                 // Create a Filer Buffer, and determine the proper encoding. We
                 // use the extension, and also the OS provided mime type for clues.
