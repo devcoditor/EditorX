@@ -21,6 +21,7 @@ div.working-set-option-btn[style] {
     text-shadow: none;
 }
 
+/* File bar hover styles */
 .sidebar-hover {
   background-color: #333533 !important;
   text-shadow: none !important;
