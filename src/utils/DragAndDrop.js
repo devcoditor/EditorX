@@ -183,13 +183,10 @@ define(function (require, exports, module) {
             event.preventDefault();
 
             options.ondragleave(event);
-            // selecting FILE bar 
             // adding functionality when dragging files away from FILE bar
-            // make call to hoverOver function to change styles
-            var sidebar = document.getElementById("sidebar");
-            sidebar.addEventListener("dragleave",function hoverOver() {
-              $("#sidebar").removeClass("sidebar-hover");;
-            },true);
+            $("#sidebar").on("dragleave", function() {
+                $("#sidebar").removeClass("sidebar-hover");
+            });
         }
 
         function handleDragOver(event) {
@@ -198,13 +195,10 @@ define(function (require, exports, module) {
             event.preventDefault();
 
             options.ondragover(event);
-            // selecting FILE bar 
             // adding functionality when dragging files on FILE bar
-            // make call to hoverOver function to change styles
-            var sidebar = document.getElementById("sidebar");
-            sidebar.addEventListener("dragover",function hoverOver() {
-              $("#sidebar").addClass("sidebar-hover");
-            },true);
+            $("#sidebar").on("dragover", function() {
+                $("#sidebar").addClass("sidebar-hover");
+            });
 
             var dropEffect =  "none";
             // XXXBramble: we want to reuse this in the UploadFiles modal, so treat body differently
@@ -212,13 +206,10 @@ define(function (require, exports, module) {
                 if(options.elem === window.document.body) {
                     if($(".modal.instance").length === 0) {
                         dropEffect = "copy";
-                        // selecting FILE bar 
                         // adding functionality when dropping files on FILE bar
-                        // make call to hoverOver function to change styles
-                        var sidebar = document.getElementById("sidebar");
-                        sidebar.addEventListener("drop",function hoverOver() {
-                          $("#sidebar").removeClass("sidebar-hover");
-                        },true);
+                        $("#sidebar").on("drop", function() {
+                             $("#sidebar").removeClass("sidebar-hover");
+                        });
                     }
                 } else {
                     dropEffect = "copy";
