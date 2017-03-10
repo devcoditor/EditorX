@@ -21,6 +21,11 @@ div.working-set-option-btn[style] {
     text-shadow: none;
 }
 
+.sidebar-hover {
+  background-color: #333533 !important;
+  text-shadow: none !important;
+}
+
 #project-files-container {
     padding-left: 0;
     font-weight: 400;
