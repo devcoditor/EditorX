@@ -183,6 +183,10 @@ define(function (require, exports, module) {
             event.preventDefault();
 
             options.ondragleave(event);
+            var sidebar = document.getElementById("sidebar");
+            sidebar.addEventListener("dragleave",function hoverOver() {
+              $("#sidebar").removeClass("sidebar-hover");;
+            },true);
         }
 
         function handleDragOver(event) {
@@ -191,6 +195,10 @@ define(function (require, exports, module) {
             event.preventDefault();
 
             options.ondragover(event);
+            var sidebar = document.getElementById("sidebar");
+            sidebar.addEventListener("dragover",function hoverOver() {
+              $("#sidebar").addClass("sidebar-hover");
+            },true);
 
             var dropEffect =  "none";
             // XXXBramble: we want to reuse this in the UploadFiles modal, so treat body differently
@@ -198,6 +206,10 @@ define(function (require, exports, module) {
                 if(options.elem === window.document.body) {
                     if($(".modal.instance").length === 0) {
                         dropEffect = "copy";
+                        var sidebar = document.getElementById("sidebar");
+                        sidebar.addEventListener("drop",function hoverOver() {
+                          $("#sidebar").removeClass("sidebar-hover");
+                        },true);
                     }
                 } else {
                     dropEffect = "copy";
