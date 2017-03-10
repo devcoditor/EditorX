@@ -464,5 +464,5 @@ define(function (require, exports, module) {
     exports.attachHandlers      = attachHandlers;
     exports.isValidDrop         = isValidDrop;
     exports.openDroppedFiles    = openDroppedFiles;
-    exports.processFiles        = processFiles;
+    exports.processFiles        = processFile;
 });
