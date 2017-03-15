@@ -77,10 +77,17 @@
 }
 
 .CodeMirror .CodeMirror-gutters {
-        
     padding-right: 10px;
-    }
-.CodeMirror-linenumber {
+}
 
-   padding: 0 15px 0 0;
+.CodeMirror-linenumber {
+    padding: 0 15px 0 0;
+}
+
+.CodeMirror-foldgutter {
+    transform: translateX(8px);
+}
+
+.CodeMirror-foldgutter:after {
+  display: none;
 }
