@@ -121,7 +121,6 @@ div.CodeMirror-cursors {
 
 .CodeMirror-lines {
     padding: @code-padding 0;
-    padding-left: 10px;
 
     /* This is necessary for issue #2780. The logic for closing dropdowns depends on "click" events. Now
      * that each line has a separate div element, there is a good chance that mouseDown and mouseUp events
@@ -141,7 +140,6 @@ div.CodeMirror-cursors {
 .CodeMirror-gutters {
     background-color: @background;
     border-right: none;
-    padding-right: @code-padding;
 }
 
 .platform-mac {
@@ -179,7 +177,7 @@ div.CodeMirror-cursors {
     min-width: 2.5em;
 */
     /*font-size: 0.9em;*/  /* restore after SourceCodePro font fix? */
-    padding: 0 @code-padding 0 10px;  // note: overridden if code-folding gutter is shown
+    padding: 0 @code-padding 0 0;  // note: overridden if code-folding gutter is shown
 }
 .CodeMirror .CodeMirror-selected {
     background: @selection-color-unfocused;
@@ -232,8 +230,6 @@ div.CodeMirror-cursors {
     .CodeMirror .CodeMirror-gutters {
         background: transparent;
         border-right: none;
-        padding-right: @code-padding;
-
     }
     
     .CodeMirror-scroll {
