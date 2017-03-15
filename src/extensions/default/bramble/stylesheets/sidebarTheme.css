@@ -16,10 +16,16 @@ div.working-set-option-btn[style] {
 /* Dark Theme Color */
 /* TODO - move this to the dark theme CSS later */
 
-#sidebar {
+body[data-theme='dark-theme'] #sidebar {
     background-color: black;
     text-shadow: none;
 }
+
+body[data-theme='light-theme'] #sidebar {
+    background-color: white;
+    text-shadow: none;
+}
+
 
 #project-files-container {
     padding-left: 0;
@@ -37,7 +43,7 @@ div.working-set-option-btn[style] {
 li.jstree-leaf a span,
 li.jstree-leaf span.extension {
     font-size: 15px;
-    color: rgba(255,255,255,.5);
+    color: #2893ef;
 }
 
 li.jstree-closed > a span,
@@ -88,7 +94,7 @@ li.jstree-leaf a.selected-node .extension {
 li.jstree-leaf a:not(.selected-node):hover,
 li.jstree-open a:first-of-type:hover,
 li.jstree-closed a:first-of-type:hover {
-    background: rgba(255,255,255,.08);
+    background: rgba(45,153,97,1);
 }
 
 
