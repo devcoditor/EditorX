@@ -89,5 +89,5 @@
 }
 
 .CodeMirror-foldgutter:after {
-  display: none;
+    display: none;
 }
