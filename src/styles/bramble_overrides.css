@@ -71,3 +71,16 @@
 .bramble-inspector-highlight {
     background: rgba(0, 135, 207, .3) !important;
 }
+
+.CodeMirror-lines {
+    padding-left: 10px;
+}
+
+.CodeMirror .CodeMirror-gutters {
+        
+    padding-right: 5px;
+    }
+.CodeMirror-linenumber {
+
+   padding: 0 15px 0 0;
+}
