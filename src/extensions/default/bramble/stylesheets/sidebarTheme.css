@@ -161,7 +161,7 @@ li.jstree-open > ul:empty:after {
 li.jstree-closed a.context-node,
 li.jstree-open a.context-node,
 li.jstree-leaf a.context-node {
-    background: rgba(255,255,255,.08);
+    background: rgba(0,0,0,.08);
 }
 
 
