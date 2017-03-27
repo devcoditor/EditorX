@@ -6,6 +6,7 @@ define(function (require, exports, module) {
 
     // BlobUtils provides an opportunistic cache for BLOB Object URLs
     // which can be looked-up synchronously.
+    var Content = require("filesystem/impls/filer/lib/content");
     var FilerUtils = require("filesystem/impls/filer/FilerUtils");
     var Path = FilerUtils.Path;
     var decodePath = FilerUtils.decodePath;
@@ -99,6 +100,18 @@ define(function (require, exports, module) {
         return filename;
     }
 
+    // Get a DownloadUrl suitable for the DataTransfer object to allow dragging
+    // files out of the browser to OS. See https://www.thecssninja.com/html5/gmail-dragout.
+    // Only works in Chrome at present, similar to how attachments in gmail work.
+    function getDownloadUrl(filename) {
+        var blobUrl = getUrl(filename);
+        var basename = Path.basename(filename);
+        var ext = Path.extname(filename);
+        var mimeType = Content.mimeFromExt(ext);
+
+        return mimeType + ":" + basename + ":" + blobUrl;
+    }
+
     // Create a Blob URL Object, and manage its lifetime by caching.
     // Subsequent calls to create a URL for this path will auto-revoke an existing URL.
     function createURL(path, data, type) {
@@ -115,4 +128,5 @@ define(function (require, exports, module) {
     exports.getUrl = getUrl;
     exports.getFilename = getFilename;
     exports.createURL = createURL;
+    exports.getDownloadUrl = getDownloadUrl;
 });

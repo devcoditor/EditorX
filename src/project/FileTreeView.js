@@ -41,7 +41,8 @@ define(function (require, exports, module) {
         FileTreeViewModel = require("project/FileTreeViewModel"),
         ViewUtils         = require("utils/ViewUtils"),
         KeyEvent          = require("utils/KeyEvent"),
-        DragAndDrop       = require("utils/DragAndDrop");
+        DragAndDrop       = require("utils/DragAndDrop"),
+        BlobUtils         = require("filesystem/impls/filer/BlobUtils");
 
     var DOM = React.DOM;
 
@@ -266,7 +267,6 @@ define(function (require, exports, module) {
             if (this.props.entry.get("rename")) {
                 return;
             }
-            e.preventDefault();
         }
     };
 
@@ -463,6 +463,21 @@ define(function (require, exports, module) {
         },
 
         /**
+         * In browsers that support it, provide a download URL that will allow the
+         * user to drag files out of the filetree and into the OS.
+         */
+        handleDragStart: function (event) {
+            var filename = this.myPath();
+            var downloadUrl = BlobUtils.getDownloadUrl(filename);
+            var dataTransfer = event.dataTransfer;
+
+            dataTransfer.setData("DownloadUrl", downloadUrl);
+            dataTransfer.effectAllowed = "copy";
+
+            event.stopPropagation();
+        },
+
+        /**
          * When the user double clicks, we will select this file and add it to the working
          * set (via the `selectInWorkingSet` action.)
          */
@@ -552,7 +567,9 @@ define(function (require, exports, module) {
                     onClick: this.handleClick,
                     onMouseDown: this.handleMouseDown,
                     onDoubleClick: this.handleDoubleClick,
-                    onDragEnter: this.handleDragEnter
+                    onDragEnter: this.handleDragEnter,
+                    onDragStart: this.handleDragStart,
+                    draggable: true
                 },
                 DOM.ins({
                     className: insClassName
