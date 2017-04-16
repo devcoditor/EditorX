@@ -6,7 +6,7 @@ define(function (require, exports, module) {
     var BaseServer              = brackets.getModule("LiveDevelopment/Servers/BaseServer").BaseServer,
         LiveDevelopmentUtils    = brackets.getModule("LiveDevelopment/LiveDevelopmentUtils"),
         Content                 = brackets.getModule("filesystem/impls/filer/lib/content"),
-        BlobUtils               = brackets.getModule("filesystem/impls/filer/BlobUtils"),
+        UrlCache               = brackets.getModule("filesystem/impls/filer/UrlCache"),
         Filer                   = brackets.getModule("filesystem/impls/filer/BracketsFiler"),
         Path                    = Filer.Path,
         HTMLRewriter            = brackets.getModule("filesystem/impls/filer/lib/HTMLRewriter"),
@@ -36,18 +36,12 @@ define(function (require, exports, module) {
     HTMLServer.prototype = Object.create(BaseServer.prototype);
     HTMLServer.prototype.constructor = HTMLServer;
 
-    //Returns a pre-generated blob url based on path
     HTMLServer.prototype.pathToUrl = function(path) {
-        return BlobUtils.getUrl(path);
+        return UrlCache.getUrl(path);
     };
-    //Returns a path based on blob url or filepath.  Returns null for any other URL.  
-    HTMLServer.prototype.urlToPath = function(url) {
-        if(Content.isBlobURL(url) || Content.isRelativeURL(url)) {
-            return BlobUtils.getFilename(url);
-        }
 
-        // Any other URL (http://...) so skip it, since we don't serve it.
-        return null;
+    HTMLServer.prototype.urlToPath = function(url) {
+        return UrlCache.getFilename(url);
     };
 
     HTMLServer.prototype.readyToServe = function () {
@@ -105,7 +99,7 @@ define(function (require, exports, module) {
      * If a livedoc exists (HTML or CSS), serve the instrumented version of the file.
      */
     HTMLServer.prototype.serveLiveDocForUrl = function(url, callback) {
-        var path = BlobUtils.getFilename(url);
+        var path = UrlCache.getFilename(url);
         this.serveLiveDocForPath(path, callback);
     };
 
@@ -119,7 +113,7 @@ define(function (require, exports, module) {
                     callback(err);
                     return;
                 }
-                callback(null, BlobUtils.createURL(path, css, "text/css"));
+                UrlCache.createURL(path, css, "text/css", callback);
             });
         }
 
@@ -129,8 +123,20 @@ define(function (require, exports, module) {
                     callback(err);
                     return;
                 }
-                // We either serve raw HTML or a Blob URL depending on browser compatibility.
-                callback(null, _shouldUseBlobURL ? BlobUtils.createURL(path, html, "text/html") : html);
+
+                UrlCache.createURL(path, html, "text/html", function(err, url) {
+                    if(err) {
+                        callback(err);
+                    }
+
+                    // If the browser can't handle a Blob URL, and we have one, send back HTML
+                    if(Content.isBlobURL(url) && !_shouldUseBlobURL) {
+                        callback(null, html);
+                        return;
+                    }
+
+                    callback(null, url);
+                });
             });
         }
 

@@ -14,7 +14,7 @@ define(function (require, exports, module) {
 
     var EventDispatcher     = brackets.getModule("utils/EventDispatcher"),
         LiveDevMultiBrowser = brackets.getModule("LiveDevelopment/LiveDevMultiBrowser"),
-        BlobUtils           = brackets.getModule("filesystem/impls/filer/BlobUtils"),
+        UrlCache            = brackets.getModule("filesystem/impls/filer/UrlCache"),
         BrambleEvents       = brackets.getModule("bramble/BrambleEvents"),
         Path                = brackets.getModule("filesystem/impls/filer/BracketsFiler").Path,
         BrambleStartupState = brackets.getModule("bramble/StartupState"),
@@ -27,9 +27,7 @@ define(function (require, exports, module) {
     var MouseManager = require("lib/MouseManager");
     var LinkManager = require("lib/LinkManager");
     var ConsoleManager = require("lib/ConsoleManager");
-
-    // An XHR shim will be injected as well to allow XHR to the file system
-    var XHRShim = require("text!lib/xhr/XHRShim.js");
+    var XHRManager = require("lib/XHRManager");
 
     EventDispatcher.makeEventDispatcher(module.exports);
 
@@ -43,7 +41,7 @@ define(function (require, exports, module) {
         }
     }
 
-    // This function maps all blob urls in a message to filesystem
+    // This function maps all urls in a message to filesystem
     // paths based on the urls that are cached, so that Brackets can work
     // with paths vs. urls
     // For e.g. a message like `{"stylesheets": {"blob://http://url" :
@@ -52,7 +50,7 @@ define(function (require, exports, module) {
     function resolveLinks(message) {
         var regex = new RegExp('\\"(blob:[^"]+)\\"', 'gm');
         var resolvedMessage = message.replace(regex, function(match, url) {
-            var path = BlobUtils.getFilename(url);
+            var path = UrlCache.getFilename(url);
 
             return ["\"", path, "\""].join("");
         });
@@ -90,6 +88,12 @@ define(function (require, exports, module) {
                 return;
             }
 
+            // Deal with XHR requests, if we're hijacking them.
+            if(XHRManager.isXHRRequest(msgObj.message)) {
+                XHRManager.handleXHRRequest(msgObj.data);
+                return;
+            }
+
             if(msgObj.message) {
                 msgObj.message = resolveLinks(msgObj.message);
             }
@@ -99,7 +103,7 @@ define(function (require, exports, module) {
                 return;
             }
 
-            // Trigger message event
+            // Not one of our custom events, re-trigger message event to LiveDev
             module.exports.trigger("message", [connId, msgObj.message]);
         } else if (msgObj.type === "connect") {
             Browser.setListener();
@@ -146,8 +150,8 @@ define(function (require, exports, module) {
         var linkRegex = new RegExp('(\\\\?\\"?)(href|src|url|value)(\\\\?\\"?\\s?:?\\s?\\(?\\\\?\\"?)([^\\\\"\\),]+)(\\\\?\\"?)', 'gm');
         var resolvedMessage = message.replace(linkRegex, function(match, quote1, attr, seperator, value, quote2) {
             var path = value.charAt(0) === "/" ? value : Path.join(currentDir, value);
-            var url = BlobUtils.getUrl(path);
-            // If BlobUtils could not find the path in the filesystem, it
+            var url = UrlCache.getUrl(path);
+            // If UrlCache could not find the path in the filesystem, it
             // returns the path back unmodified. However, since we are
             // resolving the path above to an absolute path, we should not
             // modify the original value that was captured if a url mapping
@@ -207,9 +211,9 @@ define(function (require, exports, module) {
         var currentPath = path || (currentDoc && currentDoc.doc.file.fullPath);
         var escapedPath = escapedPathTemplate({path: currentPath});
 
-        return '<base href="' + window.location.href + '">\n' +
+        return '<base href="' + UrlCache.getBaseUrl() + '">\n' +
             "<script>\n" + PostMessageTransportRemote + "</script>\n" +
-            "<script>\n" + XHRShim + "</script>\n" +
+            XHRManager.getRemoteScript() +
             MouseManager.getRemoteScript(escapedPath) +
             LinkManager.getRemoteScript() +
             ConsoleManager.getRemoteScript();
@@ -249,7 +253,7 @@ define(function (require, exports, module) {
             return;
         }
 
-        url = BlobUtils.getUrl(liveDoc.doc.file.fullPath);
+        url = UrlCache.getUrl(liveDoc.doc.file.fullPath);
 
         // Don't start rewriting a URL if it's already in process (prevents infinite loop)
         if(_pendingReloadUrl === url) {

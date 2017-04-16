@@ -6,7 +6,7 @@ define(function (require, exports, module) {
     var Async = require("filesystem/impls/filer/lib/async");
     var Content = require("filesystem/impls/filer/lib/content");
     var CSSRewriter = require("filesystem/impls/filer/lib/CSSRewriter");
-    var BlobUtils = require("filesystem/impls/filer/BlobUtils");
+    var UrlCache = require("filesystem/impls/filer/UrlCache");
     var Path = require("filesystem/impls/filer/FilerUtils").Path;
     var decodePath = require("filesystem/impls/filer/FilerUtils").decodePath;
     var PreferencesManager = brackets.getModule("preferences/PreferencesManager");
@@ -46,7 +46,7 @@ define(function (require, exports, module) {
                 return;
             }
 
-            var url = BlobUtils.getUrl(fullPath);
+            var url = UrlCache.getUrl(fullPath);
             if(url === fullPath) {
                 console.log("[HTMLRewriter warning] couldn't get URL for `" + fullPath + "`");
             } else {
@@ -169,15 +169,20 @@ define(function (require, exports, module) {
         }
         // We may or may not have a server for rewriting live CSS docs in <link>s (e.g.,
         // when we `fs.writeFile()` and generate cached Blob URLs in `handleFile()`).
-        // If we don't, use `BlobUtils.getUrl()` instead to read from the fs.
+        // If we don't, use `UrlCache.getUrl()` instead to read from the fs.
         if(!server) {
             server = {
                 serveLiveDocForPath: function(path, callback) {
                     setTimeout(function() {
-                        callback(null, BlobUtils.getUrl(path));
+                        callback(null, UrlCache.getUrl(path));
                     }, 0);
                 }
             };
+        }
+
+        // We don't always need to rewrite, so return early if it's not needed.
+        if(!UrlCache.getShouldRewriteUrls()) {
+            return callback(null, html);
         }
 
         var rewriter = new HTMLRewriter(path, html, server);

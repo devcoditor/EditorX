@@ -42,7 +42,7 @@ define(function (require, exports, module) {
         ViewUtils         = require("utils/ViewUtils"),
         KeyEvent          = require("utils/KeyEvent"),
         DragAndDrop       = require("utils/DragAndDrop"),
-        BlobUtils         = require("filesystem/impls/filer/BlobUtils");
+        UrlCache          = require("filesystem/impls/filer/UrlCache");
 
     var DOM = React.DOM;
 
@@ -468,7 +468,7 @@ define(function (require, exports, module) {
          */
         handleDragStart: function (event) {
             var filename = this.myPath();
-            var downloadUrl = BlobUtils.getDownloadUrl(filename);
+            var downloadUrl = UrlCache.getDownloadUrl(filename);
             var dataTransfer = event.dataTransfer;
 
             dataTransfer.setData("DownloadUrl", downloadUrl);

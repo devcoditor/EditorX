@@ -42,7 +42,7 @@ define(function (require, exports, module) {
         TokenUtils          = brackets.getModule("utils/TokenUtils"),
         PathUtils           = brackets.getModule("thirdparty/path-utils/path-utils"),
         Path                = brackets.getModule("filesystem/impls/filer/BracketsFiler").Path,
-        BlobUtils           = brackets.getModule("filesystem/impls/filer/BlobUtils");
+        UrlCache           = brackets.getModule("filesystem/impls/filer/UrlCache");
 
     var previewContainerHTML       = require("text!QuickViewTemplate.html");
 
@@ -494,9 +494,9 @@ define(function (require, exports, module) {
             imgPath = tokenString;
         }
         // Use this filename if this is a path with a known image extension.
-        // We'll already have this image file's Blob URL cached in BlobUtils.
+        // We'll already have this image file's URL cached in UrlCache.
         else if (!hasProtocol && isImage) {
-            imgPath = BlobUtils.getUrl(Path.join(FileUtils.getDirectoryPath(docPath), tokenString));
+            imgPath = UrlCache.getUrl(Path.join(FileUtils.getDirectoryPath(docPath), tokenString));
         }
 
         if (!imgPath) {

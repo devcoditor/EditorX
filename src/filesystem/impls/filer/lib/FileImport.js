@@ -8,7 +8,8 @@ define(function (require, exports, module) {
     var LegacyFileImport    = require("filesystem/impls/filer/lib/LegacyFileImport"),
         WebKitFileImport    = require("filesystem/impls/filer/lib/WebKitFileImport"),
         FileSystemCache     = require("filesystem/impls/filer/FileSystemCache"),
-        BrambleStartupState = require("bramble/StartupState");
+        BrambleStartupState = require("bramble/StartupState"),
+        LiveDevMultiBrowser = require("LiveDevelopment/LiveDevMultiBrowser");
 
     /**
      * XXXBramble: the Drag and Drop and File APIs are a mess of incompatible
@@ -58,7 +59,10 @@ define(function (require, exports, module) {
             if(err) {
                 return callback(err);
             }
-            FileSystemCache.refresh(callback);
+            FileSystemCache.refresh(function() {
+                LiveDevMultiBrowser.reload();
+                callback();
+            });
         });
     };
 });

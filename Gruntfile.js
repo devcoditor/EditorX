@@ -96,7 +96,8 @@ module.exports = function (grunt) {
                             'hosted.*',
                             // XXXBramble: we don't use src/config.json like Brackets does,
                             // but it needs to exist in dist/ so copy it
-                            'config.json'
+                            'config.json',
+                            'bramble-live-dev-cache-sw.js'
                         ]
                     },
                     /* extensions and CodeMirror modes */
@@ -510,6 +511,9 @@ module.exports = function (grunt) {
                 handler: 'fastest'
             }],
             stripPrefix: 'dist/',
+            importScripts: [
+                "bramble-live-dev-cache-sw.js"
+            ],
             ignoreUrlParametersMatching: [/./]
         };
 

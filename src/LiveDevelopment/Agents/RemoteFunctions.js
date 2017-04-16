@@ -713,7 +713,6 @@ function RemoteFunctions(experimental) {
             targetElement = self._queryBracketsID(targetID);
 
             if (!targetElement && !editIsSpecialTag) {
-                console.error("data-brackets-id=" + targetID + " not found");
                 return;
             }
 

@@ -13,13 +13,13 @@
         return;
     }
 
-    function sendMessage(msg) {
+    function sendMessage(path) {
         if(!transport) {
             console.error("[Brackets LiveDev] No transport set");
             return;
         }
 
-        transport.send(JSON.stringify(msg));
+        transport.send("XMLHttpRequest", path);
     }
 
     function nativeXHRFn(xhr, condition, fn, args) {
@@ -141,10 +141,7 @@
                 }
             });
 
-            sendMessage({
-                method: "XMLHttpRequest",
-                path: _requestUrl
-            });
+            sendMessage(_requestUrl);
 
             _readyState = 1;
         };
@@ -169,6 +166,15 @@
 
         self.overrideMimeType = function() {
             nativeXHRFn(xhr, !_requestUrl, xhr.overrideMimeType, arguments);
+        };
+
+        // Hack: allow addEventListener by just adding an onload/onerror functions
+        self.addEventListener = function(event, fn) {
+            if(event === "load") {
+                _onload = fn;
+            } else if(event === "error") {
+                _onerror = fn;
+            }
         };
 
         // Expose the properties on the XHR object depending on whether

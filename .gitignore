@@ -50,3 +50,7 @@ Thumbs.db
 
 # Mozilla Bramble-specific files
 .env
+
+# We use src/vfs and dist/vfs as a root for the live preview in service worker URLs
+# Don't put any files under this path!
+/src/vfs

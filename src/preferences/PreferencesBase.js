@@ -1179,6 +1179,11 @@ define(function (require, exports, module) {
 
             if (preferenceID) {
                 var pref = this.getPreference(preferenceID);
+                // XXXBramble: if we disable an extension temporarily, this might fail
+                if(!pref) {
+                    console.warn("[Bramble] skipping PreferenceManager.on, no such preferenceID", event, preferenceID);
+                    return;
+                }
                 pref.on(event, handler);
             } else {
                 this._installListener();
@@ -1843,6 +1848,11 @@ define(function (require, exports, module) {
 
             if (preferenceID) {
                 var pref = this.getPreference(preferenceID);
+                // XXXBramble: if we disable an extension temporarily, this might fail
+                if(!pref) {
+                    console.warn("[Bramble] skipping PreferenceManager.on, no such preferenceID", event, preferenceID);
+                    return;
+                }
                 pref.on(event, handler);
             } else {
                 this._on_internal(event, handler);

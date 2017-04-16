@@ -89,11 +89,11 @@
             }
         });
 
-    }, false);
+        // Remember last scroll position for this document
+        addEventListener("scroll", function() {
+            sessionStorage.setItem(SCROLL_KEY, document.body.scrollTop);
+        }, false);
 
-    // Remember last scroll position for this document
-    addEventListener("scroll", function() {
-        sessionStorage.setItem(SCROLL_KEY, document.body.scrollTop);
     }, false);
 
 }(window._Brackets_LiveDev_Transport));

@@ -7,7 +7,7 @@ define(function (require, exports, module) {
     var FileSystemError = require("filesystem/FileSystemError"),
         FileSystemStats = require("filesystem/FileSystemStats"),
         BracketsFiler   = require("filesystem/impls/filer/BracketsFiler"),
-        BlobUtils       = require("filesystem/impls/filer/BlobUtils"),
+        UrlCache       = require("filesystem/impls/filer/UrlCache"),
         decodePath      = require("filesystem/impls/filer/FilerUtils").decodePath,
         Handlers        = require("filesystem/impls/filer/lib/handlers"),
         Content         = require("filesystem/impls/filer/lib/content"),
@@ -192,18 +192,18 @@ define(function (require, exports, module) {
                 }
 
                 if(stat.isFile) {
-                    BlobUtils.rename(oldPath, newPath);
-                    BrambleEvents.triggerFileRenamed(oldPath, newPath);
-                    return callback();
-                }
+                    UrlCache.rename(oldPath, newPath, function(err) {
+                        if(err) {
+                            return callback(_mapError(err));
+                        }
 
-                // This is a dir, refresh our cache for child paths to get updated.
-                FileSystemCache.refresh(function(err){
-                    if(err){
-                      return callback(err);
-                    }
-                    callback();
-                });
+                        BrambleEvents.triggerFileRenamed(oldPath, newPath);
+                        callback();
+                    });
+                } else {
+                    // This is a dir, refresh our cache for child paths to get updated.
+                    FileSystemCache.refresh(callback);
+                }
             });
         }
 
@@ -380,11 +380,18 @@ define(function (require, exports, module) {
 
             // TODO: deal with the symlink case (i.e., only remove cache
             // item if file is really going away).
-            BlobUtils.remove(path).forEach(function(filename) {
-                BrambleEvents.triggerFileRemoved(filename);
-            });
+            UrlCache.remove(path, function(err, removed) {
+                if(err) {
+                    callback(_mapError(err));
+                    return;
+                }
 
-            callback();
+                removed.forEach(function(filename) {
+                    BrambleEvents.triggerFileRemoved(filename);
+                });
+
+                callback();
+            });
         });
     }
 
