@@ -167,7 +167,7 @@ module.exports = function (grunt) {
                     // XXXBramble: if you change this, change configureExtensions() below too.
                     "dist/styles/brackets.min.css": [
                         "src/thirdparty/CodeMirror/lib/codemirror.css",
-                        "src/styles/brackets.less"
+                        "src/styles/bramble.less"
                     ]
                 },
                 options: {
