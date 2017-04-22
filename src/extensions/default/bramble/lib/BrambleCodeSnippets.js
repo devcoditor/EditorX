@@ -6,6 +6,7 @@ define(function (require, exports, module) {
 	
     var CommandManager = brackets.getModule("command/CommandManager");
     var EditorManager  = brackets.getModule("editor/EditorManager");
+    var MainViewManager = brackets.getModule("view/MainViewManager");
 
     var CMD_ADD_CODE_SNIPPET_ID     = "bramble.addCodeSnippet";
 	
@@ -19,7 +20,8 @@ define(function (require, exports, module) {
          * @param {string} snippet The snippet to insert.
          */
         function addCodeSnippet(snippet) {
-            var editor = EditorManager.getFocusedEditor();
+            MainViewManager.focusActivePane();
+            var editor = EditorManager.getActiveEditor();
             if (editor) {
                 var insertionPos = editor.getCursorPos();
                 editor.document.replaceRange(snippet, insertionPos);
