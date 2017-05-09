@@ -1,8 +1,7 @@
 define(function (require, exports, module) {
     "use strict";
 
-    var ConsoleInterfaceManager = require("lib/ConsoleInterfaceManager"),
-        ConsoleManagerRemote = require("text!lib/ConsoleManagerRemote.js");
+    var ConsoleManagerRemote = require("text!lib/ConsoleManagerRemote.js");
 
     function getRemoteScript() {
         return "<script>\n" + ConsoleManagerRemote + "</script>\n";
@@ -16,13 +15,8 @@ define(function (require, exports, module) {
         var args = data.args;
         var type = data.type || "log";
 
-        if (type === "time" || type === "timeEnd"){
-            args[0] = type + ": " + args[0];
-        }
-
-        if (args) {
-            ConsoleInterfaceManager.add(type, args);
-        }
+        // TODO: Show this in Custom Console UI, see issue #1675 in Thimble
+        console[type].apply(console, args);
     }
 
     exports.getRemoteScript = getRemoteScript;
