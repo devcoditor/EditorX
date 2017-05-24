@@ -40,6 +40,11 @@ define(function (require, exports, module) {
             CommandManager.execute.apply(null, args).always(callback);
         }
 
+        // Fix outdated calls for new folder command (used to be FILE_FOLDER)
+        if(command === "FILE_FOLDER") {
+            command = "FILE_NEW_FOLDER";
+        }
+
         // Some commands require focus in the editor
         switch(command) {
         case "EDIT_UNDO":

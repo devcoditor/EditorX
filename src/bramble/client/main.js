@@ -1026,7 +1026,7 @@ define([
     };
 
     BrambleProxy.prototype.addNewFolder = function(callback) {
-        this._executeRemoteCommand({commandCategory: "brackets", command: "FILE_FOLDER"}, callback);
+        this._executeRemoteCommand({commandCategory: "brackets", command: "FILE_NEW_FOLDER"}, callback);
     };
 
     BrambleProxy.prototype.export = function(callback) {
