@@ -405,9 +405,9 @@ module.exports = function (grunt) {
         },
 
         exec: {
-            localize: 'node scripts/properties2js',
-            'localize-dist': 'node scripts/properties2js dist',
-            'clean-nls': 'rm -fr src/nls && git checkout -- src/nls'
+            'localize': 'npm run localize',
+            'localize-dist': 'npm run localize-dist',
+            'unlocalize': 'npm run unlocalize'
         },
 
         swPrecache: {
@@ -536,7 +536,7 @@ module.exports = function (grunt) {
         /* XXXBramble: we skip this, since we don't use any of the node_modules in Bramble.
          'npm-install', */
         'cleanempty',
-        'exec:clean-nls',
+        'exec:unlocalize',
         'usemin'
         /* XXXBramble: we skip this, since we don't bother with its info, and copy it in copy:dist
         'build-config' */
@@ -558,9 +558,6 @@ module.exports = function (grunt) {
         'swPrecache',
         'compress:sw'
     ]);
-
-    // task: undo changes to the src/nls directory
-    grunt.registerTask('unlocalize', ['exec:clean-nls']);
 
     // Default task.
     grunt.registerTask('default', ['test']);
