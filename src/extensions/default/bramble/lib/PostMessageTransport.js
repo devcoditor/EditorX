@@ -17,7 +17,9 @@ define(function (require, exports, module) {
         BlobUtils           = brackets.getModule("filesystem/impls/filer/BlobUtils"),
         BrambleEvents       = brackets.getModule("bramble/BrambleEvents"),
         Path                = brackets.getModule("filesystem/impls/filer/BracketsFiler").Path,
-        BrambleStartupState = brackets.getModule("bramble/StartupState");
+        BrambleStartupState = brackets.getModule("bramble/StartupState"),
+        Mustache            = brackets.getModule("thirdparty/mustache/mustache"),
+        escapedPathTemplate = Mustache.compile("{{path}}");
 
     // The script that will be injected into the previewed HTML to handle the other side of the post message connection.
     var PostMessageTransportRemote = require("text!lib/PostMessageTransportRemote.js");
@@ -203,11 +205,12 @@ define(function (require, exports, module) {
     function getRemoteScript(path) {
         var currentDoc = LiveDevMultiBrowser._getCurrentLiveDoc();
         var currentPath = path || (currentDoc && currentDoc.doc.file.fullPath);
+        var escapedPath = escapedPathTemplate({path: currentPath});
 
         return '<base href="' + window.location.href + '">\n' +
             "<script>\n" + PostMessageTransportRemote + "</script>\n" +
             "<script>\n" + XHRShim + "</script>\n" +
-            MouseManager.getRemoteScript(currentPath) +
+            MouseManager.getRemoteScript(escapedPath) +
             LinkManager.getRemoteScript() +
             ConsoleManager.getRemoteScript();
     }
