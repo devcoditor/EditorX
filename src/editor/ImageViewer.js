@@ -86,6 +86,31 @@ define(function (require, exports, module) {
     }
 
     /**
+     * Whether or not this image is:
+     *   a) an SVG file
+     *   b) we are currently opening SVG images as Image vs. XML
+     */
+    function isSVGImage(fullPath) {
+        var lang = LanguageManager.getLanguageForPath(fullPath);
+        var svgAsXML = PreferencesManager.get("openSVGasXML");
+        var id = lang.getId();
+
+        // Depending on whether or not the user wants to treat SVG files as XML
+        // we default to open as an image.
+        return !svgAsXML && id === "svg";
+    }
+
+    /**
+     * Whether or not this is an image, or an SVG image (vs SVG XML file).
+     */
+    function isImage(fullPath) {
+        var lang = LanguageManager.getLanguageForPath(fullPath);
+        var id = lang.getId();
+
+        return id === "image" || isSVGImage(fullPath);
+    }
+
+    /**
      * ImageView objects are constructed when an image is opened
      * @see {@link Pane} for more information about where ImageViews are rendered
      *
@@ -116,8 +141,7 @@ define(function (require, exports, module) {
         this.$image = this.$el.find(".image");
         this.$imageScale = this.$el.find(".image-scale");
         this.$imagePreview.on("load", _.bind(this._onImageLoaded, this));
-
-        Image.load(this.$imagePreview[0], file.fullPath);
+        this.$imagePreview.on("error", _.bind(console.error, console));
 
         _viewers[file.fullPath] = this;
     }
@@ -182,8 +206,13 @@ define(function (require, exports, module) {
         // make sure we always show the right file name
         DocumentManager.on("fileNameChange.ImageView", _.bind(this._onFilenameChange, this));
 
-        this._updateScale();
-
+        // For regular images, we allow image filters and colour extraction.
+        // For SVG, we only do colour extraction.
+        if(!isSVGImage(this.file.fullPath)) {
+            Image.load(e.currentTarget, this.file.fullPath, function(img) {
+                _extractColors(self.$el, img);
+            });
+        }
         _extractColors(this.$el, e.currentTarget);
     };
 
@@ -375,13 +404,7 @@ define(function (require, exports, module) {
      */
     MainViewFactory.registerViewFactory({
         canOpenFile: function (fullPath) {
-            var lang = LanguageManager.getLanguageForPath(fullPath);
-            var svgAsXML = PreferencesManager.get("openSVGasXML");
-            var id = lang.getId();
-
-            // Depending on whether or not the user wants to treat SVG files as XML
-            // we default to open as an image.
-            return id === "image" || (!svgAsXML && id === "svg");
+            return isImage(fullPath);
         },
         openFile: function (file, pane) {
             return _createImageView(file, pane);

@@ -9,19 +9,24 @@ define(function (require, exports, module) {
     var mimeFromExt         = require("filesystem/impls/filer/lib/content").mimeFromExt;
     var LiveDevMultiBrowser = require("LiveDevelopment/LiveDevMultiBrowser");
 
-    function initializeFilterButtons(image, imagePath) {
+    function initializeFilterButtons(image, imagePath, extractColors) {
         var imageMimeType = mimeFromExt(Path.extname(imagePath));
         var imageDataRegex = /base64,(.+)/;
         var $saveBtn = $(".btn-image-filter-save");
         var $resetBtn = $(".btn-image-filter-reset");
         var $imageWrapper = $(".image-view .image-wrapper");
+
+        $("#image-filters-section").removeClass("hide");
+
         var processing = false;
 
         $resetBtn.click(function() {
             image.reset();
-            $saveBtn.prop("disabled", true);
-            $resetBtn.prop("disabled", true);
-            $(".image-filters .active-filter").removeClass("active-filter");
+            updateColours(function() {
+                $saveBtn.prop("disabled", true);
+                $resetBtn.prop("disabled", true);
+                $(".image-filters .active-filter").removeClass("active-filter");
+            });
         });
 
         $saveBtn.click(function() {
@@ -49,10 +54,33 @@ define(function (require, exports, module) {
         });
 
         function finishedProcessing() {
-            processing = false;
-            $imageWrapper.removeClass("processing");
-            $saveBtn.prop("disabled", false);
-            $resetBtn.prop("disabled", false);
+            updateColours(function() {
+                processing = false;
+                $imageWrapper.removeClass("processing");
+                $saveBtn.prop("disabled", false);
+                $resetBtn.prop("disabled", false);
+            });
+        }
+
+        function updateColours(callback) {
+            function finished(err) {
+                if(err) {
+                    console.log("[Bramble] Unable to extract colour info for image", err);
+                }
+                img = null;
+                callback();
+            }
+
+            // Create an image from the current canvas, and update colour swatches
+            var img = new Image();
+            img.onload = function() {
+                extractColors(img);
+                finished();
+            };
+            img.onerror = function(e) {
+                finished(e);
+            };
+            img.src = image.canvas.toDataURL(imageMimeType);
         }
 
         function applyFilterFn(fnName, args) {
@@ -102,8 +130,12 @@ define(function (require, exports, module) {
         });
     }
 
-    exports.load = function(imageElement, imagePath) {
-        var image = Caman(imageElement);
-        initializeFilterButtons(image, imagePath);
+    exports.load = function(imageElement, imagePath, extractColors) {
+        try {
+            var image = Caman(imageElement);
+            initializeFilterButtons(image, imagePath, extractColors);
+        } catch(e) {
+            console.log("[Bramble] Unable to use image filters for image", e);
+        }
     };
 });
