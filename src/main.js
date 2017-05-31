@@ -29,23 +29,23 @@ require.config({
     // Disable module loading timeouts, due to the size of what we load
     waitSeconds: 0,
     paths: {
-        "text"              : "thirdparty/text/text",
-        "i18n"              : "thirdparty/i18n/i18n",
-        "react"             : "thirdparty/react",
+        "text": "thirdparty/text/text",
+        "i18n": "thirdparty/i18n/i18n",
+        "react": "thirdparty/react",
 
         // The file system implementation. Change this value to use different
         // implementations (e.g. cloud-based storage).
-        "fileSystemImpl"    : "filesystem/impls/filer/FilerFileSystem",
+        "fileSystemImpl": "filesystem/impls/filer/FilerFileSystem",
 
-        "caman"             : "thirdparty/caman/caman.full.min",
+        "caman": "thirdparty/caman/caman.full.min",
         // In various places in the code, it's useful to know if this is a dev vs. prod env.
         // See Gruntfile for prod override of this to config.prod.js.
-        "envConfig"         : "bramble/config/config.dev"
+        "envConfig": "bramble/config/config.dev"
     },
     map: {
         "*": {
             "thirdparty/CodeMirror2": "thirdparty/CodeMirror",
-            "thirdparty/react":       "react"
+            "thirdparty/react": "react"
         }
     },
     shim: {
@@ -77,6 +77,7 @@ if (window.location.search.indexOf("testEnvironment") > -1) {
     require.config({
         locale: urlLocale || (typeof (brackets) !== "undefined" ? brackets.app.language : window.navigator.language)
     });
+
 }
 
 /**
@@ -85,7 +86,7 @@ if (window.location.search.indexOf("testEnvironment") > -1) {
  * in dev builds.
  */
 if ('serviceWorker' in window.navigator) {
-    window.navigator.serviceWorker.register('bramble-sw.js').then(function(reg) {
+    window.navigator.serviceWorker.register('bramble-sw.js').then(function (reg) {
         "use strict";
 
         function sendMessage(data) {
@@ -102,25 +103,25 @@ if ('serviceWorker' in window.navigator) {
             sendMessage({ type: 'Bramble:offlineReady' });
         }
 
-        reg.onupdatefound = function() {
+        reg.onupdatefound = function () {
             var installingWorker = reg.installing;
 
-            installingWorker.onstatechange = function() {
+            installingWorker.onstatechange = function () {
                 switch (installingWorker.state) {
-                case 'installed':
-                    if (window.navigator.serviceWorker.controller) {
-                        updatesAvailable();
-                    } else {
-                        offlineReady();
-                    }
-                    break;
-                case 'redundant':
-                    console.error('[Bramble] The installing service worker became redundant.');
-                    break;
+                    case 'installed':
+                        if (window.navigator.serviceWorker.controller) {
+                            updatesAvailable();
+                        } else {
+                            offlineReady();
+                        }
+                        break;
+                    case 'redundant':
+                        console.error('[Bramble] The installing service worker became redundant.');
+                        break;
                 }
             };
         };
-    }).catch(function(e) {
+    }).catch(function (e) {
         "use strict";
         console.error('[Bramble] Error during service worker registration:', e);
     });
@@ -129,8 +130,16 @@ if ('serviceWorker' in window.navigator) {
 define(function (require) {
     "use strict";
 
+    // XXXBramble: We host the filesystem in the hosting, parent window.  Make sure
+    // we're loaded within an iframe, and warn if not.
+    if (window.location === window.parent.location) {
+        $('#iframe-warning').show();
+        $('.sk-spinner-rotating-plane.sk-spinner').hide();
+        return;
+    }
+
     // XXXBramble: get the filesystem loading ASAP for connection with parent window
-    require(["filesystem/impls/filer/RemoteFiler"], function(RemoteFiler) {
+    require(["filesystem/impls/filer/RemoteFiler"], function (RemoteFiler) {
         RemoteFiler.init();
         // Load the brackets module. This is a self-running module that loads and
         // runs the entire application.
