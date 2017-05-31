@@ -33,7 +33,9 @@ define(function (require, exports, module) {
         KeyEvent          = require("utils/KeyEvent"),
         Strings           = require("strings"),
         DialogTemplate    = require("text!htmlContent/dialog-template.html"),
-        Mustache          = require("thirdparty/mustache/mustache");
+        Mustache          = require("thirdparty/mustache/mustache"),
+        BrambleEvents     = brackets.getModule("bramble/BrambleEvents");
+
 
     /**
      * Dialog Buttons IDs
@@ -322,6 +324,7 @@ define(function (require, exports, module) {
             // fade-out animation)
             window.setTimeout(function () {
                 result.resolve(buttonId);
+                BrambleEvents.triggerDialogClosed();
             }, 0);
 
             // Remove the dialog instance from the DOM.
@@ -332,7 +335,7 @@ define(function (require, exports, module) {
 
             // Restore previous focus
             if (lastFocus) {
-                lastFocus.focus();    
+                lastFocus.focus();
             }
 
             //Remove wrapper
@@ -353,6 +356,7 @@ define(function (require, exports, module) {
 
             // Push our global keydown handler onto the global stack of handlers.
             KeyBindingManager.addGlobalKeydownHook(keydownHook);
+            BrambleEvents.triggerDialogOpened();
         });
 
         // Click handler for buttons
