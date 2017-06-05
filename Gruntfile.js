@@ -91,6 +91,7 @@ module.exports = function (grunt) {
                         src: [
                             'nls/{,*/}*.js',
                             'thirdparty/github-markdown.css',
+                            'thirdparty/bitjs/bitjs-untar.min.js',
                             'hosted.*',
                             // XXXBramble: we don't use src/config.json like Brackets does,
                             // but it needs to exist in dist/ so copy it
