@@ -223,6 +223,7 @@ The `options` object allows you to configure Bramble:
  * `disableUIState`: `<Boolean>` by default, UI state is kept between sessions.  This disables it (and clears old values), and uses the defaults from Bramble.
  * `autoRecoverFileSystem`: `<Boolean>` whether to try and autorecover the filesystem on failure (see `Bramble.formatFileSystem` above).
  * `debug`: `<Boolean>` whether to log debug info.
+* `zipFilenamePrefix`: `<String>` the prefix name to use for project zip files, or `"thimble-project"` by default.
 
 ## Bramble.mount(root[, filename])
 

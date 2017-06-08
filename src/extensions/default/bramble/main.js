@@ -175,7 +175,8 @@ define(function (require, exports, module) {
         // to Brackets that it can keep going, which will pick this up.
         BrambleStartupState.project.init({
             root: data.mount.root,
-            filename: data.mount.filename
+            filename: data.mount.filename,
+            zipFilenamePrefix: data.state.zipFilenamePrefix ||  "thimble-project"
         });
 
         // Set initial UI state values (if present)

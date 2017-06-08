@@ -1633,7 +1633,11 @@ define(function (require, exports, module) {
             }
 
             if (stats.type === "DIRECTORY") {
-                return ArchiveUtils.archive(path);
+                return ArchiveUtils.archive(path, Path.basename(path), function(err) {
+                    if (err) {
+                        showErrorDialog(err);
+                    }
+                });
             }
 
             // Prepare file for download

@@ -465,7 +465,9 @@ define([
                                     autoUpdate: _state.autoUpdate,
                                     openSVGasXML: _state.openSVGasXML,
                                     allowJavaScript: _state.allowJavaScript,
-                                    allowWhiteSpace: _state.allowWhiteSpace
+                                    allowWhiteSpace: _state.allowWhiteSpace,
+                                    // Allow overriding the default name for project zip files
+                                    zipFilenamePrefix: options.zipFilenamePrefix
                                 }
                             };
                             _brambleWindow.postMessage(JSON.stringify(initMessage), _iframe.src);

@@ -59,6 +59,8 @@ define(function (require, exports, module) {
 
     // zipfile can be a path (string) to a zipfile, or raw binary data.
     function unzip(zipfile, options, callback) {
+        var projectPrefix = StartupState.project("zipFilenamePrefix").replace(/\/?$/, "/");
+
         if(typeof options === 'function') {
             callback = options;
             options = {};
@@ -85,12 +87,20 @@ define(function (require, exports, module) {
                 }
 
                 var isDir = file.options.dir;
+                var filename = removeThimbleProjectFolder(file.name);
                 filenames.push({
-                    absPath: Path.join(destination, file.name),
+                    absPath: Path.join(destination, filename),
                     isDirectory: isDir,
                     data: isDir ? null : new Buffer(file.asArrayBuffer())
                 });
             });
+
+            function removeThimbleProjectFolder(path) {
+                // Nuke root folder `thimble-project/`, or whatever zip prefix was passed in
+                // at startup, if exists so that project zip files can be re-imported without
+                // adding an unnecessary folder.
+                return path.replace(projectPrefix, "");
+            }
 
             function decompress(path, callback) {
                 var basedir = Path.dirname(path.absPath);
@@ -142,17 +152,29 @@ define(function (require, exports, module) {
         }
     }
 
-    // Zip specific file or folder structure
-    function archive(path, callback) {
+    // Zip specific file or folder structure, allowing an optional root name
+    // folder to be passed in and used as the zip filename as well.  Use "thimble-project/"
+    // or whatever is configured if a rootName isn't specified.
+    function archive(path, rootName, callback) {
         var root = StartupState.project("root");
-        var rootRegex = new RegExp("^" + root + "\/?");
+        var pathPrefix = path.replace(/\/?$/, "");
+
+        if(typeof rootName === "function") {
+            callback = rootName;
+            rootName = null;
+        }
+        rootName = (rootName || StartupState.project("zipFilenamePrefix")).replace(/\/?$/, "");
         callback = callback || function() {};
+
+        var zipFilename = rootName + ".zip";
+        var rootFolder = rootName + "/";
+
         // TODO: we should try to move this to a worker
         var jszip = new JSZip();
 
         function toRelProjectPath(path) {
-            // Make path relative within the zip, rooted in a `project/` dir
-            return path.replace(rootRegex, "project/");
+            // Make path relative within the zip, rooted in a `thimble-project/` dir
+            return path.replace(pathPrefix, rootFolder);
         }
 
         function addFile(path, callback) {
@@ -201,7 +223,7 @@ define(function (require, exports, module) {
             // Prepare folder for download
             var compressed = jszip.generate({type: 'arraybuffer'});
             var blob = new Blob([compressed], {type: "application/zip"});
-            saveAs(blob, "project.zip");
+            saveAs(blob, zipFilename);
             callback();
         });
     }
@@ -239,7 +261,7 @@ define(function (require, exports, module) {
             untarWorker.terminate();
             untarWorker = null;
 
-            callback(err); 
+            callback(err);
         }
 
         function writeCallback(err) {
