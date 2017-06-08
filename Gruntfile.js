@@ -222,6 +222,9 @@ module.exports = function (grunt) {
                 options: {
                     name: 'thirdparty/almond',
                     baseUrl: 'src',
+                    paths: {
+                        "EventEmitter": "../node_modules/wolfy87-eventemitter/EventEmitter.min"
+                    },
                     optimize: 'uglify2',
                     preserveLicenseComments: false,
                     useStrict: true,

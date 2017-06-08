@@ -21,13 +21,18 @@
  *
  */
 
-/*global define, HTMLElement, MessageChannel, addEventListener*/
+/*global require, define, HTMLElement, MessageChannel, addEventListener*/
+require.config({
+    paths: {
+        "EventEmitter": "../node_modules/wolfy87-eventemitter/EventEmitter.min"
+    }
+});
 
 define([
     // Change this to filer vs. filer.min if you need to debug Filer
     "thirdparty/filer/dist/filer.min",
     "bramble/ChannelUtils",
-    "bramble/thirdparty/EventEmitter/EventEmitter.min",
+    "EventEmitter",
     "bramble/client/StateManager",
     "bramble/client/ProjectStats"
 ], function(Filer, ChannelUtils, EventEmitter, StateManager, ProjectStats) {
