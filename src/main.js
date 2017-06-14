@@ -37,7 +37,10 @@ require.config({
         // implementations (e.g. cloud-based storage).
         "fileSystemImpl": "filesystem/impls/filer/FilerFileSystem",
 
+        // Image processing libraries
+        "Pica": "../node_modules/pica/dist/pica.min",
         "caman": "thirdparty/caman/caman.full.min",
+
         // In various places in the code, it's useful to know if this is a dev vs. prod env.
         // See Gruntfile for prod override of this to config.prod.js.
         "envConfig": "bramble/config/config.dev"

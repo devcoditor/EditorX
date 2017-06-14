@@ -43,6 +43,7 @@
         "load-grunt-tasks": "3.5.0",
         "lodash": "4.15.0",
         "phantomjs": "1.9.18",
+        "pica": "^3.0.4",
         "q": "1.4.1",
         "semver": "^4.1.0",
         "wolfy87-eventemitter": "^5.1.0",

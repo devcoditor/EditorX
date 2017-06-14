@@ -13,7 +13,8 @@ define(function (require, exports, module) {
         Content         = require("filesystem/impls/filer/lib/content"),
         Async           = require("utils/Async"),
         BrambleEvents   = require("bramble/BrambleEvents"),
-        FileSystemCache = require("filesystem/impls/filer/FileSystemCache");
+        FileSystemCache = require("filesystem/impls/filer/FileSystemCache"),
+        ImageResizer    = require("filesystem/impls/filer/lib/ImageResizer");
 
     var fs              = BracketsFiler.fs(),
         Path            = BracketsFiler.Path,
@@ -285,10 +286,24 @@ define(function (require, exports, module) {
             Async.doSequentially([
                 // We need to rewrite and cache first, before we transfer ownership of the data
                 function step1RewriteAndCache(callback) {
+                    var ext = Path.extname(path);
+
                     // Add a BLOB cache record for this filename
                     // only if it's not an HTML file
-                    if(Content.isHTML(Path.extname(path))) {
-                        callback();
+                    if(Content.isHTML(ext)) {
+                        return callback();
+                    }
+
+                    // If this is a big image (>250K), resize it first
+                    if(Content.isResizableImage(ext) && Content.isImageTooLarge(data.length)) {
+                        ImageResizer.resize(path, data, function(err, resized) {
+                            if(err) {
+                                return callback(err);
+                            }
+
+                            data = resized;
+                            Handlers.handleFile(path, data, callback);
+                        });
                     } else {
                         Handlers.handleFile(path, data, callback);
                     }

@@ -35,25 +35,16 @@ define(function (require, exports, module) {
         FileSystem      = require("filesystem/FileSystem"),
         FileUtils       = require("file/FileUtils"),
         Strings         = require("strings"),
-        StringUtils     = require("utils/StringUtils"),
         Filer           = require("filesystem/impls/filer/BracketsFiler"),
         Path            = Filer.Path,
         Content         = require("filesystem/impls/filer/lib/content"),
-        LanguageManager = require("language/LanguageManager"),
-        StartupState    = require("bramble/StartupState"),
-        ArchiveUtils    = require("filesystem/impls/filer/ArchiveUtils"),
-        FilerUtils      = require("filesystem/impls/filer/FilerUtils");
+        ArchiveUtils    = require("filesystem/impls/filer/ArchiveUtils");
 
-    function WebKitFileImport(options) {
-        this.byteLimit = options.byteLimit;
-        this.archiveByteLimit = options.archiveByteLimit;
-    }
+    function WebKitFileImport(){}
 
     // We want event.dataTransfer.items for WebKit style browsers
     WebKitFileImport.prototype.import = function(source, parentPath, callback) {
         var items = source instanceof DataTransfer ? source.items : source;
-        var byteLimit = this.byteLimit;
-        var archiveByteLimit = this.archiveByteLimit;
         var pathList = [];
         var errorList = [];
         var started = 0;
@@ -176,32 +167,6 @@ define(function (require, exports, module) {
             });
         }
 
-        /**
-         * Determine whether we want to import this file at all.  If` it's too large
-         * or not a mime type we care about, reject it.
-         */
-        function rejectImport(filename, size) {
-            var ext = Path.extname(filename);
-            var mime = Content.mimeFromExt(ext);
-            var isArchive = Content.isArchive(ext);
-            var sizeLimit =  isArchive ? archiveByteLimit : byteLimit;
-            var sizeLimitMb = (sizeLimit / (1024 * 1024)).toString();
-
-            if (size > sizeLimit) {
-                return new Error(StringUtils.format(Strings.DND_MAX_SIZE_EXCEEDED, sizeLimitMb));
-            }
-
-            // If we don't know about this language type, or the OS doesn't think
-            // it's text, reject it.
-            var isSupported = !!LanguageManager.getLanguageForExtension(FilerUtils.normalizeExtension(ext, true));
-            var typeIsText = Content.isTextType(mime);
-
-            if (isSupported || typeIsText || isArchive) {
-                return null;
-            }
-            return new Error(Strings.DND_UNSUPPORTED_FILE_TYPE);
-        }
-
         function maybeImportDirectory(parentPath, entry, deferred) {
             started++;
             var fullPath = Path.join(parentPath, entry.name);
@@ -239,7 +204,7 @@ define(function (require, exports, module) {
                     }
 
                     // Check whether we want to import this file at all before we start.
-                    var wasRejected = rejectImport(entry.name, buffer.byteLength);
+                    var wasRejected = Content.shouldRejectFile(entry.name, buffer.byteLength);
                     if (wasRejected) {
                         onError(deferred, entry.name, wasRejected);
                         return;

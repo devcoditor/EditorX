@@ -5,7 +5,11 @@ define(function (require, exports, module) {
     "use strict";
 
     var LanguageManager = require('language/LanguageManager');
+    var Sizes = require("filesystem/impls/filer/lib/Sizes");
+    var Strings = require("strings");
+    var StringUtils = require("utils/StringUtils");
     var FilerUtils = require('filesystem/impls/filer/FilerUtils');
+    var Path = FilerUtils.Path;
 
     function _getLanguageId(ext) {
         ext = FilerUtils.normalizeExtension(ext, true);
@@ -17,6 +21,11 @@ define(function (require, exports, module) {
         isImage: function(ext) {
             var id = _getLanguageId(ext);
             return id === "image" || id === "svg";
+        },
+
+        isResizableImage: function(ext) {
+            ext = FilerUtils.normalizeExtension(ext);
+            return ext === '.png' || ext === '.jpg' || ext === '.jpeg';
         },
 
         isHTML: function(ext) {
@@ -143,6 +152,48 @@ define(function (require, exports, module) {
             }
 
             return /^blob\:/.test(url);
+        },
+
+        /**
+         * Determine whether we want to allow a file to be imported based on name and size.
+         */
+        shouldRejectFile: function(filename, size) {
+            var ext = Path.extname(filename);
+            var mime = this.mimeFromExt(ext);
+            var isArchive = this.isArchive(ext);
+
+            var sizeLimit;
+            if(this.isResizableImage(ext)) {
+                sizeLimit = Sizes.RESIZABLE_IMAGE_FILE_LIMIT_MB;
+            } else if(isArchive) {
+                sizeLimit = Sizes.ARCHIVE_FILE_LIMIT_MB;
+            } else {
+                sizeLimit = Sizes.REGULAR_FILE_SIZE_LIMIT_MB;
+            }
+            var sizeLimitMb = (sizeLimit / (Sizes.MB)).toString();
+
+            if (size > sizeLimit) {
+                return new Error(StringUtils.format(Strings.DND_MAX_SIZE_EXCEEDED, sizeLimitMb));
+            }
+
+            // If we don't know about this language type, or the OS doesn't think
+            // it's text, reject it.
+            var isSupported = !!LanguageManager.getLanguageForExtension(FilerUtils.normalizeExtension(ext, true));
+            var typeIsText = this.isTextType(mime);
+
+            if (isSupported || typeIsText || isArchive) {
+                return null;
+            }
+            return new Error(Strings.DND_UNSUPPORTED_FILE_TYPE);
+        },
+
+
+        /**
+         * Test if image data size is too big (250K)
+         */
+        isImageTooLarge: function(byteLength) {
+            return byteLength > Sizes.RESIZED_IMAGE_TARGET_SIZE_KB;
         }
+
     };
 });

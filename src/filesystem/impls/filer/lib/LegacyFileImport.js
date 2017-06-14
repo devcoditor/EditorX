@@ -39,21 +39,13 @@ define(function (require, exports, module) {
         Filer           = require("filesystem/impls/filer/BracketsFiler"),
         Path            = Filer.Path,
         Content         = require("filesystem/impls/filer/lib/content"),
-        LanguageManager = require("language/LanguageManager"),
-        StartupState    = require("bramble/StartupState"),
-        ArchiveUtils    = require("filesystem/impls/filer/ArchiveUtils"),
-        FilerUtils      = require("filesystem/impls/filer/FilerUtils");
+        ArchiveUtils    = require("filesystem/impls/filer/ArchiveUtils");
 
-    function LegacyFileImport(options) {
-        this.byteLimit = options.byteLimit;
-        this.archiveByteLimit = options.archiveByteLimit;
-    }
+    function LegacyFileImport(){}
 
     // We want event.dataTransfer.files for legacy browsers.
     LegacyFileImport.prototype.import = function(source, parentPath, callback) {
         var files = source instanceof DataTransfer ? source.files : source;
-        var byteLimit = this.byteLimit;
-        var archiveByteLimit = this.archiveByteLimit;
         var pathList = [];
         var errorList = [];
 
@@ -124,31 +116,6 @@ define(function (require, exports, module) {
             });
         }
 
-        /**
-         * Determine whether we want to import this file at all.  If it's too large
-         * or not a mime type we care about, reject it.
-         */
-        function rejectImport(item) {
-            var ext = Path.extname(item.name);
-            var isArchive = Content.isArchive(ext);
-            var sizeLimit =  isArchive ? archiveByteLimit : byteLimit;
-            var sizeLimitMb = (sizeLimit / (1024 * 1024)).toString();
-
-            if (item.size > sizeLimit) {
-                return new Error(StringUtils.format(Strings.DND_MAX_SIZE_EXCEEDED, sizeLimitMb));
-            }
-
-            // If we don't know about this language type, or the OS doesn't think
-            // it's text, reject it.
-            var isSupported = !!LanguageManager.getLanguageForExtension(FilerUtils.normalizeExtension(ext, true));
-            var typeIsText = Content.isTextType(item.type);
-
-            if (isSupported || typeIsText || isArchive) {
-                return null;
-            }
-            return new Error(Strings.DND_UNSUPPORTED_FILE_TYPE);
-        }
-
         function prepareDropPaths(fileList) {
             // Convert FileList object to an Array with all image files first, then CSS
             // followed by HTML files at the end, since we need to write any .css, .js, etc.
@@ -189,7 +156,7 @@ define(function (require, exports, module) {
             var reader = new FileReader();
 
             // Check whether we want to import this file at all before we start.
-            var wasRejected = rejectImport(item);
+            var wasRejected = Content.shouldRejectFile(item.name, item.size);
             if (wasRejected) {
                 errorList.push({path: item.name, error: wasRejected.message});
                 deferred.reject(wasRejected);

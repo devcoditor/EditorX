@@ -8,14 +8,7 @@ define(function (require, exports, module) {
     var LegacyFileImport    = require("filesystem/impls/filer/lib/LegacyFileImport"),
         WebKitFileImport    = require("filesystem/impls/filer/lib/WebKitFileImport"),
         FileSystemCache     = require("filesystem/impls/filer/FileSystemCache"),
-        BrambleStartupState = brackets.getModule("bramble/StartupState");
-
-    // 3MB size limit for imported files. If you change this, also change the
-    // error message we generate in rejectImport() below!
-    var byteLimit = 3145728;
-
-    // 5MB size limit for imported archives (zip & tar)
-    var archiveByteLimit = 5242880;
+        BrambleStartupState = require("bramble/StartupState");
 
     /**
      * XXXBramble: the Drag and Drop and File APIs are a mess of incompatible
@@ -35,22 +28,17 @@ define(function (require, exports, module) {
      *  - https://developer.mozilla.org/en-US/docs/Web/API/DataTransferItem/webkitGetAsEntry
      */
     function chooseImportStrategy(source) {
-        var options = {
-            byteLimit: byteLimit,
-            archiveByteLimit: archiveByteLimit
-        };
-
         if(source instanceof FileList) {
-            return LegacyFileImport.create(options);
+            return LegacyFileImport.create();
         }
 
         if(source instanceof DataTransfer) {
             if(window.DataTransferItem                            &&
                window.DataTransferItem.prototype.webkitGetAsEntry &&
                window.DataTransferItemList) {
-                return WebKitFileImport.create(options);
+                return WebKitFileImport.create();
             }
-            return LegacyFileImport.create(options);
+            return LegacyFileImport.create();
         }
     }
 

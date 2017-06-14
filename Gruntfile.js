@@ -199,7 +199,8 @@ module.exports = function (grunt) {
                     paths: {
                         // In various places in the code, it's useful to know if this is a dev vs. prod env.
                         // See src/main.js default dev loading in src/ builds.
-                        "envConfig": "bramble/config/config.prod"
+                        "envConfig": "bramble/config/config.prod",
+                        "Pica": "../node_modules/pica/dist/pica.min"
                     },
                     // brackets.js should not be loaded until after polyfills defined in "utils/Compatibility"
                     // so explicitly include it in main.js
