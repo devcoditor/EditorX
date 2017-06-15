@@ -29,7 +29,8 @@ require.config({
 });
 
 define([
-    // Change this to filer vs. filer.min if you need to debug Filer
+    // NOTE: if you modify the files involved here, also change the requirejs:iframe files list in Gruntfile.js
+    // filer.min - change this to filer vs. filer.min if you need to debug Filer
     "thirdparty/filer/dist/filer.min",
     "bramble/ChannelUtils",
     "EventEmitter",

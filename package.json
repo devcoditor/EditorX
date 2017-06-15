@@ -51,6 +51,7 @@
     },
     "devDependencies": {
         "bluebird": "^3.4.7",
+        "grunt-newer": "^1.3.0",
         "gunzip-maybe": "^1.3.1",
         "http-server": "mozilla/http-server#gzip",
         "mkdirp": "0.5.1",
@@ -72,8 +73,8 @@
         "production": "npm start -- --gzip",
         "test": "grunt test && grunt build-browser-compressed",
         "server": "http-server -p 8000 --cors",
-        "prestart": "npm run localize",
-        "start": "npm run server",
+        "prestart": "npm run localize && grunt build-browser-dev",
+        "start": "npm run server || true",
         "poststart": "npm run unlocalize"
     },
     "license": "MIT"

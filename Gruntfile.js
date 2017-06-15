@@ -42,7 +42,8 @@ module.exports = function (grunt) {
             'grunt-targethtml',
             'grunt-usemin',
             'grunt-cleanempty',
-            'grunt-exec'
+            'grunt-exec',
+            'grunt-newer'
         ]
     });
 
@@ -219,7 +220,16 @@ module.exports = function (grunt) {
                 }
             },
             iframe: {
-                // Standalone dist/bramble.js iframe api
+                // Define files involved, so grunt-newer knows whether to re-build or not
+                files: {
+                    'dist/bramble.js': [
+                        'src/bramble/client/**/*.js',
+                        'src/bramble/thirdparty/**/*.js',
+                        'src/bramble/ChannelUtils.js',
+                        'thirdparty/filer/dist/filer.min.js',
+                    ]
+                },
+                // Standalone, minified dist/bramble.js iframe api
                 options: {
                     name: 'thirdparty/almond',
                     baseUrl: 'src',
@@ -543,6 +553,11 @@ module.exports = function (grunt) {
         'usemin'
         /* XXXBramble: we skip this, since we don't bother with its info, and copy it in copy:dist
         'build-config' */
+    ]);
+
+    // task: build for development, skipping most steps: only build iframe API if needed.
+    grunt.registerTask('build-browser-dev', [
+        'newer:requirejs:iframe'
     ]);
 
     // task: build dist/ for browser

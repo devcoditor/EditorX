@@ -130,13 +130,19 @@
         });
     }
 
-    // Support loading from src/ or dist/ to make local dev easier
-    require(["bramble/client/main"], function(Bramble) {
+    // Support loading from src/ or dist/ (default) to make local dev easier
+    var isSrc = !!window.location.pathname.match(/\/src\/[^/]+$/);
+    var brambleModule;
+
+    if(isSrc) {
+        console.log("Bramble src/ build");
+        brambleModule = "../dist/bramble";
+    } else {
+        console.log("Bramble dist/ build");
+        brambleModule = "bramble";
+    }
+
+    require([brambleModule], function(Bramble) {
         load(Bramble);
-    }, function(err) {
-        console.log("Unable to load Bramble from src/, trying from dist/");
-        require(["bramble"], function(Bramble) {
-            load(Bramble);
-        });
     });
 }());
