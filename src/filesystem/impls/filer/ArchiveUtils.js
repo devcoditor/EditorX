@@ -11,6 +11,7 @@ define(function (require, exports, module) {
     var StartupState    = require("bramble/StartupState");
     var JSZip           = require("thirdparty/jszip/dist/jszip.min");
     var FileSystemCache = require("filesystem/impls/filer/FileSystemCache");
+    var FileSystem      = require("filesystem/FileSystem");
     var Filer           = require("filesystem/impls/filer/BracketsFiler");
     var saveAs          = require("thirdparty/FileSaver");
     var Buffer          = Filer.Buffer;
@@ -47,6 +48,12 @@ define(function (require, exports, module) {
 
         // Include this file, don't skip.
         return false;
+    }
+
+    // We need to use the right level of abstraction in order to have images get resized.
+    function writeBinaryFile(path, data, callback) {
+        var file = FileSystem.getFileForPath(path);
+        file.write(data, {encoding: null}, callback);
     }
 
     function _refreshFilesystem(callback) {
@@ -120,10 +127,11 @@ define(function (require, exports, module) {
                                 if(err) {
                                     return callback(err);
                                 }
-                                fs.writeFile(path.absPath, path.data, callback);
+
+                                writeBinaryFile(path.absPath, path.data, callback);
                             });
                         } else {
-                            fs.writeFile(path.absPath, path.data, callback);
+                            writeBinaryFile(path.absPath, path.data, callback);
                         }
                     });
                 }
@@ -253,7 +261,7 @@ define(function (require, exports, module) {
                     return callback(err);
                 }
 
-                fs.writeFile(path, new Buffer(data), {encoding: null}, callback);
+                writeBinaryFile(path, new Buffer(data), callback);
             });
         }
 
