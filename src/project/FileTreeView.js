@@ -531,6 +531,11 @@ define(function (require, exports, module) {
                 case "gif":
                     fileType = "image";
                     break;
+                case "ogv":
+                case "mp4":
+                case "webm":
+                    fileType = "video";
+                    break;
                 case "css":
                 case "less":
                     fileType = "css";

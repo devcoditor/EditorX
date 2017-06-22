@@ -17,7 +17,7 @@
         "fileExtensions": ["html", "htm", "shtm", "shtml", "xhtml", "cfm", "cfml", "cfc", "dhtml", "xht", "tpl", "twig", "kit", "jsp", "aspx", "ascx", "asp", "master", "cshtml", "vbhtml"],
         "blockComment": ["<!--", "-->"]
     },
-    
+
     "javascript": {
         "name": "JavaScript",
         "mode": "javascript",
@@ -61,19 +61,19 @@
         "fileExtensions": ["md", "markdown", "mdown", "mkdn"],
         "blockComment": ["<!--", "-->"]
     },
-  
+
     "image": {
         "name": "Image",
         "fileExtensions": ["gif", "png", "jpe", "jpeg", "jpg", "ico", "bmp", "webp"],
         "isBinary": true
     },
-    
-    "audio": {
-        "name": "Audio",
-        "fileExtensions": ["mp3", "wav", "aif", "aiff", "ogg"],
+
+    "image": {
+        "name": "Image",
+        "fileExtensions": ["gif", "png", "jpe", "jpeg", "jpg", "ico", "bmp", "webp"],
         "isBinary": true
     },
-    
+
     "binary": {
         "name": "Other Binary",
         "fileExtensions": [
