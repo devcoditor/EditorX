@@ -499,8 +499,10 @@ module.exports = function (grunt) {
             cacheId: 'bramble',
             logger: grunt.log.writeln,
             staticFileGlobs: [
-                // Avoid caching dist/nls/**/*, but take everything else in dist/
-                'dist/{extensions,styles,thirdparty}/**/*',
+                // Avoid caching dist/nls/**/* and dist/extensions/extra/**/*,
+                // but take everything else in dist/
+                'dist/{styles,thirdparty}/**/*',
+                'dist/extensions/default/**/*',
                 'dist/*.*'
             ],
             runtimeCaching: [{
@@ -508,6 +510,9 @@ module.exports = function (grunt) {
                 handler: 'fastest'
             }, {
                 urlPattern: /\/dist\/nls\//,
+                handler: 'fastest'
+            }, {
+                urlPattern: /\/dist\/extensions\/extra\//,
                 handler: 'fastest'
             }],
             stripPrefix: 'dist/',
