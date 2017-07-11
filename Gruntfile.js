@@ -73,7 +73,10 @@ module.exports = function (grunt) {
                 files: [{
                     expand: true,
                     cwd: 'dist/',
-                    src: '**/*.js',
+                    src: [
+                        '**/*.js',
+                        '!**/extensions/extra/PDFView/thirdparty/**/*',
+                    ],
                     dest: 'dist/'
                 }]
             }
@@ -302,6 +305,7 @@ module.exports = function (grunt) {
                 '!src/extensions/extra/brackets-cdn-suggestions/**',
                 '!src/extensions/extra/HTMLHinter/**',
                 '!src/extensions/extra/MDNDocs/**',
+                '!**/extensions/extra/PDFView/thirdparty/**/*',
                 '!src/bramble/thirdparty/**/*',
                 '!src/extensions/disabled/**',
                 '!**/node_modules/**/*.js',

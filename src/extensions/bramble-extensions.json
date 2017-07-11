@@ -154,5 +154,22 @@
                 "src/extensions/default/brackets-show-whitespace/styles/main.css"
             ]
         }
+    },
+    {
+        "path": "extensions/extra/PDFView",
+        "less": {
+            "dist/extensions/extra/PDFView/styles/styles.css": [
+                "src/extensions/extra/PDFView/styles/styles.less"
+            ],
+            "dist/extensions/extra/PDFView/styles/viewer-overrides.css": [
+                "src/extensions/extra/PDFView/styles/viewer-overrides.css"
+            ]
+        },
+        "copy": [
+            "extensions/extra/PDFView/thirdparty/**/*",
+            "extensions/extra/PDFView/images/**/*",
+            "extensions/extra/PDFView/htmlContent/viewer.html",
+            "extensions/extra/PDFView/bramble-pdfjs.js"
+        ]
     }
 ]
