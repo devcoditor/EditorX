@@ -31,12 +31,110 @@ div.working-set-option-btn[style] {
     padding: 12px 0 0 0;
     font-weight: 400;
     font-family: "Open Sans", "Helvetica Neue", sans-serif;
+    overflow-x: hidden !important;
+}
+
+// Indicates used and available room in a project
+#project-size-info {
+    padding: 12px 10px;
+    transition: opacity .2s ease-out;
+    overflow: hidden;
+
+    &.hidden {
+        opacity: 0;
+    }
+
+    .space-available {
+        background: rgba(0,0,0,.1);
+        position: relative;
+        height: 6px;
+        margin-bottom: 6px;
+        border-radius: 2px;
+    }
+
+    .space-used-bar {
+        border-radius: 2px;
+        width: 0;
+        background: #61a782;
+        height: 100%;
+        position: absolute;
+        left: 0;
+        transition: all .2s ease-out;
+        transition-delay: .2s;
+    }
+
+    &.project-size-warning .space-used-bar {
+        background: #ef7e42;
+    }
+
+    &.project-size-exceeded {
+        .space-used-bar {
+            background: #da2828;
+        }
+
+        .space-used-summary {
+            color: #da2828;
+
+            strong {
+                color: inherit;
+            }
+        }
+    }
+
+    .space-used-summary {
+        color: rgba(0,0,0,.4);
+        font-family: "Open Sans";
+        margin: 0;
+
+        strong {
+            font-weight: 600;
+            color: inherit;
+            color: rgba(0,0,0,.5);
+        }
+    }
+}
+
+.dark #project-size-info {
+
+    .space-available {
+        background: rgba(255,255,255,.2);
+    }
+
+    .space-used-bar {
+        background: #2a794f;
+    }
+
+    .space-used-summary {
+        color: rgba(255,255,255,.4);
+
+        strong {
+            color: rgba(255,255,255,.5);
+        }
+    }
+
+    &.project-size-warning .space-used-bar {
+        background: #c35921;
+    }
+
+    &.project-size-exceeded {
+
+        .space-used-bar {
+            background: #a51818;
+        }
+
+        .space-used-summary {
+            color: #a02626;
+
+            strong {
+                color: inherit;
+            }
+        }
+    }
 }
 
 #project-files-container ul {
     padding: 0 !important;
 }
-
 
 /* File tree basic styles */
 
