@@ -518,6 +518,18 @@ define(function (require, exports, module) {
                 case "gif":
                     fileType = "image";
                     break;
+                case "eot":
+                case "woff":
+                case "otf":
+                case "ttf":
+                    fileType = "font";
+                    break;
+                case "mp3":
+                case "oga":
+                case "wav":
+                case "wave":
+                    fileType = "audio";
+                    break;
                 case "ogv":
                 case "mp4":
                 case "webm":
