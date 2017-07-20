@@ -30,8 +30,6 @@ define(function (require, exports, module) {
 
     var _               = require("thirdparty/lodash"),
         Async           = require("utils/Async"),
-        Dialogs         = require("widgets/Dialogs"),
-        DefaultDialogs  = require("widgets/DefaultDialogs"),
         FileSystem      = require("filesystem/FileSystem"),
         FileUtils       = require("file/FileUtils"),
         Strings         = require("strings"),

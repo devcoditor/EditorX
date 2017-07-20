@@ -97,13 +97,9 @@ define(function (require, exports, module) {
                 // Turn off the other buttons
                 $fromComputerButton.off("click", self._handleFromComputer.bind(self));
                 $takeSelfieButton.off("click", self._handleTakeSelfie.bind(self));
-
-                // Switch to the upload spinner
-                $dragFilesAreaDiv.hide();
-                $uploadFilesDiv.show();
+                self.hide();
             },
             onfilesdone: function() {
-                self.hide();
                 self.destroy();
             },
             autoRemoveHandlers: true

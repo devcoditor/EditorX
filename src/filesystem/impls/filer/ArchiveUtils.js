@@ -15,6 +15,10 @@ define(function (require, exports, module) {
     var Filer           = require("filesystem/impls/filer/BracketsFiler");
     var FilerUtils      = require("filesystem/impls/filer/FilerUtils");
     var saveAs          = require("thirdparty/FileSaver");
+    var Dialogs         = require("widgets/Dialogs");
+    var DefaultDialogs  = require("widgets/DefaultDialogs");
+    var Strings         = require("strings");
+    var StringUtils     = require("utils/StringUtils");
     var Buffer          = Filer.Buffer;
     var Path            = Filer.Path;
     var fs              = Filer.fs();
@@ -134,7 +138,18 @@ define(function (require, exports, module) {
                     return callback(err);
                 }
 
-                _refreshFilesystem(callback);
+                _refreshFilesystem(function(err) {
+                    if(err) {
+                        return callback(err);
+                    }
+
+                    Dialogs.showModalDialog(
+                        DefaultDialogs.DIALOG_ID_INFO,
+                        Strings.DND_SUCCESS_UNZIP_TITLE
+                    ).getPromise().then(function() {
+                        callback(null);
+                    }, callback);
+                });
             });
         }
 
@@ -257,7 +272,18 @@ define(function (require, exports, module) {
             untarWorker.terminate();
             untarWorker = null;
 
-            callback(err);
+            _refreshFilesystem(function(err) {
+                if(err) {
+                    return callback(err);
+                }
+
+                Dialogs.showModalDialog(
+                    DefaultDialogs.DIALOG_ID_INFO,
+                    Strings.DND_SUCCESS_UNTAR_TITLE
+                ).getPromise().then(function() {
+                    callback(null);
+                }, callback);
+            });
         }
 
         function writeCallback(err) {
@@ -267,7 +293,7 @@ define(function (require, exports, module) {
 
             pending--;
             if(pending === 0) {
-                _refreshFilesystem(finish);
+                finish(err);
             }
         }
 

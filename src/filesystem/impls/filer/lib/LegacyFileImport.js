@@ -30,12 +30,9 @@ define(function (require, exports, module) {
 
     var _               = require("thirdparty/lodash"),
         Async           = require("utils/Async"),
-        Dialogs         = require("widgets/Dialogs"),
-        DefaultDialogs  = require("widgets/DefaultDialogs"),
         FileSystem      = require("filesystem/FileSystem"),
         FileUtils       = require("file/FileUtils"),
         Strings         = require("strings"),
-        StringUtils     = require("utils/StringUtils"),
         Filer           = require("filesystem/impls/filer/BracketsFiler"),
         Path            = Filer.Path,
         Content         = require("filesystem/impls/filer/lib/content"),
@@ -90,11 +87,7 @@ define(function (require, exports, module) {
                     return;
                 }
 
-                Dialogs.showModalDialog(
-                    DefaultDialogs.DIALOG_ID_INFO,
-                    Strings.DND_SUCCESS_UNZIP_TITLE,
-                    StringUtils.format(Strings.DND_SUCCESS_UNZIP, basename)
-                ).getPromise().then(deferred.resolve, deferred.reject);
+                deferred.resolve();
             });
         }
 
@@ -108,11 +101,7 @@ define(function (require, exports, module) {
                     return;
                 }
 
-                Dialogs.showModalDialog(
-                    DefaultDialogs.DIALOG_ID_INFO,
-                    Strings.DND_SUCCESS_UNTAR_TITLE,
-                    StringUtils.format(Strings.DND_SUCCESS_UNTAR, basename)
-                ).getPromise().then(deferred.resolve, deferred.reject);
+                deferred.resolve();
             });
         }
 
