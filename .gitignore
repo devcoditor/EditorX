@@ -57,3 +57,7 @@ Thumbs.db
 
 # ignore package-lock.json files
 package-lock.json
+
+# ignore generated test files
+.grunt/
+_SpecRunner.html
