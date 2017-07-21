@@ -109,12 +109,13 @@ define(function (require, exports, module) {
         });
     };
     BlobUrlProvider.prototype.remove = function(path, callback) {
-        var self = this;
+        var urls = this.urls;
+        var paths = this.paths;
         var removed = [];
 
         // If this is a dir path, look for other paths entries below it
-        Object.keys(self.urls).forEach(function(key) {
-            var url = self.urls[key];
+        Object.keys(urls).forEach(function(key) {
+            var url = urls[key];
 
             // The first time a file is written, we won't have
             // a stale cache entry to clean up.
@@ -127,8 +128,8 @@ define(function (require, exports, module) {
             if(key === path || key.indexOf(path + "/") === 0) {
                 removed.push(key);
 
-                delete self.urls[key];
-                delete self.paths[url];
+                delete urls[key];
+                delete paths[url];
 
                 // Delete the reference from memory
                 URL.revokeObjectURL(url);
@@ -138,13 +139,29 @@ define(function (require, exports, module) {
         _.defer(callback, null, removed);
     };
     BlobUrlProvider.prototype.rename = function(oldPath, newPath, callback) {
-        var url = this.urls[oldPath];
+        var urls = this.urls;
+        var paths = this.paths;
+        var renamed = [];
 
-        this.urls[newPath] = url;
-        this.paths[url] = newPath;
-        delete this.urls[oldPath];
+        // Deal with filenames and dirs (rename child paths entries below it)
+        Object.keys(urls).forEach(function(path) {
+            // If this filename matches exactly, or  filenames begin with "<path>/..."
+            if(path === oldPath || path.indexOf(oldPath + "/") === 0) {
+                var url = urls[path];
+                var renamedPath = path.replace(oldPath, newPath);
 
-        _.defer(callback);
+                urls[renamedPath] = url;
+                paths[url] = renamedPath;
+                delete urls[path];
+
+                renamed.push({
+                    oldPath: oldPath,
+                    newPath: renamedPath
+                });
+            }
+        });
+
+        _.defer(callback, null, renamed);
     };
 
 
@@ -255,39 +272,72 @@ define(function (require, exports, module) {
              .done(function() {
                  callback(null, removed);
              })
-             .fail(function(err) {
-                 callback(err);
-             });
+             .fail(callback);
     };
     CacheStorageUrlProvider.prototype.rename = function(oldPath, newPath, callback) {
         var self = this;
-        var oldUrl = self.urls[oldPath];
+        var urls = this.urls;
+        var paths = this.paths;
+        var projectCacheName = this.projectCacheName;
+        var renamed = [];
 
-        // Get the existing Response, and re-cache it with a new Request
-        // which uses the correct path/url.
-        window.caches
-            .open(self.projectCacheName)
-            .then(function(cache) {
-                cache.match(oldUrl).then(function(response) {
-                    var type = Content.mimeFromExt(Path.extname(newPath));
-                    var headers = new Headers();
-                    headers.append("Content-Type", type);
+        function _maybeRename(pathPart) {
+            var deferred = new $.Deferred();
 
-                    var newUrl = self.generateVFSUrlForPath(newPath);
-                    var request = new Request(newUrl, {
-                        method: "GET",
-                        headers: headers
+            // If this filename doesn't match exactly, or path doesn't begin with "<path>/..."
+            if(!(pathPart === oldPath || pathPart.indexOf(oldPath + "/") === 0)) {
+                return deferred.resolve().promise();
+            }
+
+            var oldUrl = urls[pathPart];
+            var renamedPath = pathPart.replace(oldPath, newPath);
+
+            // Get the existing Response, and re-cache it with a new Request
+            // which uses the correct path/url.
+            window.caches
+                .open(projectCacheName)
+                .then(function(cache) {
+                    cache.match(oldUrl).then(function(response) {
+                        var type = Content.mimeFromExt(Path.extname(renamedPath));
+                        var headers = new Headers();
+                        headers.append("Content-Type", type);
+
+                        var newUrl = self.generateVFSUrlForPath(renamedPath);
+                        var request = new Request(newUrl, {
+                            method: "GET",
+                            headers: headers
+                        });
+
+                        urls[renamedPath] = newUrl;
+                        paths[newUrl] = renamedPath;
+
+                        cache.put(request, response.clone()).then(function() {
+                            self.remove(pathPart, function(err) {
+                                if(err) {
+                                    return deferred.reject(err);
+                                }
+
+                                renamed.push({
+                                    oldPath: oldPath,
+                                    newPath: renamedPath
+                                });
+
+                                deferred.resolve();
+                            });
+                        });
                     });
+                })
+                .catch(deferred.reject);
 
-                    self.urls[newPath] = newUrl;
-                    self.paths[newUrl] = newPath;
+            return deferred.promise();
+        }
 
-                    cache.put(request, response.clone()).then(function() {
-                        self.remove(oldPath, callback);
-                    });
-                });
-            })
-            .catch(callback);
+        // Deal with renaming a file, or a dir (and all children)
+        Async.doSequentially(Object.keys(self.urls), _maybeRename, false)
+             .done(function() {
+                 callback(null, renamed);
+             })
+             .fail(callback);
     };
 
 
