@@ -92,7 +92,7 @@ define(function (require, exports, module) {
         case '.wave':
         // fallsthrough
         case '.wav':
-            return 'audio/vnd.wave';
+            return 'audio/wav';
 
         // Web Fonts
         case '.eot':
