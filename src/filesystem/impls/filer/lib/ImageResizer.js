@@ -69,7 +69,7 @@ define(function (require, exports, module) {
             if (bufferSize < TARGET_SIZE * 0.5) {
                 return true;
             }
-            if (bufferSize > TARGET_SIZE * 0.66) {
+            if (bufferSize > TARGET_SIZE * 1.5) {
                 return true;
             }
             return false;
