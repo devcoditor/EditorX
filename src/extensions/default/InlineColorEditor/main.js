@@ -151,11 +151,56 @@ define(function (require, exports, module) {
         }
     }
 
+    function queryInlineColorEditorPrivoder(hostEditor, pos) {
+        var colorRegEx, cursorLine, match, sel, start, end, endPos, marker;
+        var cssPropertyName, semiColonPos, colonPos, colorValue, cursorLineSubstring, firstCharacterPos;
+
+        sel = hostEditor.getSelection();
+        if (sel.start.line !== sel.end.line) {
+            return false;
+        }
+
+        colorRegEx = new RegExp(ColorUtils.COLOR_REGEX);
+        cursorLine = hostEditor.document.getLine(pos.line);
+
+        // Loop through each match of colorRegEx and stop when the one that contains pos is found.
+        do {
+            match = colorRegEx.exec(cursorLine);
+            if (match) {
+                start = match.index;
+                end = start + match[0].length;
+            }
+        } while (match && (pos.ch < start || pos.ch > end));
+
+        if (match) {
+            return true;
+        }
+
+        // Get the css property name after removing spaces and ":" so that we can check for it in the file ColorProperties.json
+        cssPropertyName = cursorLine.split(':')[0].trim();
+
+        if (!cssPropertyName || !properties[cssPropertyName]) {
+            return false;
+        }
+
+        if (properties[cssPropertyName]) {
+            colonPos = cursorLine.indexOf(":");
+            semiColonPos = cursorLine.indexOf(";");
+            cursorLineSubstring = cursorLine.substring(colonPos + 1, cursorLine.length);
+            colorValue = cursorLineSubstring.replace(/ /g,"").replace(";", "");
+            if (colorValue) {
+                return colorRegEx.test(colorValue);
+            }
+            return true;
+        }
+
+        return false;
+    }
 
     // Initialize extension
     ExtensionUtils.loadStyleSheet(module, "css/main.less");
 
-    EditorManager.registerInlineEditProvider(inlineColorEditorProvider);
+    EditorManager.registerInlineEditProvider(inlineColorEditorProvider, queryInlineColorEditorPrivoder);
 
     // for use by other InlineColorEditors
     exports.prepareEditorForProvider = prepareEditorForProvider;

@@ -115,7 +115,39 @@ define(function (require, exports, module) {
         return result.resolve(inline3DParameterEditor).promise();
     }
 
+    function queryInline3DParametersEditor(hostEditor, pos) {
+        var match, sel, tagInfo, cursorLine, ParameterRegex, start, end, endPos, marker;
+
+        sel = hostEditor.getSelection();
+        if (sel.start.line !== sel.end.line) {
+            return false;
+        }
+        var tagInfo = HTMLUtils.getTagInfo(hostEditor, sel.start);
+        if(!is3DParameter(tagInfo.tagName)) {
+            return false;
+        }
+
+        ParameterRegex = Inline3dParametersUtils.PARAMETERS_3D_REGEX;
+        ParameterRegex.lastIndex = 0;
+        cursorLine = hostEditor.document.getLine(pos.line);
+        match = ParameterRegex.exec(cursorLine);
+
+        // The loop returns the first match to the regex ParameterRegex
+        // Returns null in case no match is found
+        while(match) {
+            start = match.index;
+            end = start + match[0].trim().length;
+            if (pos.ch >= start && pos.ch <= end) {
+                break;
+            }
+            // look for the next match since a match containing the cursor is not found yet
+            match = ParameterRegex.exec(cursorLine);
+        }
+
+        return !!match;
+    }
+
     ExtensionUtils.loadStyleSheet(module, "css/main.less");
-    EditorManager.registerInlineEditProvider(inline3DParametersEditor);
+    EditorManager.registerInlineEditProvider(inline3DParametersEditor, queryInline3DParametersEditor);
     exports.prepareParametersForProvider = prepareParametersForProvider;
 });

@@ -44,6 +44,9 @@ define(function (require, exports, module) {
         Path                = brackets.getModule("filesystem/impls/filer/BracketsFiler").Path,
         UrlCache           = brackets.getModule("filesystem/impls/filer/UrlCache");
 
+    // XXXBramble: we also show a similar indicator, and need to not have them fight for space
+    var InlineProviderIndicator = brackets.getModule("editor/InlineProviderIndicator");
+
     var previewContainerHTML       = require("text!QuickViewTemplate.html");
 
     var enabled,                             // Only show preview if true
@@ -137,6 +140,9 @@ define(function (require, exports, module) {
                 width:  previewWidth + 2 * POPOVER_HORZ_MARGIN
             },
             clip = ViewUtils.getElementClipSize($(editor.getRootElement()), elementRect);
+
+        // XXXBramble: hide the inline provider indicator if present so they don't fight.
+        InlineProviderIndicator.hide();
 
         // Prevent horizontal clipping
         if (clip.left > 0) {
@@ -558,8 +564,8 @@ define(function (require, exports, module) {
         var line = editor.document.getLine(pos.line);
 
         // FUTURE: Support plugin providers. For now we just hard-code...
-        var popover = colorAndGradientPreviewProvider(editor, pos, token, line) ||
-                      imagePreviewProvider(editor, pos, token, line);
+        // XXXBramble: we opt to not show the color preview, since we show an editor indicator instead.
+        var popover = imagePreviewProvider(editor, pos, token, line);
 
         if (popover) {
             // Providers return just { start, end, content, ?onShow, xpos, ytop, ybot }

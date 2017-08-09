@@ -66,8 +66,8 @@ define(function (require, exports, module) {
         InlineTextEditor    = require("editor/InlineTextEditor").InlineTextEditor,
         Strings             = require("strings"),
         LanguageManager     = require("language/LanguageManager"),
-        DeprecationWarning  = require("utils/DeprecationWarning");
-
+        DeprecationWarning  = require("utils/DeprecationWarning"),
+        InlineProviderIndicator = require("editor/InlineProviderIndicator");
 
     /**
      * Currently focused Editor (full-size, inline, or otherwise)
@@ -119,8 +119,6 @@ define(function (require, exports, module) {
         return doc && doc._masterEditor;
     }
 
-
-
     /**
      * Updates _viewStateCache from the given editor's actual current state
      * @private
@@ -143,6 +141,31 @@ define(function (require, exports, module) {
         }
     }
 
+    /**
+     * Finds out if an editor provider exists for the given editor and position or not.
+     */
+    function _queryEditorProviders(editor) {
+        var pos = editor.getCursorPos();
+        var providers = _inlineEditProviders;
+
+        for (var i = 0, len = providers.length; i < len; i++) {
+            var query = providers[i].provider.query;
+            if(query && query(editor, pos)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    function _checkCurrentPositionForProviders(e) {
+        var editor = e.target;
+        var editorProviderAvailable = _queryEditorProviders(editor);
+        if(editorProviderAvailable) {
+            InlineProviderIndicator.show(editor);
+        } else {
+            InlineProviderIndicator.hide();
+        }
+    }
 
 	/**
      * Editor focus handler to change the currently active editor
@@ -157,6 +180,15 @@ define(function (require, exports, module) {
         }
         var previous = _lastFocusedEditor;
         _lastFocusedEditor = current;
+
+        // XXXBramble: wire cursor activity listener on this editor (removing old one)
+        // so that we can inform users of inline editor and doc providers.
+        if(previous) {
+            previous.off("cursorActivity", _checkCurrentPositionForProviders);
+        }
+        if(current) {
+            current.on("cursorActivity", _checkCurrentPositionForProviders);
+        }
 
         exports.trigger("activeEditorChange", current, previous);
     }
@@ -257,6 +289,9 @@ define(function (require, exports, module) {
         // If one of them will provide a widget, show it inline once ready
         if (inlinePromise) {
             inlinePromise.done(function (inlineWidget) {
+                // XXXBramble: hide inline editor indicator if showing, and keep it closed until widget is closed
+                InlineProviderIndicator.disable();
+
                 editor.addInlineWidget(pos, inlineWidget).done(function () {
                     PerfUtils.addMeasurement(PerfUtils.INLINE_WIDGET_OPEN);
                     result.resolve();
@@ -300,6 +335,9 @@ define(function (require, exports, module) {
                 // an inline widget's editor has focus, so close it
                 PerfUtils.markStart(PerfUtils.INLINE_WIDGET_CLOSE);
                 inlineWidget.close().done(function () {
+                    // XXXBramble: re-enable inline editor indicator
+                    InlineProviderIndicator.enable();
+
                     PerfUtils.addMeasurement(PerfUtils.INLINE_WIDGET_CLOSE);
                     // return a resolved promise to CommandManager
                     result.resolve(false);
@@ -384,7 +422,17 @@ define(function (require, exports, module) {
             hostEditor.focus();
         }
 
+        // XXXBramble: re-enable inline editor indicator
+        InlineProviderIndicator.enable();
+
         return hostEditor.removeInlineWidget(inlineWidget);
+    }
+
+    /**
+     * A stub for editor and doc providers, which don't have a query function.
+     */
+    function defaultQueryFunction() {
+        return false;
     }
 
     /**
@@ -397,11 +445,23 @@ define(function (require, exports, module) {
      * @param {number=} priority
      * The provider returns a promise that will be resolved with an InlineWidget, or returns a string
      * indicating why the provider cannot respond to this case (or returns null to indicate no reason).
+     * @param {function(!Editor, !{line:number, ch:number}):?(boolean)} queryFunction
+     * An optional function used to query the provider to determine whether it could provide an editor
+     * for the given cursor position.
      */
-    function registerInlineEditProvider(provider, priority) {
+    function registerInlineEditProvider(provider, priority, queryFunction) {
+        if (typeof priority === "function") {
+            queryFunction = priority;
+            priority = 0;
+        }
+
         if (priority === undefined) {
             priority = 0;
         }
+
+        // Augment the provider with a query function
+        provider.query = queryFunction || defaultQueryFunction;
+
         _insertProviderSorted(_inlineEditProviders, provider, priority);
     }
 
@@ -420,7 +480,8 @@ define(function (require, exports, module) {
         if (priority === undefined) {
             priority = 0;
         }
-        _insertProviderSorted(_inlineDocsProviders, provider, priority);
+
+        _insertProviderSorted(_inlineDocsProviders, provider);
     }
 
     /**
