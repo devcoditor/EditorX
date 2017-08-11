@@ -30,10 +30,6 @@ define(function (require, exports, module) {
         case '.htm':
         // fallsthrough
         case '.htx':
-        // fallsthrough
-        case '.md':
-        // fallsthrough
-        case '.markdown':
             return 'text/html';
 
         // CSS
@@ -50,6 +46,14 @@ define(function (require, exports, module) {
         case '.json':
             return 'application/javascript';
         case '.txt':
+        // fallsthrough
+        case '.markdown':
+        // fallsthrough
+        case '.md':
+        // fallsthrough
+        case '.ini':
+        // fallsthrough
+        case '.cfg':
             return 'text/plain';
 
         // Images
@@ -84,6 +88,8 @@ define(function (require, exports, module) {
 
         // Audio
         case '.oga':
+        // fallsthrough
+        case '.ogg':
             return 'audio/ogg';
         case '.mpa':
         // fallsthrough
@@ -145,6 +151,11 @@ define(function (require, exports, module) {
         isCSS: function(ext) {
             var id = _getLanguageId(ext);
             return id === "css";
+        },
+
+        isScript: function(ext) {
+            var info = new FileInfo(ext);
+            return info.subType === "javascript";
         },
 
         needsRewriting: function(ext) {

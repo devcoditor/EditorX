@@ -1,7 +1,13 @@
 {
     "unknown": {
+        "name": "Unknown",
+        "isBinary": true
+    },
+
+    "text": {
         "name": "Text",
-        "mode": ["null", "text/plain"]
+        "mode": ["null", "text/plain"],
+        "fileExtensions": ["txt", "ini", "cfg"]
     },
 
     "css": {
@@ -60,12 +66,6 @@
         "mode": "markdown",
         "fileExtensions": ["md", "markdown", "mdown", "mkdn"],
         "blockComment": ["<!--", "-->"]
-    },
-
-    "image": {
-        "name": "Image",
-        "fileExtensions": ["gif", "png", "jpe", "jpeg", "jpg", "ico", "bmp", "webp"],
-        "isBinary": true
     },
 
     "image": {

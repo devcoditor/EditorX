@@ -45,6 +45,11 @@ define(function (require, exports, module) {
         UrlCache          = require("filesystem/impls/filer/UrlCache"),
         Menus             = require("command/Menus");
 
+    // XXXBramble
+    var FilerUtils        = require("filesystem/impls/filer/FilerUtils"),
+        Path              = FilerUtils.Path,
+        Content           = require("filesystem/impls/filer/lib/content");
+
     var DOM = React.DOM;
 
     /**
@@ -492,72 +497,44 @@ define(function (require, exports, module) {
 
         render: function () {
             var fullname = this.props.name,
-                extension = LanguageManager.getCompoundFileExtension(fullname),
-                name = _getName(fullname, extension),
-                fileType = "default";
+                ext = LanguageManager.getCompoundFileExtension(fullname),
+                name = _getName(fullname, ext),
+                mime = Content.mimeFromExt(ext),
+                fileType;
 
-            switch (extension.toLowerCase()) {
-                case "htmls":
-                case "htm":
-                case "htx":
-                case "md":
-                case "markdown":
-                case "html":
-                case "xml":
-                case "xhtml":
-                    fileType = "html";
-                    break;
-                case "ico":
-                case "bmp":
-                case "svg":
-                case "png":
-                case "ico":
-                case "jpg":
-                case "jpe":
-                case "jpeg":
-                case "gif":
-                    fileType = "image";
-                    break;
-                case "eot":
-                case "woff":
-                case "otf":
-                case "ttf":
-                    fileType = "font";
-                    break;
-                case "mp3":
-                case "oga":
-                case "wav":
-                case "wave":
-                    fileType = "audio";
-                    break;
-                case "ogv":
-                case "mp4":
-                case "webm":
-                    fileType = "video";
-                    break;
-                case "css":
-                case "less":
-                    fileType = "css";
-                    break;
-                case "js":
-                case "jsx":
-                case "json":
-                    fileType = "js";
-                    break;
-                case "pdf":
-                    fileType = "pdf";
-                    break;
-                default:
-                    fileType = LanguageManager.getLanguageForPath(fullname).isBinary() ? "binary" : "default";
-                    break;
+            // Figure out which icon we want to show, relying on Content Type info.
+            if(Content.isHTML(ext)) {
+                fileType = "html";
+            } else if (Content.isImage(ext)) {
+                fileType = "image";
+            } else if (Content.isFont(ext)) {
+                fileType = "font";
+            } else if (Content.isAudio(ext)) {
+                fileType = "audio";
+            } else if (Content.isVideo(ext)) {
+                fileType = "video";
+            } else if (Content.isCSS(ext)) {
+                fileType = "css";
+            } else if (Content.isScript(ext)) {
+                fileType = "js";
+            } else if (Content.isPDF(ext)) {
+                fileType = "pdf";
+            } else {
+                // If it doesn't match anything else, do one last check for a text/* type
+                // and if it isn't that, assume binary.
+                if (mime.indexOf("text/") === 0) {
+                    fileType = "default";
+                } else {
+                    fileType = "binary";
+                }
             }
 
             var insClassName = "jstree-icon-" + fileType;
 
-            if (extension) {
-                extension = DOM.span({
+            if (ext) {
+                ext = DOM.span({
                     className: "extension"
-                }, "." + extension);
+                }, "." + ext);
             }
 
             var nameDisplay,
@@ -603,7 +580,7 @@ define(function (require, exports, module) {
                 DOM.span({
                     className: "menuToggle",
                     onClick: this.handleToggleClick
-                }),thickness, this.getIcons(), name, extension]);
+                }),thickness, this.getIcons(), name, ext]);
                 nameDisplay = DOM.a.apply(DOM.a, aArgs);
             }
 
