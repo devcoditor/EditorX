@@ -1066,8 +1066,14 @@ define(function (require, exports, module) {
             $(mouseOrLocation.menuToggleEl).addClass("toggle-open");
         }
 
-        // Add a file-menu class to hide non-file items from file context menu
-        $("#project-context-menu").toggleClass("file-menu", mouseOrLocation.fileMenu);
+        /*
+         * Add a file-menu class to hide non-file items from file context menu
+         * Used !!(mouseOrLocation.fileMenu) since we need to force a boolean
+         * as the second parameterto the toggleClass function.
+         * Passing undefined instead of a false would make it interpret the 
+         * funciton being called with one parameter only, and would simply toggle it.
+         */
+        $("#project-context-menu").toggleClass("file-menu", !!(mouseOrLocation.fileMenu));
 
         // only show context menu if it has menu items
         if ($menuWindow.children().length <= 0) {
