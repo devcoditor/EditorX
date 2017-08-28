@@ -96,7 +96,11 @@ define(function (require, exports, module) {
         KeyBindingManager   = brackets.getModule("command/KeyBindingManager");
 
     // XXXBramble: broadcast layout changes on the first editor pane
-    var BrambleEvents       = require("bramble/BrambleEvents");
+    var BrambleEvents       = require("bramble/BrambleEvents"),
+        FilerUtils          = require("filesystem/impls/filer/FilerUtils"),
+        Path                = FilerUtils.Path,
+        Content             = require("filesystem/impls/filer/lib/content"),
+        BinaryViewer        = require("editor/BinaryViewer");
 
     /**
      * Preference setting name for the MainView Saved State
@@ -1243,10 +1247,34 @@ define(function (require, exports, module) {
             }
         }
 
+        function openWithFactory(factory) {
+             file.exists(function (fileError, fileExists) {
+                if (!fileExists) {
+                    result.reject(fileError || FileSystemError.NOT_FOUND);
+                    return;
+                }
+
+                // let the factory open the file and create a view for it
+                factory
+                    .openFile(file, pane)
+                    .done(function () {
+                        // if we opened a file that isn't in the project
+                        //  then add the file to the working set
+                        if (!ProjectManager.isWithinProject(file.fullPath)) {
+                            addToWorkingSet(paneId, file);
+                        }
+                        doPostOpenActivation();
+                        result.resolve(file);
+                    })
+                    .fail(function (fileError) {
+                        result.reject(fileError);
+                    });
+            });
+        }
+
         if (!file || !_getPane(paneId)) {
             return result.reject("bad argument").promise();
         }
-
 
         // See if there is already a view for the file
         var pane = _getPane(paneId);
@@ -1257,38 +1285,27 @@ define(function (require, exports, module) {
         var factory = MainViewFactory.findSuitableFactoryForPath(file.fullPath);
 
         if (factory) {
-            file.exists(function (fileError, fileExists) {
-                if (fileExists) {
-                    // let the factory open the file and create a view for it
-                    factory.openFile(file, pane)
-                        .done(function () {
-                            // if we opened a file that isn't in the project
-                            //  then add the file to the working set
-                            if (!ProjectManager.isWithinProject(file.fullPath)) {
-                                addToWorkingSet(paneId, file);
-                            }
-                            doPostOpenActivation();
-                            result.resolve(file);
-                        })
-                        .fail(function (fileError) {
-                            result.reject(fileError);
-                        });
-                } else {
-                    result.reject(fileError || FileSystemError.NOT_FOUND);
-                }
-            });
+            openWithFactory(factory);
         } else {
-            DocumentManager.getDocumentForPath(file.fullPath)
-                .done(function (doc) {
-                    _edit(paneId, doc, $.extend({}, options, {
-                        noPaneActivate: true
-                    }));
-                    doPostOpenActivation();
-                    result.resolve(doc.file);
-                })
-                .fail(function (fileError) {
-                    result.reject(fileError);
-                });
+            // If this is a text type, open normally.
+            if(Content.isUTF8Encoded(Path.extname(file.fullPath)) || options.forceEditorOpen) {
+                DocumentManager
+                    .getDocumentForPath(file.fullPath)
+                    .done(function (doc) {
+                        _edit(paneId, doc, $.extend({}, options, {
+                            noPaneActivate: true
+                        }));
+                        doPostOpenActivation();
+                        result.resolve(doc.file);
+                    })
+                    .fail(function (fileError) {
+                        result.reject(fileError);
+                    });
+            }
+            // Otherwise, show the binary viewer and let the user decide what to do
+            else {
+                openWithFactory(BinaryViewer);
+            }
         }
 
         result.done(function () {

@@ -75,6 +75,33 @@
         background: rgba(0,0,0,.08);
     }
 
+    button {
+        cursor: pointer;
+        font-weight: 600;
+        padding: 8px 12px;
+        border: none;
+        color: white;
+        margin-right: 5px;
+        border-radius: 2px;
+        font-size: 15px;
+        box-shadow: none;
+        border-bottom: solid 2px rgba(0,0,0,.2);
+        background: #2A9961;
+        outline: none;
+
+        &[disabled] {
+          cursor: not-allowed;
+        }
+
+        &:not(["disabled"]):hover {
+          background: #39AA6D
+        }
+
+        &:active {
+          background: #288952;
+        }
+    }
+
     .code-wrapper {
         background: #e3f4fd;
         text-align: left;
@@ -572,5 +599,28 @@
                 }
             }
         }
+    }
+}
+
+// Binary (or non-editable) file viewer
+.binary-view {
+    h1 {
+        font-size: 22px;
+        margin: 0 0 25px 0;
+    }
+
+    .extension {
+        background: rgba(0,0,0,.1);
+        font-size: 15px;
+        padding: 2px;
+        font-family: monospace, "sans-serif";
+    }
+
+    p {
+        margin-bottom: 15px;
+    }
+
+    button {
+        margin-bottom: 10px;
     }
 }

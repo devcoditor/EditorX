@@ -1629,9 +1629,12 @@ define(function (require, exports, module) {
     }
 
     /** Download selected file or folder structure **/
-    function handleFileDownload() {
-        var selectedItem = ProjectManager.getSelectedItem();
-        var path = selectedItem._path;
+    function handleFileDownload(path) {
+        if(!path) {
+            var selectedItem = ProjectManager.getSelectedItem();
+            path = selectedItem._path;
+        }
+
         fs.stat(path, function(err, stats) {
             if (err) {
                 showErrorDialog(err);
