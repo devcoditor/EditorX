@@ -16,6 +16,7 @@ define(function (require, exports, module) {
         _changing,
         _room,
         _received = {}, // object to keep track of a file being received to make sure we dont emit it back.
+        _renaming,
         _buffer;
 
     var TIME = 5000; // time in mili seconds after which the file buffer should be cleared
@@ -54,10 +55,15 @@ define(function (require, exports, module) {
 
         _pending = []; // pending clients that need to be initialized.
         _changing = false;
+        _renaming = {};
         _buffer = {};
 
         window.setInterval(_clearBuffer, TIME);
         FileSystem.on("rename", function(event, oldPath, newPath) {
+            if(_renaming[oldPath]) {
+                delete _renaming[oldPath];
+                return;
+            }
             var rootDir = StartupState.project("root");
             var relOldPath = Path.relative(rootDir, oldPath);
             var relNewPath = Path.relative(rootDir, newPath);
@@ -96,7 +102,7 @@ define(function (require, exports, module) {
 
     function _handleMessage(msg) {
         var payload = msg.payload;
-        var oldPath, newPath, fullPath;
+        var fullPath, oldPath, newPath;
         var rootDir = StartupState.project("root");
         switch(msg.type) {
             case "new client":
@@ -109,8 +115,12 @@ define(function (require, exports, module) {
                 break;
             case "file-rename":
                 oldPath = Path.join(rootDir, payload.oldPath);
-                newPath = Path.join(rootDir, payload.newPath); 
-                console.log("renamed " + oldPath + " to " + newPath);
+                newPath = Path.join(rootDir, payload.newPath);
+                _renaming[oldPath] = true;
+                CommandManager.execute("bramble.renameFile", {dirName: Path.dirname(oldPath), from: Path.basename(oldPath), to: Path.basename(newPath)})
+                    .error(function(err) {
+                        console.log(err);
+                    });
                 break;
             case "file-added":
                 if(payload.isFolder) {
