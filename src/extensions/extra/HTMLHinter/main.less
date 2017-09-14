@@ -1,21 +1,117 @@
+
 /*Font family for errorPanel*/
-@fontFamily: Helvetica, Arial, "Meiryo UI", "ＭＳ Ｐゴシック", "MS PGothic", sans-serif;
+@fontFamily: "Open Sans", sans-serif;
 
 .errorHighlight {
-    background-color: #EDC5C5;
+    background-color: rgba(255,230,95,.1);
+}
+
+.CodeMirror-linewidget {
+  transform: none;
+}
+
+
+.styled-background {
+    background-color: rgba(255,230,95,.2);
+    animation: highlightStrobe .4s ease-in-out infinite;
+}
+
+@keyframes highlightStrobe {
+  50% {
+    background-color: rgba(255,230,95,.35);
+  }
 }
 
 .errorPanel {
-    padding-left: 20px;
-    background-color: #EDC5C5;
-    color: black;
+    margin: 16px;
+    border-radius: 5px;
+    padding: 10px 14px;
+    background: #ffe56a;
     font-family: @fontFamily;
+    color: rgba(0,0,0,.6);
+    user-select: text;
+
+    // This is the little speech bubble arrow
+
+    &:after {
+      content: "";
+      position: absolute;
+      background: #ffe56a;
+      width: 16px;
+      height: 16px;
+      transform-origin: center;
+      transform: rotate(55deg);
+      top: 11px;
+      right: 28px;
+    }
+
+    h4 {
+        font-weight: bold;
+        font-family: @fontFamily;
+        margin: 0 0 10px 0;
+        padding: 0;
+        color: rgba(0,0,0,.8);
+        font-size: 15px;
+    }
+
+    p {
+      line-height: 150%;
+    }
+
+
+
+    em {
+      color: blue;
+      text-decoration: underline;
+      cursor: pointer;
+      font-style: normal;
+    }
+
+    code {
+      color: rgba(0,0,0,.7);
+      font-family: monospace;
+      font-size: 14px;
+      background: rgba(0,0,0,.1);
+      border-radius: 1px;
+      padding: 1px 3px 2px 3px;
+      margin: 0 1px;
+      cursor: pointer;
+      border-radius: 2px;
+      position: relative;
+      top: -1px;
+
+      &[data-highlight] {
+        background: white;
+        box-shadow: 0px 1px 1px rgba(0,0,0,.14);
+        padding-right: 16px;
+
+        &:after {
+          content: "";
+          position: absolute;
+          width: 16px;
+          height: 100%;
+          right: 1px;
+          top: 0px;
+          background-image: url("./pointer.svg");
+          background-position: center;
+          background-size: 8px;
+          background-repeat: no-repeat;
+        }
+      }
+
+    }
+
+    p {
+      margin: 0;
+    }
+
+    > div:focus {
+      outline: none;
+    }
+
 }
 
-.errorPanel h4 {
-    font-weight: bold;
-    font-family: @fontFamily;
-}
+
 
 .tooltipsy {
     padding: 2px;
@@ -41,6 +137,22 @@
 }
 
 .hint-marker-error {
-    background-image: url("./explanationpt.png");
+    background-image: url("./emoji.png");
+    height: 26px;
+    width: 26px;
+    transform: translateY(-3px);
+    animation: markerAppear .2s ease-out;
+}
+
+@keyframes markerAppear {
+    0% {
+       transform: scale(.6) translateY(-3px);
+    }
+    60% {
+       transform: scale(1.1) translateY(-3px);
+    }
+    100% {
+       transform: scale(1) translateY(-3px);
+    }
 }
 

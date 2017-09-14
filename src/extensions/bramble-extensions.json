@@ -8,6 +8,9 @@
         }
     },
     {
+        "path": "extensions/extra/HTMLHinter"
+    },
+    {
         "path": "extensions/default/HTMLCodeHints"
     },
     {

@@ -10,14 +10,14 @@ define(function (require, exports, module) {
         currentErrorWidget,
         errorToggle,
         isShowingDescription;
-    
+
     ExtensionUtils.loadStyleSheet(module, "main.less");
     require("tooltipsy.source");
 
     //Publicly available function to remove all errors from brackets
     function cleanUp(line) {
         removeButton();
-        removeHighlight(line);
+        removeLineHighlight(line);
         hideDescription();
         isShowingDescription = false;
     }
@@ -29,8 +29,7 @@ define(function (require, exports, module) {
         isShowingDescription = false;
 
         showButton(errorObj);
-
-        highlight(errorObj);
+        addLineHighlight(errorObj);
 
         //Apply on click method to the errorToggle to display the inLineErrorWidget
         errorToggle.onclick = function() {
@@ -56,7 +55,7 @@ define(function (require, exports, module) {
     }
 
     //Highlights the line in which the error is present
-    function highlight(errorObject) {
+    function addLineHighlight(errorObject) {
         if(!errorObject.line) {
             return;
         }
@@ -64,7 +63,7 @@ define(function (require, exports, module) {
     }
 
     //Removes highlight from line in which error was present
-    function removeHighlight(line) {
+    function removeLineHighlight(line) {
         if(!line) {
             return;
         }
@@ -75,8 +74,9 @@ define(function (require, exports, module) {
     function showButton(errorObject){
         getCodeMirror().addWidget(errorObject, errorToggle, false);
         $(errorToggle).attr("class", "hint-marker-positioning hint-marker-error").removeClass("hidden");
-        //Show tooltips message
-        $(".hint-marker-positioning").tooltipsy({content : "Click error icon for details", alignTo: "cursor", offset: [10, -10]});
+
+        // Show tooltips message
+        // $(".hint-marker-positioning").tooltipsy({content : "Click error icon for details", alignTo: "cursor", offset: [10, -10]});
     }
 
     // Function that removes gutter button
@@ -96,14 +96,61 @@ define(function (require, exports, module) {
         isShowingDescription = false;
     }
 
-    //Creates the description, and then displays it
+    // Creates & shows the error description
     function showDescription(error) {
+
         var description = document.createElement("div");
         description.className = "errorPanel";
         description.innerHTML = Mustache.render(lineWidgetHTML, {"error": error.message});
+
+        var highlightEls = description.querySelectorAll('[data-highlight]');
+
+        for (var i = 0; i < highlightEls.length; ++i) {
+            var highlightEl = highlightEls[i];
+            highlightEl.addEventListener("mouseenter",function(){
+                var coordAttr = this.getAttribute("data-highlight") || false;
+                if(coordAttr) {
+                    var coords = coordAttr.split(",");
+                    addTextHighlight(coords[0], coords[1]);
+                }
+            });
+
+            highlightEl.addEventListener("mouseleave",function(){
+                var coordAttr = this.getAttribute("data-highlight") || false;
+                if(coordAttr) {
+                    var coords = coordAttr.split(",");
+                    removeTextHighlight(coords[0], coords[1]);
+                }
+            });
+        }
+
         var options = {coverGutter: false, noHScroll: false, above: false, showIfHidden: false};
 
+        // https://codemirror.net/doc/manual.html#addLineWidget
+        // console.log(getCodeMirror());
         currentErrorWidget = getCodeMirror().addLineWidget(error.line, description, options);
+    }
+
+
+
+    // Stores the highlight objects created when adding text highlight
+    var activeTextHighlights = {};
+
+    // Adds a text higlight to the code
+    function addTextHighlight(start, end){
+        var startHighlight = getCodeMirror().doc.posFromIndex(start);
+        var endHighlight = getCodeMirror().doc.posFromIndex(end);
+        var highlight = getCodeMirror().markText(startHighlight, endHighlight, { className: "styled-background" });
+        activeTextHighlights[start + "," + end] = highlight;
+    }
+
+    // Removes a text higlight to the code
+    function removeTextHighlight(start, end){
+        var highlight = activeTextHighlights[start + "," + end] || false;
+        if(highlight){
+            highlight.clear();
+            delete activeTextHighlights[start + "," + end];
+        }
     }
 
     //Destroys the description

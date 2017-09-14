@@ -1,15 +1,6 @@
 /*jslint vars: true, plusplus: true, devel: true, nomen: true, regexp: true, indent: 4, maxerr: 50 */
 /*global define, brackets*/
 
-require.config({
-    waitSeconds: 120,
-    paths: {
-        "text" : "lib/text",
-        "i18n" : "lib/i18n"
-    },
-    locale: brackets.getLocale()
-});
-
 define(function (require, exports, module) {
     "use strict";
 
