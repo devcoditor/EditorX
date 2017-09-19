@@ -124,8 +124,6 @@ span.faint-text {
 
 }
 
-
-
 .tooltipsy {
     padding: 2px;
     max-width: 200px;
@@ -138,23 +136,62 @@ span.faint-text {
     left: auto !important; /* CodeMirror will set this value, but we don't want it set! */
     right: 1em;
     background-color: transparent;
-
     cursor: pointer;
-
     width: 1.4em;
     height: 1.4em;
     margin-top: -1.3em;
-
     background-size: 100% 100%;
     z-index: 999;
 }
 
 .hint-marker-error {
-    background-image: url("./emoji.png");
+    background-image: url("images/scared.png");
     height: 26px;
     width: 26px;
     transform: translateY(-3px);
     animation: markerAppear .2s ease-out;
+
+    &.bye {
+        animation: byeEmoji 2s linear;
+        transform: scale(0) translateY(-3px);
+        opacity: 0;
+    }
+
+    @keyframes byeEmoji {
+        0% {
+             transform: scale(1) translateY(-3px);
+             opacity: 1;
+        }
+        16% {
+             transform: scale(1) translateY(-3px);
+             transition-timing-function: ease-in;
+        }
+        19% {
+            background-image: url("images/scared.png");
+            transform: scale(.5) translateY(-3px);
+        }
+        20% {
+            background-image: url("images/thumbs-up.png");
+            transition-timing-function: ease-out;
+        }
+        23% {
+            transform: scale(1) translateY(-3px);
+        }
+        50% {
+            transform: scale(1)  translateY(-3px);
+            transition-timing-function: ease-in;
+        }
+        60% {
+            transform: scale(1.1)  translateY(-3px);
+            transition-timing-function: ease-out;
+            opacity: 1;
+        }
+        63% {
+            background-image: url("images/thumbs-up.png");
+            transform: scale(0) translateY(-3px);
+            opacity: 0;
+        }
+    }
 }
 
 @keyframes markerAppear {

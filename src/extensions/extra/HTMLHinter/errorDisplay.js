@@ -117,8 +117,19 @@ define(function (require, exports, module) {
         if(!errorToggle) {
             return;
         }
+
+
         if (errorToggle.parentNode) {
-            $(errorToggle).remove();
+
+            $(errorToggle).addClass("bye");
+
+            setTimeout(function(el) {
+                return function() {
+                    el.remove();
+                };
+            }(errorToggle), 2000);
+
+
         }
 
         //Destroy tooltips instance
