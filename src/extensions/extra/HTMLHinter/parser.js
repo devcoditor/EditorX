@@ -26,12 +26,16 @@ define(function(require) {
 
     function parse(input) {
         var result = slowparse.HTML(document, input);
+
         var error;
 
         if(result.error) {
             error = {};
             error.message = templatify(errorMessages[result.error.type], result.error);
             error.cursor = result.error.cursor;
+            if(result.error.token) {
+                error.token = result.error.token;
+            }
         }
 
         return error;

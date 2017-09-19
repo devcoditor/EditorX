@@ -10,7 +10,7 @@ define(function (require, exports, module) {
         currentErrorWidget,
         errorToggle,
         isShowingDescription,
-        invalidCodeHighlightStart;
+        highlights = [];
 
     ExtensionUtils.loadStyleSheet(module, "main.less");
     require("tooltipsy.source");
@@ -24,19 +24,38 @@ define(function (require, exports, module) {
         isShowingDescription = false;
     }
 
-
     //Publicly available function used to display error markings
-    function addInvalidCodeHighlight(cursorPosition) {
-        invalidCodeHighlightStart = cursorPosition;
-        addTextHighlight(cursorPosition, 9999999999, "faint-text");
+    function addInvalidCodeHighlight(token) {
+        var start = token.interval.start;
+        var end = token.interval.end;
+
+        addTextHighlight(start, end, "red-text");
+
+        highlights.push({
+            start: start,
+            end: end
+        });
+
+        addTextHighlight(end, 9999999999, "faint-text");
+
+        highlights.push({
+            start: end,
+            end: 9999999999
+        });
     }
 
     function removeInvalidCodeHighlight() {
-        removeTextHighlight(invalidCodeHighlightStart, 9999999999);
+        // Remove all of the code we highlighted
+        for(var i = 0; i < highlights.length; i++) {
+            var highlight = highlights[i];
+            removeTextHighlight(highlight.start, highlight.end);
+        }
+        highlights = [];
     }
 
     //Publicly available function used to display error markings
     function scafoldHinter(errorStart, errorEnd, errorObj) {
+        // console.log(errorStart, errorEnd, errorObj);
         //Setup neccessary variables
         errorToggle = document.createElement("div");
         isShowingDescription = false;

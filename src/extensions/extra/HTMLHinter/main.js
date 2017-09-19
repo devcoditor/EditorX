@@ -30,12 +30,14 @@ define(function (require, exports, module) {
         html = editor.document.getText();
         error = parse(html);
 
-        if(error) {
-            clearTimeout(errorDisplayTimeout);
+        clearTimeout(errorDisplayTimeout);
 
+        if(error) {
             errorDisplayTimeout = setTimeout(function(){
                 clearAllErrors();
-                MarkErrors.addInvalidCodeHighlight(error.cursor);
+                if(error.token) {
+                    MarkErrors.addInvalidCodeHighlight(error.token);
+                }
                 errorCache.message = error.message;
                 errorCache.line = editor._codeMirror.getDoc().posFromIndex(error.cursor).line;
                 MarkErrors.scafoldHinter(error.cursor, error.end, errorCache);
@@ -89,4 +91,3 @@ define(function (require, exports, module) {
         MainViewManager.on("currentFileChange", documentChanged);
     });
 });
-

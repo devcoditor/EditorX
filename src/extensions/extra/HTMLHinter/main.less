@@ -2,14 +2,9 @@
 /*Font family for errorPanel*/
 @fontFamily: "Open Sans", sans-serif;
 
-.errorHighlight {
-    background-color: rgba(255,230,95,.1);
-}
-
 .CodeMirror-linewidget {
     transform: none;
 }
-
 
 .styled-background {
     background-color: rgba(255,230,95,.2);
@@ -17,13 +12,23 @@
 }
 
 .faint-text {
-    color: rgba(255,255,255,.2) !important;
+    color: rgba(255,255,255,.5) !important;
+}
+
+.red-text {
+    border-bottom: solid 2px rgba(237,108,48,1);
+    animation: underlineStrobe .65s ease-in-out infinite;
+}
+
+@keyframes underlineStrobe {
+    50% {
+        border-bottom: solid 2px rgba(237,108,48,.65);
+    }
 }
 
 span.faint-text {
     color: rgba(255,255,255,.2) !important;
 }
-
 
 @keyframes highlightStrobe {
     50% {
@@ -34,7 +39,7 @@ span.faint-text {
 .errorPanel {
     margin: 16px;
     border-radius: 5px;
-    padding: 10px 14px;
+    padding: 10px 14px 10px 14px;
     background: #ffe56a;
     font-family: @fontFamily;
     color: rgba(0,0,0,.6);
