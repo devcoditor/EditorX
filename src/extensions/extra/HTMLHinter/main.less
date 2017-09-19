@@ -7,7 +7,7 @@
 }
 
 .CodeMirror-linewidget {
-  transform: none;
+    transform: none;
 }
 
 
@@ -16,10 +16,19 @@
     animation: highlightStrobe .4s ease-in-out infinite;
 }
 
+.faint-text {
+    color: rgba(255,255,255,.2) !important;
+}
+
+span.faint-text {
+    color: rgba(255,255,255,.2) !important;
+}
+
+
 @keyframes highlightStrobe {
-  50% {
-    background-color: rgba(255,230,95,.35);
-  }
+    50% {
+        background-color: rgba(255,230,95,.35);
+    }
 }
 
 .errorPanel {
@@ -32,7 +41,6 @@
     user-select: text;
 
     // This is the little speech bubble arrow
-
     &:after {
       content: "";
       position: absolute;
@@ -146,13 +154,13 @@
 
 @keyframes markerAppear {
     0% {
-       transform: scale(.6) translateY(-3px);
+        transform: scale(.6) translateY(-3px);
     }
     60% {
-       transform: scale(1.1) translateY(-3px);
+        transform: scale(1.1) translateY(-3px);
     }
     100% {
-       transform: scale(1) translateY(-3px);
+        transform: scale(1) translateY(-3px);
     }
 }
 

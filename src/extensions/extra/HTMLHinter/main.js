@@ -32,8 +32,10 @@ define(function (require, exports, module) {
 
         if(error) {
             clearTimeout(errorDisplayTimeout);
+
             errorDisplayTimeout = setTimeout(function(){
                 clearAllErrors();
+                MarkErrors.addInvalidCodeHighlight(error.cursor);
                 errorCache.message = error.message;
                 errorCache.line = editor._codeMirror.getDoc().posFromIndex(error.cursor).line;
                 MarkErrors.scafoldHinter(error.cursor, error.end, errorCache);

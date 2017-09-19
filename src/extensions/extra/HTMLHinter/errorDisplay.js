@@ -9,17 +9,30 @@ define(function (require, exports, module) {
         lineWidgetHTML = require("text!inlineWidget.html"),
         currentErrorWidget,
         errorToggle,
-        isShowingDescription;
+        isShowingDescription,
+        invalidCodeHighlightStart;
 
     ExtensionUtils.loadStyleSheet(module, "main.less");
     require("tooltipsy.source");
 
     //Publicly available function to remove all errors from brackets
     function cleanUp(line) {
+        removeInvalidCodeHighlight();
         removeButton();
         removeLineHighlight(line);
         hideDescription();
         isShowingDescription = false;
+    }
+
+
+    //Publicly available function used to display error markings
+    function addInvalidCodeHighlight(cursorPosition) {
+        invalidCodeHighlightStart = cursorPosition;
+        addTextHighlight(cursorPosition, 9999999999, "faint-text");
+    }
+
+    function removeInvalidCodeHighlight() {
+        removeTextHighlight(invalidCodeHighlightStart, 9999999999);
     }
 
     //Publicly available function used to display error markings
@@ -111,7 +124,7 @@ define(function (require, exports, module) {
                 var coordAttr = this.getAttribute("data-highlight") || false;
                 if(coordAttr) {
                     var coords = coordAttr.split(",");
-                    addTextHighlight(coords[0], coords[1]);
+                    addTextHighlight(coords[0], coords[1], "styled-background");
                 }
             });
 
@@ -131,16 +144,14 @@ define(function (require, exports, module) {
         currentErrorWidget = getCodeMirror().addLineWidget(error.line, description, options);
     }
 
-
-
     // Stores the highlight objects created when adding text highlight
     var activeTextHighlights = {};
 
     // Adds a text higlight to the code
-    function addTextHighlight(start, end){
+    function addTextHighlight(start, end, className){
         var startHighlight = getCodeMirror().doc.posFromIndex(start);
         var endHighlight = getCodeMirror().doc.posFromIndex(end);
-        var highlight = getCodeMirror().markText(startHighlight, endHighlight, { className: "styled-background" });
+        var highlight = getCodeMirror().markText(startHighlight, endHighlight, { className: className });
         activeTextHighlights[start + "," + end] = highlight;
     }
 
@@ -164,4 +175,5 @@ define(function (require, exports, module) {
 
     exports.cleanUp = cleanUp;
     exports.scafoldHinter = scafoldHinter;
+    exports.addInvalidCodeHighlight = addInvalidCodeHighlight;
 });
