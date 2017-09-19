@@ -36,6 +36,7 @@ define(function (require, exports, module) {
             end: end
         });
 
+        // TODO - make this better, we should find out how long the document is firsT?
         addTextHighlight(end, 9999999999, "faint-text");
 
         highlights.push({
