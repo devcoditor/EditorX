@@ -11,11 +11,14 @@ define(function (require, exports, module) {
         MarkErrors            = require("errorDisplay"),
         parse                 = require("./parser"),
         defaultFont,
-        errorCache = {};
+        errorCache = {},
+        errorDisplayTimeout,
+        errorDisplayTimeoutMS = 1000;
 
     ExtensionUtils.loadStyleSheet(module, "main.less");
 
     function main(){
+
         var editor = EditorManager.getActiveEditor();
         var error;
         var html;
@@ -27,12 +30,16 @@ define(function (require, exports, module) {
         html = editor.document.getText();
         error = parse(html);
 
-        clearAllErrors();
-
         if(error) {
-            errorCache.message = error.message;
-            errorCache.line = editor._codeMirror.getDoc().posFromIndex(error.cursor).line;
-            MarkErrors.scafoldHinter(error.cursor, error.end, errorCache);
+            clearTimeout(errorDisplayTimeout);
+            errorDisplayTimeout = setTimeout(function(){
+                clearAllErrors();
+                errorCache.message = error.message;
+                errorCache.line = editor._codeMirror.getDoc().posFromIndex(error.cursor).line;
+                MarkErrors.scafoldHinter(error.cursor, error.end, errorCache);
+            }, errorDisplayTimeoutMS);
+        } else {
+            clearAllErrors();
         }
     }
 
