@@ -44,6 +44,17 @@ span.faint-text {
     font-family: @fontFamily;
     color: rgba(0,0,0,.6);
     user-select: text;
+    max-height: 200px;
+    overflow: hidden;
+    opacity: 1;
+    animation: showPanel .25s ease-out;
+
+    @keyframes showPanel {
+        0% {
+            max-height: 0;
+            opacity: 0;
+        }
+    }
 
     // This is the little speech bubble arrow
     &:after {
