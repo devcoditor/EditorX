@@ -16,12 +16,28 @@ define(function (require, exports, module) {
     require("tooltipsy.source");
 
     //Publicly available function to remove all errors from brackets
-    function cleanUp(line) {
+    function cleanUp(line, type) {
+
+        if(type == "keep-emoji") {
+            removeButton("instant");
+        } else {
+            removeButton();
+        }
+
         removeInvalidCodeHighlight();
-        removeButton();
         removeLineHighlight(line);
         hideDescription();
         isShowingDescription = false;
+    }
+
+    // Check if the erorr marker is already present
+    function checkForMarker(){
+        var marker = document.querySelector(".hint-marker-error") || false;
+        if(marker) {
+            return true;
+        } else {
+            return false;
+        }
     }
 
     //Publicly available function used to display error markings
@@ -55,13 +71,13 @@ define(function (require, exports, module) {
     }
 
     //Publicly available function used to display error markings
-    function scafoldHinter(errorStart, errorEnd, errorObj) {
-        // console.log(errorStart, errorEnd, errorObj);
+    function scafoldHinter(errorStart, errorEnd, errorObj, markerAnimation) {
         //Setup neccessary variables
         errorToggle = document.createElement("div");
         isShowingDescription = false;
 
-        showButton(errorObj);
+        showButton(errorObj, markerAnimation);
+
         addLineHighlight(errorObj);
 
         //Apply on click method to the errorToggle to display the inLineErrorWidget
@@ -104,39 +120,72 @@ define(function (require, exports, module) {
     }
 
     //Function that adds a button on the gutter (on given line nubmer) next to the line numbers
-    function showButton(errorObject){
+    function showButton(errorObject, animationType){
         getCodeMirror().addWidget(errorObject, errorToggle, false);
-        $(errorToggle).attr("class", "hint-marker-positioning hint-marker-error").removeClass("hidden");
+            $(errorToggle).attr("class", "hint-marker-positioning hint-marker-error").removeClass("hidden");
+
+        if(animationType == "animated") {
+            console.log("Showing with animaton");
+            $(errorToggle).attr("class", "hint-marker-positioning hint-marker-error").addClass("pop");
+        } else {
+            console.log("Showing instantly");
+        }
 
         // Show tooltips message
         // $(".hint-marker-positioning").tooltipsy({content : "Click error icon for details", alignTo: "cursor", offset: [10, -10]});
     }
 
     // Function that removes gutter button
-    function removeButton(){
+    function removeButton(animationType){
         if(!errorToggle) {
             return;
         }
 
+        // Maybe sometimes we'll need to remove it instantly, so I'll add a speed argument
+        // for future use you fucken idiots.
+
+        var goodEmojis = [
+            "biceps","halo","heart","peace","sunglasses","wink","nerd","horns","thumbs"
+        ];
+
+        var randomEmoji = goodEmojis[Math.floor(Math.random() * goodEmojis.length)];
 
         if (errorToggle.parentNode) {
 
-            $(errorToggle).addClass("bye");
+            if(animationType == "instant") {
+                $(errorToggle).remove();
+            } else {
+                $(errorToggle).addClass("bye");
 
-            setTimeout(function(el) {
-                return function() {
-                    el.remove();
-                };
-            }(errorToggle), 2000);
+                // Adds the class for the "positive" emoji we want to use
+                // partway through the animation. This is a workaround becuase we are
+                // using a CSS animation, so it's hard to make it dynamic.
+                setTimeout(function(el) {
+                    return function() {
+                        el.classList.add(randomEmoji);
+                    };
+                }(errorToggle), 400);
+
+                setTimeout(function(el) {
+                    return function() {
+                        el.remove();
+                    };
+                }(errorToggle), 1300);
 
 
+                setTimeout(function(el) {
+                    return function() {
+                        el.remove();
+                    };
+                }(errorToggle), 1300);
+            }
         }
 
         //Destroy tooltips instance
-        var tooltips = $(".hint-marker-positioning").data("tooltipsy");
-        if(tooltips) {
-            tooltips.destroy();
-        }
+        // var tooltips = $(".hint-marker-positioning").data("tooltipsy");
+        // if(tooltips) {
+            // tooltips.destroy();
+        // }
         isShowingDescription = false;
     }
 
@@ -204,6 +253,7 @@ define(function (require, exports, module) {
         currentErrorWidget = null;
     }
 
+    exports.checkForMarker = checkForMarker;
     exports.cleanUp = cleanUp;
     exports.scafoldHinter = scafoldHinter;
     exports.addInvalidCodeHighlight = addInvalidCodeHighlight;

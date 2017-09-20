@@ -145,17 +145,52 @@ span.faint-text {
 }
 
 .hint-marker-error {
-    background-image: url("images/scared.png");
+
     height: 26px;
     width: 26px;
     transform: translateY(-3px);
-    animation: markerAppear .2s ease-out;
+    background-image: url("images/scared.png");
+
+    &.pop {
+        animation: markerAppear .2s ease-out;
+    }
 
     &.bye {
         animation: byeEmoji 2s linear;
         transform: scale(0) translateY(-3px);
         opacity: 0;
     }
+
+    &.thumbs {
+        background-image: url("images/thumbs-up.png");
+    }
+    &.biceps {
+        background-image: url("images/biceps.png");
+    }
+    &.halo {
+        background-image: url("images/halo.png");
+    }
+    &.heart {
+        background-image: url("images/heart.png");
+    }
+    &.peace {
+        background-image: url("images/peace.png");
+    }
+    &.sunglasses {
+        background-image: url("images/sunglasses.png");
+    }
+    &.wink {
+        background-image: url("images/wink.png");
+    }
+    &.nerd {
+        background-image: url("images/nerd.png");
+    }
+    &.horns {
+        background-image: url("images/horns.png");
+    }
+
+
+    // "biceps","halo","heart","peace","sunglasses","wink","nerd","horns","thumbs"
 
     @keyframes byeEmoji {
         0% {
@@ -167,11 +202,9 @@ span.faint-text {
              transition-timing-function: ease-in;
         }
         19% {
-            background-image: url("images/scared.png");
             transform: scale(.5) translateY(-3px);
         }
         20% {
-            background-image: url("images/thumbs-up.png");
             transition-timing-function: ease-out;
         }
         23% {
@@ -187,7 +220,7 @@ span.faint-text {
             opacity: 1;
         }
         63% {
-            background-image: url("images/thumbs-up.png");
+            // background-image: url("images/thumbs-up.png");
             transform: scale(0) translateY(-3px);
             opacity: 0;
         }

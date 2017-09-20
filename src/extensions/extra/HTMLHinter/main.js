@@ -12,12 +12,15 @@ define(function (require, exports, module) {
         parse                 = require("./parser"),
         defaultFont,
         errorCache = {},
+        emojiShowing = false,
         errorDisplayTimeout,
         errorDisplayTimeoutMS = 1000;
 
     ExtensionUtils.loadStyleSheet(module, "main.less");
 
     function main(){
+
+        // This function runs every keystroke.....
 
         var editor = EditorManager.getActiveEditor();
         var error;
@@ -32,23 +35,31 @@ define(function (require, exports, module) {
 
         clearTimeout(errorDisplayTimeout);
 
+        var markerPresent = MarkErrors.checkForMarker();
+
         if(error) {
             errorDisplayTimeout = setTimeout(function(){
-                clearAllErrors();
+                clearAllErrors("keep-emoji");
                 if(error.token) {
                     MarkErrors.addInvalidCodeHighlight(error.token);
                 }
                 errorCache.message = error.message;
                 errorCache.line = editor._codeMirror.getDoc().posFromIndex(error.cursor).line;
-                MarkErrors.scafoldHinter(error.cursor, error.end, errorCache);
+
+                if(markerPresent){
+                    MarkErrors.scafoldHinter(error.cursor, error.end, errorCache, "instant");
+                } else {
+                    MarkErrors.scafoldHinter(error.cursor, error.end, errorCache, "animated");
+                }
+
             }, errorDisplayTimeoutMS);
         } else {
             clearAllErrors();
         }
     }
 
-    function clearAllErrors(){
-        MarkErrors.cleanUp(errorCache.line);
+    function clearAllErrors(type){
+        MarkErrors.cleanUp(errorCache.line, type);
         errorCache = {};
     }
 
