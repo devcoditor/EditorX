@@ -145,7 +145,7 @@ define(function (require, exports, module) {
         // for future use you fucken idiots.
 
         var goodEmojis = [
-            "biceps","halo","heart","peace","sunglasses","wink","nerd","horns","thumbs"
+            "biceps","halo","heart","peace","sunglasses","wink","horns","thumbs"
         ];
 
         var randomEmoji = goodEmojis[Math.floor(Math.random() * goodEmojis.length)];
@@ -191,6 +191,8 @@ define(function (require, exports, module) {
 
     // Creates & shows the error description
     function showDescription(error) {
+
+        errorToggle.classList.add("nerd");
 
         var description = document.createElement("div");
         description.className = "errorPanel";
@@ -249,6 +251,8 @@ define(function (require, exports, module) {
         if(!currentErrorWidget) {
             return;
         }
+
+        errorToggle.classList.remove("nerd");
         currentErrorWidget.clear();
         currentErrorWidget = null;
     }
