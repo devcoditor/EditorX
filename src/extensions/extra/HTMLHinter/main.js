@@ -20,18 +20,20 @@ define(function (require, exports, module) {
 
     function main(){
 
-        // This function runs every keystroke.....
-
         var editor = EditorManager.getActiveEditor();
         var error;
-        var html;
+        var fileContent;
 
-        if(!editor || editor.document.getLanguage().getName() !== "HTML") {
+        if(!editor) { return; }
+
+        var docLanguage = editor.document.getLanguage().getName();
+
+        if(docLanguage !== "HTML" && docLanguage !== "CSS") {
             return;
         }
 
-        html = editor.document.getText();
-        error = parse(html);
+        fileContent = editor.document.getText();
+        error = parse(fileContent, docLanguage);
 
         clearTimeout(errorDisplayTimeout);
 

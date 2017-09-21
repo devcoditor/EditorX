@@ -25,7 +25,7 @@ define(function (require, exports, module) {
         }
 
         removeInvalidCodeHighlight();
-        removeLineHighlight(line);
+        // removeLineHighlight(line);
         hideDescription();
         isShowingDescription = false;
     }
@@ -78,7 +78,7 @@ define(function (require, exports, module) {
 
         showButton(errorObj, markerAnimation);
 
-        addLineHighlight(errorObj);
+        // addLineHighlight(errorObj);
 
         //Apply on click method to the errorToggle to display the inLineErrorWidget
         errorToggle.onclick = function() {
@@ -104,35 +104,39 @@ define(function (require, exports, module) {
     }
 
     //Highlights the line in which the error is present
-    function addLineHighlight(errorObject) {
-        if(!errorObject.line) {
-            return;
-        }
-        getCodeMirror().getDoc().addLineClass(errorObject.line, "background", "errorHighlight");
-    }
+    // function addLineHighlight(errorObject) {
+    //     if(!errorObject.line) {
+    //         return;
+    //     }
+    //     getCodeMirror().getDoc().addLineClass(errorObject.line, "background", "errorHighlight");
+    // }
 
     //Removes highlight from line in which error was present
-    function removeLineHighlight(line) {
-        if(!line) {
-            return;
-        }
-        getCodeMirror().getDoc().removeLineClass(line, "background", "errorHighlight");
-    }
+    // function removeLineHighlight(line) {
+    //     if(!line) {
+    //         return;
+    //     }
+    //     getCodeMirror().getDoc().removeLineClass(line, "background", "errorHighlight");
+    // }
 
     //Function that adds a button on the gutter (on given line nubmer) next to the line numbers
     function showButton(errorObject, animationType){
         getCodeMirror().addWidget(errorObject, errorToggle, false);
-            $(errorToggle).attr("class", "hint-marker-positioning hint-marker-error").removeClass("hidden");
+        $(errorToggle).attr("class", "hint-marker-positioning hint-marker-error").removeClass("hidden");
 
+        // Sometimes we want this to pop in instead of appearing instantly,
+        // This is where that happens.
         if(animationType == "animated") {
-            console.log("Showing with animaton");
             $(errorToggle).attr("class", "hint-marker-positioning hint-marker-error").addClass("pop");
-        } else {
-            console.log("Showing instantly");
         }
 
         // Show tooltips message
-        // $(".hint-marker-positioning").tooltipsy({content : "Click error icon for details", alignTo: "cursor", offset: [10, -10]});
+        // TODO - this shows even when the error is open, so that's not great
+        // $(".hint-marker-positioning").tooltipsy({
+        //     content : "Click error icon for details",
+        //     alignTo: "cursor", // Can also use on an element
+        //     offset: [10, -10]
+        // });
     }
 
     // Function that removes gutter button
@@ -172,7 +176,6 @@ define(function (require, exports, module) {
                     };
                 }(errorToggle), 1300);
 
-
                 setTimeout(function(el) {
                     return function() {
                         el.remove();
@@ -186,6 +189,7 @@ define(function (require, exports, module) {
         // if(tooltips) {
             // tooltips.destroy();
         // }
+
         isShowingDescription = false;
     }
 

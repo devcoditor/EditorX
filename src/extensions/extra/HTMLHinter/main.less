@@ -9,6 +9,14 @@
 .styled-background {
     background-color: rgba(255,230,95,.2);
     animation: highlightStrobe .4s ease-in-out infinite;
+    position: relative;
+
+    &:after {
+        // content:"*";
+        // color: white;
+        // position: absolute;
+        // top: -15px;
+    }
 }
 
 .faint-text {
@@ -56,17 +64,25 @@ span.faint-text {
         }
     }
 
+    a {
+        color: #0083e8;
+
+        &:hover {
+            color: #0083e8;
+        }
+    }
+
     // This is the little speech bubble arrow
     &:after {
-      content: "";
-      position: absolute;
-      background: #ffe56a;
-      width: 16px;
-      height: 16px;
-      transform-origin: center;
-      transform: rotate(55deg);
-      top: 11px;
-      right: 28px;
+        content: "";
+        position: absolute;
+        background: #ffe56a;
+        width: 16px;
+        height: 16px;
+        transform-origin: center;
+        transform: rotate(55deg);
+        top: 11px;
+        right: 28px;
     }
 
     h4 {
@@ -79,58 +95,55 @@ span.faint-text {
     }
 
     p {
-      line-height: 150%;
-    }
-
-
-
-    em {
-      color: blue;
-      text-decoration: underline;
-      cursor: pointer;
-      font-style: normal;
+        line-height: 150%;
     }
 
     code {
-      color: rgba(0,0,0,.7);
-      font-family: monospace;
-      font-size: 14px;
-      background: rgba(0,0,0,.1);
-      border-radius: 1px;
-      padding: 1px 3px 2px 3px;
-      margin: 0 1px;
-      cursor: pointer;
-      border-radius: 2px;
-      position: relative;
-      top: -1px;
+        color: rgba(0,0,0,.6);
+        background: rgba(0,0,0,.1);
+        padding: 1px 6px 2px 6px;
+        font-family: "Menlo Regular", Consolas, Inconsolata, "Vera Sans", "Lucida Console", Courier, monospace, fixed;
+        font-size: 15px;
+        margin: 0 1px;
+        border-radius: 2px;
+    }
 
-      &[data-highlight] {
+    em {
+        font-style: normal;
+    }
+
+    [data-highlight] {
+        font-size: 15px;
         background: white;
+        color: rgba(0,0,0,.75);
+        position: relative;
+        top: -1px;
+        padding: 0px 17px 2px 6px;
+        margin: 0 1px;
+        border-radius: 2px;
+        cursor: pointer;
         box-shadow: 0px 1px 1px rgba(0,0,0,.14);
-        padding-right: 16px;
 
         &:after {
-          content: "";
-          position: absolute;
-          width: 16px;
-          height: 100%;
-          right: 1px;
-          top: 0px;
-          background-image: url("./pointer.svg");
-          background-position: center;
-          background-size: 8px;
-          background-repeat: no-repeat;
+            content: "";
+            position: absolute;
+            width: 16px;
+            height: 100%;
+            right: 1px;
+            top: 0px;
+            background-image: url("./pointer.svg");
+            background-position: center;
+            background-size: 8px;
+            background-repeat: no-repeat;
         }
-      }
-
     }
 
     p {
-      margin: 0;
+        margin: 0;
     }
 
     > div:focus {
-      outline: none;
+        outline: none;
     }
 
 }
@@ -156,7 +169,6 @@ span.faint-text {
 }
 
 .hint-marker-error {
-
     height: 26px;
     width: 26px;
     transform: translateY(-3px);
@@ -175,6 +187,7 @@ span.faint-text {
     &.thumbs {
         background-image: url("images/thumbs-up.png");
     }
+
     &.biceps {
         background-image: url("images/biceps.png");
     }

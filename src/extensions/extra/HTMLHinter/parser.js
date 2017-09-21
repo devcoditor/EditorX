@@ -24,8 +24,17 @@ define(function(require) {
         });
     }
 
-    function parse(input) {
-        var result = slowparse.HTML(document, input);
+    function parse(input, type) {
+
+        var result;
+
+        if (type === "HTML") {
+            result = slowparse.HTML(document, input);
+        } else if (type === "CSS") {
+            result = slowparse.CSS(input);
+        } else {
+            return;
+        }
 
         var error;
 
