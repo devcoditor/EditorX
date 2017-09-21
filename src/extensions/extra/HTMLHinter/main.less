@@ -7,15 +7,43 @@
 }
 
 .styled-background {
-    background-color: rgba(255,230,95,.2);
-    animation: highlightStrobe .4s ease-in-out infinite;
     position: relative;
+    border-bottom: solid 2px rgba(237,108,48,1);
+    background: rgba(237,108,48,.3);
+    animation: highlightStrobe .6s ease-in-out infinite;
 
-    &:after {
-        // content:"*";
-        // color: white;
-        // position: absolute;
-        // top: -15px;
+    @keyframes highlightStrobe {
+        50% {
+            background: rgba(237,108,48,.15);
+        }
+    }
+
+    &.mark-start:after {
+        content:"";
+        background-size: 80%;
+        background-repeat: no-repeat;
+        background-position: center;
+        background-image: url("images/arrow-down.svg");
+        height: 30px;
+        width: 30px;
+        color: white;
+        position: absolute;
+        top: -23px;
+        border-radius: 18px;
+        left: -15px;
+        animation: arrowPoint .6s ease-in-out infinite;
+    }
+}
+
+@keyframes arrowPoint {
+    0% {
+        transform: translateY(0) rotate(-8deg);
+    }
+    50% {
+        transform: translateY(-3px) rotate(-8deg);
+    }
+    100% {
+        transform: translateY(0) rotate(-8deg);
     }
 }
 
@@ -38,17 +66,13 @@ span.faint-text {
     color: rgba(255,255,255,.2) !important;
 }
 
-@keyframes highlightStrobe {
-    50% {
-        background-color: rgba(255,230,95,.35);
-    }
-}
-
 .errorPanel {
     margin: 16px;
     border-radius: 5px;
     padding: 10px 14px 10px 14px;
     background: #ffe56a;
+    background: #fbca31;
+    border-bottom: solid 2px rgba(0,0,0,.1);
     font-family: @fontFamily;
     color: rgba(0,0,0,.6);
     user-select: text;
@@ -77,6 +101,7 @@ span.faint-text {
         content: "";
         position: absolute;
         background: #ffe56a;
+        background: inherit;
         width: 16px;
         height: 16px;
         transform-origin: center;
@@ -95,13 +120,13 @@ span.faint-text {
     }
 
     p {
-        line-height: 150%;
+        line-height: 160%;
     }
 
     code {
         color: rgba(0,0,0,.6);
         background: rgba(0,0,0,.1);
-        padding: 1px 6px 2px 6px;
+        padding: 2px 6px 2px 6px;
         font-family: "Menlo Regular", Consolas, Inconsolata, "Vera Sans", "Lucida Console", Courier, monospace, fixed;
         font-size: 15px;
         margin: 0 1px;
@@ -118,7 +143,7 @@ span.faint-text {
         color: rgba(0,0,0,.75);
         position: relative;
         top: -1px;
-        padding: 0px 17px 2px 6px;
+        padding: 2px 17px 2px 6px;
         margin: 0 1px;
         border-radius: 2px;
         cursor: pointer;
@@ -145,7 +170,6 @@ span.faint-text {
     > div:focus {
         outline: none;
     }
-
 }
 
 .tooltipsy {
@@ -262,4 +286,3 @@ span.faint-text {
         transform: scale(1) translateY(-3px);
     }
 }
-

@@ -237,7 +237,7 @@ define(function (require, exports, module) {
     function addTextHighlight(start, end, className){
         var startHighlight = getCodeMirror().doc.posFromIndex(start);
         var endHighlight = getCodeMirror().doc.posFromIndex(end);
-        var highlight = getCodeMirror().markText(startHighlight, endHighlight, { className: className });
+        var highlight = getCodeMirror().markText(startHighlight, endHighlight, { className: className, startStyle: "mark-start" });
         activeTextHighlights[start + "," + end] = highlight;
     }
 
