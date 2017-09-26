@@ -42,6 +42,7 @@ define(function(require) {
             error = {};
             error.message = templatify(errorMessages[result.error.type], result.error);
             error.cursor = result.error.cursor;
+            error.type = result.error.type;
             if(result.error.token) {
                 error.token = result.error.token;
             }

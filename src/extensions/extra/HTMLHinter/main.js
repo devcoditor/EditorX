@@ -49,9 +49,9 @@ define(function (require, exports, module) {
                 errorCache.line = editor._codeMirror.getDoc().posFromIndex(error.cursor).line;
 
                 if(markerPresent){
-                    MarkErrors.scafoldHinter(error.cursor, error.end, errorCache, "instant");
+                    MarkErrors.scafoldHinter(error.cursor, error.end, errorCache, "instant", error.type);
                 } else {
-                    MarkErrors.scafoldHinter(error.cursor, error.end, errorCache, "animated");
+                    MarkErrors.scafoldHinter(error.cursor, error.end, errorCache, "animated", error.type);
                 }
 
             }, errorDisplayTimeoutMS);

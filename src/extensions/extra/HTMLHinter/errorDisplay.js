@@ -7,6 +7,7 @@ define(function (require, exports, module) {
     var EditorManager  = brackets.getModule("editor/EditorManager"),
         ExtensionUtils = brackets.getModule("utils/ExtensionUtils"),
         lineWidgetHTML = require("text!inlineWidget.html"),
+        errorMessages = require("strings"),
         currentErrorWidget,
         errorToggle,
         isShowingDescription,
@@ -71,7 +72,7 @@ define(function (require, exports, module) {
     }
 
     //Publicly available function used to display error markings
-    function scafoldHinter(errorStart, errorEnd, errorObj, markerAnimation) {
+    function scafoldHinter(errorStart, errorEnd, errorObj, markerAnimation, errorType) {
         //Setup neccessary variables
         errorToggle = document.createElement("div");
         isShowingDescription = false;
@@ -83,7 +84,7 @@ define(function (require, exports, module) {
         //Apply on click method to the errorToggle to display the inLineErrorWidget
         errorToggle.onclick = function() {
             if(!isShowingDescription) {
-                showDescription(errorObj);
+                showDescription(errorObj, errorType);
             }
             else {
                 hideDescription();
@@ -194,13 +195,16 @@ define(function (require, exports, module) {
     }
 
     // Creates & shows the error description
-    function showDescription(error) {
-
+    function showDescription(error, errorType) {
         errorToggle.classList.add("nerd");
 
         var description = document.createElement("div");
         description.className = "errorPanel";
-        description.innerHTML = Mustache.render(lineWidgetHTML, {"error": error.message});
+
+        description.innerHTML = Mustache.render(lineWidgetHTML, {
+            "error": error.message,
+            "errorType": errorMessages[errorType + "_TITLE"]
+        });
 
         var highlightEls = description.querySelectorAll('[data-highlight]');
 
