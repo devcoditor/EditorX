@@ -85,10 +85,10 @@ span.faint-text {
     }
 
     a {
-        color: #0083e8;
+        color: #006ec3;
 
         &:hover {
-            color: #0083e8;
+            color: #006ec3;
         }
     }
 
@@ -116,17 +116,21 @@ span.faint-text {
     }
 
     p {
-        line-height: 160%;
+        line-height: 150%;
+        &:not(:last-child) {
+            margin-bottom: 15px;
+        }
     }
 
     code {
         color: rgba(0,0,0,.6);
         background: rgba(0,0,0,.1);
-        padding: 2px 6px 3px 6px;
+        padding: 3px 6px 3px 6px;
+        padding: 1px 4px 2px 4px;
         font-family: "Menlo Regular", Consolas, Inconsolata, "Vera Sans", "Lucida Console", Courier, monospace, fixed;
         font-size: 15px;
-        margin: 0 1px;
         border-radius: 2px;
+        font-weight: 500;
     }
 
     em {
@@ -139,23 +143,28 @@ span.faint-text {
         color: rgba(0,0,0,.75);
         position: relative;
         top: -1px;
-        padding: 2px 17px 3px 6px;
+        // padding: 2px 24px 3px 6px;
+        padding-right: 24px;
         margin: 0 1px;
         border-radius: 2px;
         cursor: pointer;
         box-shadow: 0px 1px 1px rgba(0,0,0,.14);
+
+        color: #5ba87e;
+        background: #222;
 
         &:after {
             content: "";
             position: absolute;
             width: 16px;
             height: 100%;
-            right: 1px;
-            top: 0px;
+            right: 4px;
+            top: -1px;
             background-image: url("./pointer.svg");
             background-position: center;
             background-size: 8px;
             background-repeat: no-repeat;
+            opacity: .5;
         }
     }
 

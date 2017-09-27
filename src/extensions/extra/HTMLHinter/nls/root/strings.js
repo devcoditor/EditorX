@@ -26,12 +26,24 @@ define({
     "INVALID_CSS_PROPERTY_NAME": "<p>CSS property <em data-highlight='[[cssProperty.start]],[[cssProperty.end]]'>[[cssProperty.property]]</em> does not exist. You may want to see a <a href='https://developer.mozilla.org/en/CSS/CSS_Reference'>list of CSS properties</a>.</p>",
     "INVALID_CSS_RULE_TITLE": "INVALID_CSS_RULE_TITLE",
     "INVALID_CSS_RULE": "<p><em data-highlight='[[cssRule.start]],[[cssRule.end]]'>This</em> CSS rule is not legal CSS.</p>",
-    "INVALID_TAG_NAME_TITLE": "INVALID_TAG_NAME_TITLE",
-    "INVALID_TAG_NAME": "<p>The <code>&lt;</code> character <em data-highlight='[[openTag.start]],[[openTag.end]]'>here</em> appears to be the beginning of a tag, but is not followed by a valid tag name.</p> <p>If you just want a <code>&lt;</code> to appear on your Web page, try using <code>&amp;lt;</code> instead.</p> <p>Or, see a <a href='https://developer.mozilla.org/en/docs/Web/Guide/HTML/HTML5/HTML5_element_list'>list of HTML5 tags</a>.</p>",
+    "INVALID_TAG_NAME_TITLE": "That's not a valid tag! <br/> INVALID_TAG_NAME",
+    "INVALID_TAG_NAME": "<p>This <code data-highlight='[[openTag.start]],[[openTag.end]]'>&lt;</code> character appears to be the beginning of a tag, but is not followed by a valid tag name.</p> <p>If you just want a <code>&lt;</code> to appear on your Web page, try using <code>&amp;lt;</code> instead.</p> <p>Or, see a <a href='https://developer.mozilla.org/en/docs/Web/Guide/HTML/HTML5/HTML5_element_list'>list of HTML5 tags</a>.</p>",
     "JAVASCRIPT_URL_NOT_ALLOWED_TITLE": "JAVASCRIPT_URL_NOT_ALLOWED_TITLE",
     "JAVASCRIPT_URL_NOT_ALLOWED": "<p>Sorry, but security restrictions on this site prevent you from using the <code>javascript:</code> URL <em data-highlight='[[value.start]],[[value.end]]'>here</em>. If you really need to use JavaScript, consider using <a href='http://jsbin.com/'>jsbin</a> or <a href='http://jsfiddle.net/'>jsfiddle</a>.</p>",
-    "MISMATCHED_CLOSE_TAG_TITLE": "Mismatched Closing Tag",
-    "MISMATCHED_CLOSE_TAG": "<p>The closing <code data-highlight='[[closeTag.start]],[[closeTag.end]]'>&lt;/[[closeTag.name]]&gt;</code> tag doesn't pair with the opening <code data-highlight='[[openTag.start]],[[openTag.end]]'>&lt;[[openTag.name]]&gt;</code> tag. This is likely due to a missing <code>&lt;/[[openTag.name]]&gt;</code> tag.",
+
+    "ORPHAN_CLOSE_TAG_TITLE": "Unexpected closing tag!",
+    "ORPHAN_CLOSE_TAG": "<p>This closing <code data-highlight='[[closeTag.start]],[[closeTag.end]]'>&lt;/[[closeTag.name]]&gt;</code> tag doesn't seem to pair with any opened tags. Are you sure it needs to be here?</p>",
+
+    "MISMATCHED_CLOSE_TAG_DUE_TO_EARLIER_AUTO_CLOSING_TITLE" : "MISMATCHED_CLOSE_TAG_DUE_TO_EARLIER_AUTO_CLOSING_TITLE",
+    "MISMATCHED_CLOSE_TAG_DUE_TO_EARLIER_AUTO_CLOSING" : "MISMATCHED_CLOSE_TAG_DUE_TO_EARLIER_AUTO_CLOSING",
+
+    "MISSING_CLOSING_TAG_NAME_TITLE": "MISSING_CLOSING_TAG_NAME_TITLE",
+    "MISSING_CLOSING_TAG_NAME": "MISSING_CLOSING_TAG_NAME",
+
+
+    "MISMATCHED_CLOSE_TAG_TITLE": "Forgot to close a tag? (MISMATCHED_CLOSE_TAG)",
+    "MISMATCHED_CLOSE_TAG": "<p>This closing <code data-highlight='[[closeTag.start]],[[closeTag.end]]'>&lt;/[[closeTag.name]]&gt;</code> tag doesn't pair with this unclosed <code data-highlight='[[openTag.start]],[[openTag.end]]'>&lt;[[openTag.name]]&gt;</code> tag.</p> <p>Close the <code>&lt;[[openTag.name]]&gt;</code> tag with a matching <code>&lt;/[[openTag.name]]&gt;</code> tag.</p>",
+    // "MISMATCHED_CLOSE_TAG": "<p>This closing <code data-highlight='[[closeTag.start]],[[closeTag.end]]'>&lt;/[[closeTag.name]]&gt;</code> tag doesn't pair with this opening <code data-highlight='[[openTag.start]],[[openTag.end]]'>&lt;[[openTag.name]]&gt;</code> tag. This is likely due to a missing <code>&lt;/[[openTag.name]]&gt;</code> tag.",
     "MISSING_CSS_BLOCK_CLOSER_TITLE": "MISSING_CSS_BLOCK_CLOSER_TITLE",
     "MISSING_CSS_BLOCK_CLOSER": "<p>Missing block closer or next property:value; pair following <em data-highlight='[[cssValue.start]],[[cssValue.end]]'>[[cssValue.value]]</em>.</p>",
     "MISSING_CSS_BLOCK_OPENER_TITLE": "MISSING_CSS_BLOCK_OPENER_TITLE",
