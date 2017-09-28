@@ -38,6 +38,9 @@ define(function(require) {
 
         var error;
 
+        console.log("Parser returns...");
+        console.log(result.error);
+
         if(result.error) {
             error = {};
             error.message = templatify(errorMessages[result.error.type], result.error);
@@ -45,6 +48,9 @@ define(function(require) {
             error.type = result.error.type;
             if(result.error.token) {
                 error.token = result.error.token;
+            }
+            if(result.error.highlight) {
+                error.highlight = result.error.highlight;
             }
         }
 

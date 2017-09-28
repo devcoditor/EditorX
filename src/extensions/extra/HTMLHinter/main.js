@@ -42,9 +42,15 @@ define(function (require, exports, module) {
         if(error) {
             errorDisplayTimeout = setTimeout(function(){
                 clearAllErrors("keep-emoji");
-                if(error.token) {
-                    MarkErrors.addInvalidCodeHighlight(error.token);
+
+                if (error.highlight) {
+                    MarkErrors._addInvalidCodeHighlight(error.highlight);
                 }
+
+                // if (error.token) {
+                //      MarkErrors.addInvalidCodeHighlight(error.token);
+                // }
+
                 errorCache.message = error.message;
                 errorCache.line = editor._codeMirror.getDoc().posFromIndex(error.cursor).line;
 

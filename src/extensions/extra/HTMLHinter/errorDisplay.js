@@ -42,6 +42,25 @@ define(function (require, exports, module) {
     }
 
     //Publicly available function used to display error markings
+    function _addInvalidCodeHighlight(highlight) {
+        addTextHighlight(highlight.start, highlight.end, "red-text");
+
+        highlights.push({
+            start: highlight.start,
+            end: highlight.end
+        });
+
+        // TODO - make this better, we should find out how long the document is firsT?
+        addTextHighlight(highlight.end, 9999999999, "faint-text");
+
+        highlights.push({
+            start: highlight.end,
+            end: 9999999999
+        });
+    }
+
+
+    //Publicly available function used to display error markings
     function addInvalidCodeHighlight(token) {
         var start = token.interval.start;
         var end = token.interval.end;
@@ -269,4 +288,5 @@ define(function (require, exports, module) {
     exports.cleanUp = cleanUp;
     exports.scafoldHinter = scafoldHinter;
     exports.addInvalidCodeHighlight = addInvalidCodeHighlight;
+    exports._addInvalidCodeHighlight = _addInvalidCodeHighlight; // temp new version
 });
