@@ -87,40 +87,60 @@ define({
     "MISSING_CSS_BLOCK_CLOSER_TITLE": "Unclosed block of CSS",
     "MISSING_CSS_BLOCK_CLOSER": "<p>Looks like you forgot to close this block of CSS. Add a <code>}</code> after <code data-highlight='[[cssValue.start]],[[cssValue.end]]'>[[cssValue.value]]</code>.",
 
-    // ✏️ The reporting needs work...
-    // 🔗 https://github.com/mozilla/slowparse/issues/95
+    //✏️ https://github.com/mozilla/slowparse/issues/95
     "MISSING_CSS_BLOCK_OPENER_TITLE": "Forgot to open your CSS block?",
     "MISSING_CSS_BLOCK_OPENER": "Add a <code>{</code> after the <code data-highlight='[[cssSelector.start]],[[cssSelector.end]]'>[[cssSelector.selector]]</code>.",
 
-    //
+    //✏️ https://github.com/mozilla/slowparse/issues/96
     "MISSING_CSS_PROPERTY_TITLE": "Did you forget a CSS property?",
     "MISSING_CSS_PROPERTY": "<p>Missing property for <em data-highlight='[[cssSelector.start]],[[cssSelector.end]]'>[[cssSelector.selector]]</em>.</p>",
 
-    "MISSING_CSS_SELECTOR_TITLE": "MISSING_CSS_SELECTOR",
-    "MISSING_CSS_SELECTOR": "<p>Missing either a new CSS selector or the &lt;/style&gt; tag <em data-highlight='[[cssBlock.start]],[[cssBlock.end]]'>here</em>.</p>",
+    //😀✏️ https://github.com/mozilla/slowparse/issues/97
+    "MISSING_CSS_SELECTOR_TITLE": "Missing selector",
+    "MISSING_CSS_SELECTOR": "<p>Did you forget to add a selector in front of this <code data-highlight='[[cssBlock.start]],[[cssBlock.end]]'>{</code> for the rules that start after?",
 
-    "MISSING_CSS_VALUE_TITLE": "MISSING_CSS_VALUE_TITLE",
-    "MISSING_CSS_VALUE": "<p>Missing value for <em data-highlight='[[cssProperty.start]],[[cssProperty.end]]'>[[cssProperty.property]]</em>.</p>",
-    "SCRIPT_ELEMENT_NOT_ALLOWED_TITLE": "SCRIPT_ELEMENT_NOT_ALLOWED_TITLE",
-    "SCRIPT_ELEMENT_NOT_ALLOWED": "<p>Sorry, but security restrictions on this site prevent you from using <code>&lt;script&gt;</code> tags <em data-highlight='[[openTag.start]],[[closeTag.end]]'>here</em>. If you really need to use JavaScript, consider using <a href='http://jsbin.com/'>jsbin</a> or <a href='http://jsfiddle.net/'>jsfiddle</a>.</p>",
-    "SELF_CLOSING_NON_VOID_ELEMENT_TITLE": "SELF_CLOSING_NON_VOID_ELEMENT_TITLE",
-    "SELF_CLOSING_NON_VOID_ELEMENT": "<p>The <code>&lt;[[name]]&gt;</code> tag <em data-highlight='[[start]],[[end]]'>here</em> can't be self-closed, because <code>&lt;[[name]]&gt;</code> is not a void element; it must be closed with a separate <code>&lt;/[[name]]&gt;</code> tag.</p>",
+    //😀
+    "MISSING_CSS_VALUE_TITLE": "Missing value",
+    "MISSING_CSS_VALUE": "Add a value for the the <code data-highlight='[[cssProperty.start]],[[cssProperty.end]]'>[[cssProperty.property]]</code> rule.",
+
+    //❓✏️https://github.com/mozilla/slowparse/issues/98
+    //"SCRIPT_ELEMENT_NOT_ALLOWED_TITLE": "SCRIPT_ELEMENT_NOT_ALLOWED_TITLE",
+    //"SCRIPT_ELEMENT_NOT_ALLOWED": "<p>Sorry, but security restrictions on this site prevent you from using <code>&lt;script&gt;</code> tags <em data-highlight='[[openTag.start]],[[closeTag.end]]'>here</em>. If you really need to use JavaScript, consider using <a href='http://jsbin.com/'>jsbin</a> or <a href='http://jsfiddle.net/'>jsfiddle</a>.</p>",
+
+    //😀
+    "SELF_CLOSING_NON_VOID_ELEMENT_TITLE": "This is not a self-closing tag",
+    "SELF_CLOSING_NON_VOID_ELEMENT": "This <code data-highlight='[[start]],[[end]]'>&lt;[[name]]&gt;</code> tag can't be self-closed because it is not a void element. Remove the <code>/</code> and then close it with a separate <code>&lt;/[[name]]&gt;</code> tag.",
+
+    //🚫❓- not sure how to make this come up
     "UNCAUGHT_CSS_PARSE_ERROR_TITLE": "UNCAUGHT_CSS_PARSE_ERROR_TITLE",
     "UNCAUGHT_CSS_PARSE_ERROR": "<p>A parse error occurred outside expected cases: <em data-highlight='[[error.start]],[[error.end]]'>[[error.msg]]</em></p>",
+
+    //❓- doesn't seem to get thrown, caught by other stuff first...
     "UNCLOSED_TAG_TITLE": "UNCLOSED_TAG_TITLE",
     "UNCLOSED_TAG": "<p>The <code>&lt;[[openTag.name]]&gt;</code> tag <em data-highlight='[[openTag.start]],[[openTag.end]]'>here</em> never closes.</p>",
+
+    //😀
     "UNEXPECTED_CLOSE_TAG_TITLE": "UNEXPECTED_CLOSE_TAG_TITLE",
     "UNEXPECTED_CLOSE_TAG": "<p>The closing <code>&lt;/[[closeTag.name]]&gt;</code> tag <em data-highlight='[[closeTag.start]],[[closeTag.end]]'>here</em> doesn't pair with anything, because there are no opening tags that need to be closed.</p>",
-    "UNFINISHED_CSS_PROPERTY_TITLE": "UNFINISHED_CSS_PROPERTY_TITLE",
-    "UNFINISHED_CSS_PROPERTY": "<p>Property <em data-highlight='[[cssProperty.start]],[[cssProperty.end]]'>[[cssProperty.property]]</em> still needs finalizing with :</p>",
-    "UNFINISHED_CSS_SELECTOR_TITLE": "UNFINISHED_CSS_SELECTOR_TITLE",
-    "UNFINISHED_CSS_SELECTOR": "<p>Selector <em data-highlight='[[cssSelector.start]],[[cssSelector.end]]'>[[cssSelector.selector]]</em> still needs finalizing with {</p>",
+
+    //😀
+    "UNFINISHED_CSS_PROPERTY_TITLE": "Unfinished CSS rule",
+    "UNFINISHED_CSS_PROPERTY": "This <code data-highlight='[[cssProperty.start]],[[cssProperty.end]]'>[[cssProperty.property]]</code> property still needs finalizing with :</p>",
+
+    //😀
+    "UNFINISHED_CSS_SELECTOR_TITLE": "Unfinished selector",
+    "UNFINISHED_CSS_SELECTOR": "This selector <code data-highlight='[[cssSelector.start]],[[cssSelector.end]]'>[[cssSelector.selector]]</code> still needs finalizing with <code>{</code>",
+
     "UNFINISHED_CSS_VALUE_TITLE": "UNFINISHED_CSS_VALUE_TITLE",
     "UNFINISHED_CSS_VALUE": "<p>Value <em data-highlight='[[cssValue.start]],[[cssValue.end]]'>[[cssValue.value]]</em> still needs finalizing with ;</p>",
+
     "UNKOWN_CSS_KEYWORD_TITLE": "UNKOWN_CSS_KEYWORD_TITLE",
     "UNKOWN_CSS_KEYWORD": "<p>The CSS @keyword <em data-highlight='[[cssKeyword.start]],[[cssKeyword.end]]'>[[cssKeyword.value]]</em> does not match any known @keywords.</p>",
+
+    //✏️https://github.com/mozilla/slowparse/issues/99
     "UNQUOTED_ATTR_VALUE_TITLE": "UNQUOTED_ATTR_VALUE_TITLE",
-    "UNQUOTED_ATTR_VALUE": "<p>The Attribute value <em data-highlight='[[start]]'>here</em> should start with an opening double quote.</p>",
+    "UNQUOTED_ATTR_VALUE": "The Attribute value <code data-highlight='[[start]]'>here</code> should start with an opening double quote.</p>",
+
     "UNTERMINATED_ATTR_VALUE_TITLE": "UNTERMINATED_ATTR_VALUE_TITLE",
     "UNTERMINATED_ATTR_VALUE": "<p>The <code>&lt;[[openTag.name]]&gt;</code> tag's <code>[[attribute.name.value]]</code> attribute has a value <em data-highlight='[[attribute.value.start]]'>here</em> that doesn't end with a closing double quote.</p>",
     "UNTERMINATED_CLOSE_TAG_TITLE": "UNTERMINATED_CLOSE_TAG_TITLE",
