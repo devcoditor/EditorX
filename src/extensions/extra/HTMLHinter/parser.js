@@ -38,7 +38,7 @@ define(function(require) {
 
         var error;
 
-        console.log("Parser returns...");
+        console.log("parser.js receives...");
         console.log(result.error);
 
         if(result.error) {

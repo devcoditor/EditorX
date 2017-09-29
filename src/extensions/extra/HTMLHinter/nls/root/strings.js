@@ -131,24 +131,32 @@ define({
     "UNFINISHED_CSS_SELECTOR_TITLE": "Unfinished selector",
     "UNFINISHED_CSS_SELECTOR": "This selector <code data-highlight='[[cssSelector.start]],[[cssSelector.end]]'>[[cssSelector.selector]]</code> still needs finalizing with <code>{</code>",
 
+    //✏️ https://github.com/mozilla/slowparse/issues/100
     "UNFINISHED_CSS_VALUE_TITLE": "UNFINISHED_CSS_VALUE_TITLE",
     "UNFINISHED_CSS_VALUE": "<p>Value <em data-highlight='[[cssValue.start]],[[cssValue.end]]'>[[cssValue.value]]</em> still needs finalizing with ;</p>",
 
-    "UNKOWN_CSS_KEYWORD_TITLE": "UNKOWN_CSS_KEYWORD_TITLE",
-    "UNKOWN_CSS_KEYWORD": "<p>The CSS @keyword <em data-highlight='[[cssKeyword.start]],[[cssKeyword.end]]'>[[cssKeyword.value]]</em> does not match any known @keywords.</p>",
+    //😀
+    "UNKOWN_CSS_KEYWORD_TITLE": "Unrecognized CSS Keyword",
+    "UNKOWN_CSS_KEYWORD": "The CSS @keyword <code data-highlight='[[cssKeyword.start]],[[cssKeyword.end]]'>[[cssKeyword.value]]</code> does not match any known @keywords.",
 
     //✏️https://github.com/mozilla/slowparse/issues/99
     "UNQUOTED_ATTR_VALUE_TITLE": "UNQUOTED_ATTR_VALUE_TITLE",
     "UNQUOTED_ATTR_VALUE": "The Attribute value <code data-highlight='[[start]]'>here</code> should start with an opening double quote.</p>",
 
-    "UNTERMINATED_ATTR_VALUE_TITLE": "UNTERMINATED_ATTR_VALUE_TITLE",
-    "UNTERMINATED_ATTR_VALUE": "<p>The <code>&lt;[[openTag.name]]&gt;</code> tag's <code>[[attribute.name.value]]</code> attribute has a value <em data-highlight='[[attribute.value.start]]'>here</em> that doesn't end with a closing double quote.</p>",
+    //✏️https://github.com/mozilla/slowparse/issues/101
+    "UNTERMINATED_ATTR_VALUE_TITLE": "Unclosed attribute value",
+    "UNTERMINATED_ATTR_VALUE": "<p>The <code>&lt;[[openTag.name]]&gt;</code> tag's <code>[[attribute.name.value]]</code> attribute has a value <code class='blue' data-highlight='[[attribute.value.start]]'>here</code> that doesn't end with a closing double quote.</p>",
+
     "UNTERMINATED_CLOSE_TAG_TITLE": "UNTERMINATED_CLOSE_TAG_TITLE",
     "UNTERMINATED_CLOSE_TAG": "<p>The closing <code>&lt;/[[closeTag.name]]&gt;</code> tag <em data-highlight='[[closeTag.start]],[[closeTag.end]]'>here</em> doesn't end with a <code>&gt;</code>.</p>",
-    "UNTERMINATED_COMMENT_TITLE": "UNTERMINATED_COMMENT_TITLE",
-    "UNTERMINATED_COMMENT": "<p>The comment <em data-highlight='[[start]]'>here</em> doesn't end with a <code>--&gt;</code>.</p>",
+
+    //✏️https://github.com/mozilla/slowparse/issues/102
+    "UNTERMINATED_COMMENT_TITLE": "Unclosed comment",
+    "UNTERMINATED_COMMENT": "This comment <code class='comment' data-highlight='[[start]]'>&lt;!--</code> needs to be closed with a matching <code>--&gt;</code>.",
+
     "UNTERMINATED_CSS_COMMENT_TITLE": "UNTERMINATED_CSS_COMMENT_TITLE",
     "UNTERMINATED_CSS_COMMENT": "<p>The CSS comment <em data-highlight='[[start]]'>here</em> doesn't end with a <code>*/</code>.</p>",
+
     "UNTERMINATED_OPEN_TAG_TITLE": "UNTERMINATED_OPEN_TAG_TITLE",
     "UNTERMINATED_OPEN_TAG": "<p>The opening <code>&lt;[[openTag.name]]&gt;</code> tag <em data-highlight='[[openTag.start]],[[openTag.end]]'>here</em> doesn't end with a <code>&gt;</code>.</p>"
 });
