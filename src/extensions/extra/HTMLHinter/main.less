@@ -115,22 +115,29 @@ span.faint-text {
         font-size: 15px;
     }
 
-    p {
-        line-height: 150%;
-        &:not(:last-child) {
+    .error-text {
+        line-height: 165%;
+
+        p {
+            margin-bottom: 0;
+        }
+
+        p:not(:last-child) {
             margin-bottom: 15px;
         }
+
     }
 
     code {
-        color: rgba(0,0,0,.6);
+        color: rgba(0,0,0,.8);
         background: rgba(0,0,0,.1);
-        padding: 3px 6px 3px 6px;
-        padding: 1px 4px 2px 4px;
+        padding: 2px 4px 3px 4px;
         font-family: "Menlo Regular", Consolas, Inconsolata, "Vera Sans", "Lucida Console", Courier, monospace, fixed;
         font-size: 15px;
         border-radius: 2px;
         font-weight: 500;
+        position: relative;
+        top: -1px;
     }
 
     em {
@@ -138,12 +145,12 @@ span.faint-text {
     }
 
     [data-highlight] {
+        font-weight: 500;
         font-size: 15px;
         background: white;
         color: rgba(0,0,0,.75);
         position: relative;
         top: -1px;
-        // padding: 2px 24px 3px 6px;
         padding-right: 24px;
         margin: 0 1px;
         border-radius: 2px;
@@ -155,6 +162,10 @@ span.faint-text {
 
         &.attribute {
             color: #a0779f;
+        }
+
+        &.text {
+            color: rgba(255,255,255,.8);
         }
 
         &:after {
