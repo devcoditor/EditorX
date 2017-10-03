@@ -220,6 +220,9 @@ define(function (require, exports, module) {
         var description = document.createElement("div");
         description.className = "errorPanel";
 
+        console.log("showDescription");
+        console.log(error.message);
+
         description.innerHTML = Mustache.render(lineWidgetHTML, {
             "error": error.message,
             "errorType": errorMessages[errorType + "_TITLE"]

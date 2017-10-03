@@ -158,5 +158,10 @@ define({
     "UNTERMINATED_CSS_COMMENT": "<p>The CSS comment <em data-highlight='[[start]]'>here</em> doesn't end with a <code>*/</code>.</p>",
 
     "UNTERMINATED_OPEN_TAG_TITLE": "UNTERMINATED_OPEN_TAG_TITLE",
-    "UNTERMINATED_OPEN_TAG": "<p>The opening <code>&lt;[[openTag.name]]&gt;</code> tag <em data-highlight='[[openTag.start]],[[openTag.end]]'>here</em> doesn't end with a <code>&gt;</code>.</p>"
+    "UNTERMINATED_OPEN_TAG": "<p>The opening <code>&lt;[[openTag.name]]&gt;</code> tag <em data-highlight='[[openTag.start]],[[openTag.end]]'>here</em> doesn't end with a <code>&gt;</code>.</p>",
+
+
+    "INVALID_CHILD_TAG_WARNING_TITLE" : "INVALID_CHILD_TAG_WARNING",
+    "INVALID_CHILD_TAG_WARNING" : "This <code data-highlight='[[invalidTag.start]],[[invalidTag.end]]'>[[invalidTag.name]]</code> This opening <code data-highlight='[[openTag.start]],[[openTag.end]]'>&lt;[[openTag.name]]&gt;</code> here sucks!",
+
 });
