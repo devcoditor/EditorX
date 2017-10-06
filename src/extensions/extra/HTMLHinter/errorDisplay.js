@@ -16,6 +16,24 @@ define(function (require, exports, module) {
     ExtensionUtils.loadStyleSheet(module, "main.less");
     require("tooltipsy.source");
 
+
+    // TODO - this is also in parser.js, so we should not duplicate it.
+    function templatify(input, macros) {
+        if(!macros) {
+            return input.replace(new RegExp("\\[\\[[^\\]]+\\]\\]", "g"), "");
+        }
+        return input.replace(new RegExp("\\[\\[([^\\]]+)\\]\\]", "g"), function(a,b) {
+            b = b.split(".");
+            var rep = macros[b[0]];
+            b = b.slice(1);
+            while(b && b.length>0 && rep) {
+                rep = rep[b.splice(0,1)[0]];
+            }
+            return rep!==null && rep!==undefined ? rep : "";
+        });
+    }
+
+
     //Publicly available function to remove all errors from brackets
     function cleanUp(line, type) {
 
@@ -91,7 +109,10 @@ define(function (require, exports, module) {
     }
 
     //Publicly available function used to display error markings
-    function scafoldHinter(errorStart, errorEnd, errorObj, markerAnimation, errorType) {
+    function scafoldHinter(errorStart, errorEnd, errorObj, markerAnimation, errorType, errorTitle) {
+        console.log("scafoldHinter", errorType, errorTitle);
+
+
         //Setup neccessary variables
         errorToggle = document.createElement("div");
         isShowingDescription = false;
@@ -103,7 +124,7 @@ define(function (require, exports, module) {
         //Apply on click method to the errorToggle to display the inLineErrorWidget
         errorToggle.onclick = function() {
             if(!isShowingDescription) {
-                showDescription(errorObj, errorType);
+                showDescription(errorObj, errorType, errorTitle);
             }
             else {
                 hideDescription();
@@ -214,18 +235,15 @@ define(function (require, exports, module) {
     }
 
     // Creates & shows the error description
-    function showDescription(error, errorType) {
+    function showDescription(error, errorType, errorTitle) {
         errorToggle.classList.add("nerd");
 
         var description = document.createElement("div");
         description.className = "errorPanel";
 
-        console.log("showDescription");
-        console.log(error.message);
-
         description.innerHTML = Mustache.render(lineWidgetHTML, {
             "error": error.message,
-            "errorType": errorMessages[errorType + "_TITLE"]
+            "errorTitle": errorTitle
         });
 
         var highlightEls = description.querySelectorAll('[data-highlight]');

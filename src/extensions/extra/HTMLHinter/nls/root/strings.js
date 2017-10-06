@@ -160,8 +160,18 @@ define({
     "UNTERMINATED_OPEN_TAG_TITLE": "UNTERMINATED_OPEN_TAG_TITLE",
     "UNTERMINATED_OPEN_TAG": "<p>The opening <code>&lt;[[openTag.name]]&gt;</code> tag <em data-highlight='[[openTag.start]],[[openTag.end]]'>here</em> doesn't end with a <code>&gt;</code>.</p>",
 
-
-    "INVALID_CHILD_TAG_WARNING_TITLE" : "INVALID_CHILD_TAG_WARNING",
-    "INVALID_CHILD_TAG_WARNING" : "This <code data-highlight='[[invalidTag.start]],[[invalidTag.end]]'>[[invalidTag.name]]</code> This opening <code data-highlight='[[openTag.start]],[[openTag.end]]'>&lt;[[openTag.name]]&gt;</code> here sucks!",
+    //❓ TODO - figure out where to send people
+    "BLOCK_INSIDE_INLINE_ELEMENT_TITLE" : "You can't put a &lt;[[invalidTag.name]]&gt; here!",
+    "BLOCK_INSIDE_INLINE_ELEMENT" : `
+      <p>
+      This <code data-highlight='[[invalidTag.start]],[[invalidTag.end]]'>&lt;[[invalidTag.name]]&gt;</code>
+      is a block element, which are not allowed inside of inline elements, like this
+      <code data-highlight='[[openTag.start]],[[openTag.end]]'>&lt;[[openTag.name]]&gt;</code>.
+      </p>
+      <p>
+      Change the <code>[[openTag.name]]</code> to a block-level
+      element: here's a <a href="https://developer.mozilla.org/en-US/docs/Web/HTML/Block-level_elements">handy list</a>.
+      </p>
+    `
 
 });

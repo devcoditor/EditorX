@@ -109,7 +109,7 @@ span.faint-text {
     h4 {
         font-weight: bold;
         font-family: inherit;
-        margin: 0 0 10px 0;
+        margin: 0 0 12px 0;
         padding: 0;
         color: rgba(0,0,0,.8);
         font-size: 15px;
@@ -117,13 +117,14 @@ span.faint-text {
 
     .error-text {
         line-height: 165%;
+        transform: scale(1);
 
         p {
             margin-bottom: 0;
         }
 
         p:not(:last-child) {
-            margin-bottom: 15px;
+            margin-bottom: 12px;
         }
 
     }
@@ -131,7 +132,7 @@ span.faint-text {
     code {
         color: rgba(0,0,0,.8);
         background: rgba(0,0,0,.1);
-        padding: 2px 6px 3px 6px;
+        padding: 2px 6px 4px 6px;
         font-family: "Menlo Regular", Consolas, Inconsolata, "Vera Sans", "Lucida Console", Courier, monospace, fixed;
         font-size: 15px;
         border-radius: 2px;
@@ -149,16 +150,46 @@ span.faint-text {
         font-size: 15px;
         background: white;
         color: rgba(0,0,0,.75);
+        padding: 2px 6px 4px 6px;
+        line-height: 16px;
         position: relative;
         top: -1px;
-        padding-right: 24px;
+        display: inline-block;
+        // padding-right: 24px;
+
         margin: 0 1px;
         border-radius: 2px;
         cursor: pointer;
         box-shadow: 0px 1px 1px rgba(0,0,0,.14);
-
         color: #5ba87e;
-        background: #222;
+        background: rgba(0,0,0,.8);
+
+        animation: pulse 3s ease-in-out;
+        animation-iteration-count: 1;
+
+        @keyframes pulse {
+            10% {
+                transform: scale(1);
+                background: rgba(0,0,0,.8);
+            }
+            15% {
+                transform: scale(1.1);
+                background: rgba(0,0,0,.7);
+            }
+            20% {
+                transform: scale(1);
+                background: rgba(0,0,0,.8);
+            }
+            25% {
+                transform: scale(1.1);
+                background: rgba(0,0,0,.7);
+            }
+            30% {
+                transform: scale(1);
+                background: rgba(0,0,0,.8);
+            }
+        }
+
 
         &.comment {
             color: rgba(255, 255, 255, 0.3);
@@ -176,19 +207,24 @@ span.faint-text {
             color: rgba(255,255,255,.8);
         }
 
-        &:after {
-            content: "";
-            position: absolute;
-            width: 16px;
-            height: 100%;
-            right: 4px;
-            top: -1px;
-            background-image: url("./pointer.svg");
-            background-position: center;
-            background-size: 8px;
-            background-repeat: no-repeat;
-            opacity: .5;
-        }
+        // &:after {
+        //     content: "";
+        //     position: absolute;
+        //     width: 16px;
+        //     height: 100%;
+        //     right: 4px;
+        //     top: -1px;
+            // background-image: url("./pointer.svg");
+
+            // background-position: center;
+            // background-size: 8px;
+            // background-repeat: no-repeat;
+            // opacity: .5;
+
+            // background-image: url("./images/crosshair.svg");
+            // background-size: 16px;
+            // opacity: 1;
+        // }
     }
 
     p {
