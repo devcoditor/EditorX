@@ -20,10 +20,10 @@ for info on how we're using CodeMirror.
 
 # How to setup Bramble (Brackets) in your local machine
 
-Step 1: Make sure you fork and clone [Bramble](https://github.com/mozilla/brackets).
+Step 1: Make sure you fork and clone [Brackets](https://github.com/mozilla/brackets). It uses submodules so don't forget to add `--recurse-submodules` to your `git clone` or Brackets won't work.
 
 ```
-$ git clone https://github.com/[yourusername]/brackets --recursive
+$ git clone https://github.com/[yourusername]/brackets --recurse-submodules
 ```
 
 Step 2: Install its dependencies
