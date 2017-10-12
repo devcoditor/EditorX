@@ -12,5 +12,7 @@ environment:
 install:
   - ps: Install-Product node $env:nodejs_version
   - npm install
+  - npm install -g grunt-cli
 
-test: false
+test_script:
+  - grunt build-browser-compressed
