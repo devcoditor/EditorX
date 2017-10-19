@@ -32,10 +32,7 @@ define(function (require, exports, module) {
         });
     }
 
-    function sendActiveEditorChangeEvent(file) {
-        var fullPath = file.fullPath;
-        var filename = Path.basename(fullPath);
-
+    function sendActiveEditorChangeEvent(fullPath, filename) {
         sendEvent({
             type: "bramble:activeEditorChange",
             fullPath: fullPath,
@@ -98,20 +95,27 @@ define(function (require, exports, module) {
         var lastKnownEditorFilePath;
         MainViewManager.on("currentFileChange", function(e, file) {
             if(!file) {
+                lastKnownEditorFilePath = "";
+                sendActiveEditorChangeEvent("", "");
                 return;
             }
 
-            if(file.fullPath !== lastKnownEditorFilePath) {
-                lastKnownEditorFilePath = file.fullPath;
-                sendActiveEditorChangeEvent(file);
+            var fullPath = file.fullPath;
+            var filename = Path.basename(fullPath);
+
+            if(fullPath !== lastKnownEditorFilePath) {
+                lastKnownEditorFilePath = fullPath;
+                sendActiveEditorChangeEvent(fullPath, filename);
             }
         });
 
         // Listen for file rename
         BrambleEvents.on("fileRenamed", function(e, oldFilePath, newFilePath) {
             if (oldFilePath === lastKnownEditorFilePath) {
-                lastKnownEditorFilePath = newFilePath;
-                sendActiveEditorChangeEvent({ fullPath: newFilePath });
+                var fullPath = newFilePath;
+                var filename = Path.basename(fullPath);
+                lastKnownEditorFilePath = fullPath;
+                sendActiveEditorChangeEvent(fullPath, filename);
             }
         });
 
