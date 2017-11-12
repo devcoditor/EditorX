@@ -9,18 +9,26 @@ define(function (require, exports, module) {
     var CommandManager  = require("command/CommandManager");
     var FilerUtils      = require("filesystem/impls/filer/FilerUtils");
     var DocumentManager = require("document/DocumentManager");
-    var FilerUtils      = require("filesystem/impls/filer/FilerUtils");
+    var FilerUtils      = require("filesystem/impls/filer/FilerUtils"); 
+    var BracketsFiler   = require("filesystem/impls/filer/BracketsFiler");
 
     var _webrtc,
-        _pending,
         _changing,
         _room,
         _received = {}, // object to keep track of a file being received to make sure we dont emit it back.
         _renaming,
-        _buffer;
+        _fs,
+        _buffer,
+        _initialized,
+        _receiveQueue,
+        _deletedRemotely;
 
     var TIME = 5000; // time in mili seconds after which the file buffer should be cleared
 
+    /**
+     * Called to initialize a WebRTC connection.
+     * @param : options : {serverUrl : Url to the WebRTC Turn Server, room : Unique identifier of the room to connect to} 
+     */
     function connect(options) {
         if(_webrtc) {
             console.error("Collaboration already initialized");
@@ -46,17 +54,39 @@ define(function (require, exports, module) {
         }
         _room = options.room || Math.random().toString(36).substring(7);
         console.log(_room);
+        _fs = BracketsFiler.fs();
         _webrtc.joinRoom(_room, function() {
-            _webrtc.sendToAll("new client", {});
-            _webrtc.on("createdPeer", _initializeNewClient);
+            if(_webrtc.getPeers().length > 0) {
+                var rootDir = StartupState.project("root");
+                _fs.ls(rootDir, {}, function(err, entries) {
+                    if(err) {
+                        console.log(err);
+                        return;
+                    }
+
+                    var paths = entries.map(function(entry) {
+                        var fullPath = Path.join(rootDir, entry.path);
+                        return entry.type === "DIRECTORY" ? fullPath.replace(/\/?$/, "/") : fullPath;
+                    });
+                    _removeLocally(paths)
+                        .then(function() {
+                            _webrtc.sendToAll('initialize-me', true);
+                        })
+                        .fail(function(err) {
+                            console.log(err);
+                        });
+                });
+            }
 
             _webrtc.connection.on('message', _handleMessage);
         });
 
-        _pending = []; // pending clients that need to be initialized.
         _changing = false;
         _renaming = {};
         _buffer = {};
+        _initialized = {};
+        _deletedRemotely= {};
+        _receiveQueue = [];
 
         window.setInterval(_clearBuffer, TIME);
         FileSystem.on("rename", function(event, oldPath, newPath) {
@@ -74,40 +104,50 @@ define(function (require, exports, module) {
             var rootDir = StartupState.project("root");
             if(added) {
                 added.forEach(function(addedFile) {
-                    var relPath = Path.relative(StartupState.project("root"), addedFile._path);
-                    // send file only if this client added this file, and not received it
-                    if(_received[relPath]) {
-                        // Clear _received of file name for future events.
-                        delete _received[relPath];
-                        return;
-                    }
-                    FilerUtils.readFileAsBinary(addedFile._path, function(err, buffer) {
-                        if(err) {
-                            console.log(err);
-                        }
-                        var file = new File([buffer], relPath);
-                        _webrtc.getPeers().forEach(function(peer) {
-                            peer.sendFile(file);
-                        });
-                    });
+                    _sendFileViaWebRTC(addedFile);
                 });
             }
             if(removed) {
                 removed.forEach(function(removedFile) {
-                    _webrtc.sendToAll("file-removed", {path: Path.relative(rootDir, removedFile.fullPath), isFolder: removedFile.isDirectory});
+                    var relPath = Path.relative(rootDir, removedFile.fullPath);
+                    if(_deletedRemotely[removedFile.fullPath]) {
+                        delete _deletedRemotely[removedFile.fullPath];
+                        return;
+                    }
+                    _webrtc.sendToAll("file-removed", {path: relPath, isFolder: removedFile.isDirectory});
                 });
             }
         });
     };
 
+    /**
+     * Remove the set of files contained int the found array
+     * This method doesn't emit these delete events to connected clients.
+     * @param : found : Array containing the file paths to be deleted.
+     * expects a '/' in the end for foler.
+     */
+    function _removeLocally(found) {
+        if(found.length === 0) {
+            return (new $.Deferred()).resolve().promise();
+        }
+
+        var fullPath = found.shift();
+        return _removeLocally(found)
+            .then(function() {
+                return _removeFile(fullPath, fullPath.endsWith('/'));
+            });
+    }
+
+
+    /**
+     * Handles events received from remote clients
+     * @param : msg : {type : to identify the type of event, payload : data associated with the data}
+     */
     function _handleMessage(msg) {
         var payload = msg.payload;
         var fullPath, oldPath, newPath;
         var rootDir = StartupState.project("root");
         switch(msg.type) {
-            case "new client":
-                _pending.push(msg.from);
-                break;
             case "codemirror-change":
                 payload.changes.forEach(function(delta) {
                     _handleCodemirrorChange(delta, payload.path);
@@ -123,42 +163,104 @@ define(function (require, exports, module) {
                     });
                 break;
             case "file-added":
+                _received[payload.path] = true;
                 if(payload.isFolder) {
                     CommandManager.execute("bramble.addFolder", {filename: payload.path});
                 } else {
-                    CommandManager.execute("bramble.addFile", {filename: payload.path, contents: ""});
+                    CommandManager.execute("bramble.addFile", {filename: payload.path, contents: payload.text});
                 }
                 break;
             case "file-removed":
-                fullPath = Path.join(rootDir, payload.path);
-                if(payload.isFolder) {
-                    FileSystem.getDirectoryForPath(fullPath).unlink();
+                var fullPath = Path.join(rootDir, payload.path);
+                _removeFile(fullPath, payload.isFolder);
+                break;
+            case "initialize-file":
+                if(_initialized[payload.path]) {
+                    if(!payload.fromCodemirror) {
+                        return;
+                    }
+                }
+
+                _received[payload.path] = true;
+                _initialized[payload.path] = true;
+                _receiveQueue.push(payload);
+
+                if(_receiveQueue.length === 1) {
+                    _startInitializingfiles(_receiveQueue[0]);
+                }
+                break;
+            case "initialize-me":
+                if(_webrtc.getPeers(msg.from)[0]) {
+                    _initializeNewClient(_webrtc.getPeers(msg.from)[0]);
                 } else {
-                    FileSystem.getFileForPath(fullPath).unlink();
+                    console.log("Client " + msg.from + " Not found");
                 }
-                break;
-            case "initClient":
-                if(_changing) {
-                    return;
-                }
-                _changing = true;
-                EditorManager.getCurrentFullEditor()._codeMirror.setValue(payload);
-                _changing = false;
-                break;
         }
     };
 
-
-    function _initializeNewClient(peer) {
-        _changing = true;
-        for(var i = 0; i<_pending.length; i++) {
-            if(_pending[i] === peer.id) {
-                peer.send("initClient", EditorManager.getCurrentFullEditor()._codeMirror.getValue());
-                _pending.splice(i, 1);
-                break;
-            }
+    /**
+     * Function to start initializing the file system sequentially in order of files
+     * received from the connected peers.
+     * Using a sequential approach to make sure we don't initialize a file inside a folder
+     * before the folder is made.
+     */
+    function _startInitializingfiles(payload) {
+        if(payload.isFolder) {
+            CommandManager.execute("bramble.addFolder", {filename: payload.path})
+            .always(function() {
+                _receiveQueue.splice(0, 1);
+                if(_receiveQueue.length > 0) {
+                    _startInitializingfiles(_receiveQueue[0]);
+                }
+            });
+        } else {
+            CommandManager.execute("bramble.addFile", {filename: payload.path, contents: payload.text})
+            .always(function() {
+                _receiveQueue.splice(0, 1);
+                if(_receiveQueue.length > 0) {
+                    _startInitializingfiles(_receiveQueue[0]);
+                }
+            });
         }
-        _changing = false;
+    }
+
+    /**
+     * Function that recursively walks through all fils and folders to initialize a 
+     * newly connected peer.
+     */
+    function _initializeNewClient(peer) {
+        _fs.ls(StartupState.project("root"), { recursive: true }, function(err, entries) {
+            if(err) {
+                console.log(err);
+                return;
+            }
+
+            function processPath(fullPath) {
+                var cm = _getOpenCodemirrorInstance(fullPath);
+                var relPath = Path.relative(StartupState.project("root"), fullPath);
+                if(cm) {
+                    peer.send('initialize-file', {path: relPath, text: cm.getValue(), isFolder: false, fromCodemirror: true});
+                } else {
+                    _sendFileViaWebRTC(FileSystem.getFileForPath(fullPath), peer, 'initialize-file');
+                }
+
+            }
+
+            function processEntries(parentPath, entries) {
+                entries.forEach(function(entry) {
+                    var fullPath = Path.join(parentPath, entry.path);
+                    if(entry.type !== 'DIRECTORY') {
+                        processPath(fullPath);
+                    } else {
+                        processPath(fullPath.replace(/\/?$/, "/"));
+                        processEntries(fullPath, entry.contents);
+                    }
+                });
+            }
+
+            processEntries(StartupState.project("root"), entries);
+        });
+        
         peer.on("fileTransfer", function (metadata, receiver) {
             console.log("incoming filetransfer", metadata.name, metadata);
             receiver.on("progress", function (bytesReceived) {
@@ -186,6 +288,31 @@ define(function (require, exports, module) {
         });
     };
 
+    /**
+     * Function to remove a file/folder that was deleted by a connected peer.
+     * @param : fullPath : absolute path to the file to be deleted
+     * @param : isFolder : Boolean 
+     */
+    function _removeFile(fullPath, isFolder) {
+        var result = new $.Deferred();
+        _deletedRemotely[fullPath] = true;
+        var fnName = isFolder ? "getDirectoryForPath" : "getFileForPath";
+        FileSystem[fnName](fullPath).unlink(function(err) {
+            if(err) {
+                result.reject(err);
+            }
+            result.resolve();
+        });
+        return result.promise();
+    }
+
+    /**
+     * Function to apply changes made in a peer's editor to the current brackets instance.
+     * If we have a codemirror instance open for the file, we apply the changes directly to it.
+     * Else we push to a buffer that keeps track of the changes made in the file by other clients
+     * and applies those changes directly to the filesystem every TIME seconds, or whenever the user
+     * opens that file.
+     */
     function _handleCodemirrorChange(delta, relPath) {
         if(_changing) {
             return;
@@ -233,12 +360,6 @@ define(function (require, exports, module) {
         }
     }
 
-    function hasPendingDiffsToBeApplied(path) {
-        if(!_webrtc || !_buffer || !_buffer[path] || _buffer[path].length === 0) {
-            return false;
-        }
-        return true;
-    }
     /**
      * Applies all the changes kept in the buffer array that have occured on connected clients but have not
      * yet been written to the filesystem for this file.
@@ -304,10 +425,15 @@ define(function (require, exports, module) {
         return result.promise();
     }
 
+    /**
+     * Returns a codemirror instance associated with the file identified by the parameter
+     * Returns null if the file is not open in a codemirror instance and resides only in the filesystems
+     * @param {String} : Absolute path to the file
+     */
     function _getOpenCodemirrorInstance(fullPath) {
-        var masterEditor = EditorManager.getCurrentFullEditor();
-        if(masterEditor.getFile().fullPath === fullPath) {
-            return masterEditor._codeMirror;
+        var doc = DocumentManager.getOpenDocumentForPath(fullPath);
+        if(doc && doc._masterEditor) {
+            return doc._masterEditor._codeMirror;
         }
         return null;
     }
@@ -359,6 +485,29 @@ define(function (require, exports, module) {
         return pos;
     }
 
+    /**
+     * Function that returns weather a filer is a text file or not
+     * Used for differentiating the way in which the file is sent to the client
+     * A binary file is sent peer to peer, whereas a text file is sent through a socket server.
+     * @param {File} : file to be identified as text/binary.
+     */
+    function _isTextFile(file) {
+        //needs to be checked for text/non-text files
+        var ext = Path.extname(file);
+        if(ext === ".jpg]" || ext === ".png]" || ext === ".pdf]" || ext === ".mp4]") {
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
+     * Public function that is triggered when the user makes a change to his editor.
+     * The function sends this change to all the connected peers for them to apply the same
+     * to their editors.
+     * @param {Array} Array containing set of changes made by the user
+     * fullPath {String} Identifier of the file to which the change was made.
+     */
     function triggerCodemirrorChange(changeList, fullPath) {
         if(_changing) {
             return;
@@ -367,9 +516,64 @@ define(function (require, exports, module) {
         _webrtc.sendToAll("codemirror-change", {changes: changeList, path: relPath});
     };
 
-    exports.hasPendingDiffsToBeApplied = hasPendingDiffsToBeApplied;
+    /**
+     * Private function to send a file to the connected peers.
+     * This could be a newly added file at this client's brackets istance, or could be a file
+     * that a peer has asked for initializing his/her filesystem.
+     * @param {!File} : addedFile : File that is to be sent
+     * @param {!peer} : Peer to which the image needs to be sent. Default as all the peers
+     * @param {!String} : Type of message to identify the event on remote clients. Default as 'file-addeed'.
+     */
+    function _sendFileViaWebRTC(addedFile, peer, message) {
+        message = message || 'file-added';
+        var relPath = Path.relative(StartupState.project("root"), addedFile._path);
+        // send file only if this client added this file, and not received it
+        if(_received[relPath]) {
+            // Clear _received of file name for future events.
+            delete _received[relPath];
+            return;
+        }
+
+        if(addedFile.isDirectory) {
+            if(peer) {
+                peer.send(message, {path: relPath, isFolder: true});
+                return;
+            }
+            _webrtc.sendToAll(message, {path: relPath, isFolder: true});
+            return;
+        }
+
+        if(_isTextFile(addedFile)) {
+            FilerUtils.readFileAsUTF8(addedFile._path)
+            .done(function(text, stats) {
+                if(peer) {
+                    peer.send(message, {path: relPath, text: text, isFolder: false});
+                    return;
+                }
+                _webrtc.sendToAll(message, {path: relPath, text: text, isFolder: false});
+            })
+            .fail(function(err) {
+                console.log("Not Able to Read File while Collaborating");
+            });
+            return;
+        }
+
+        FilerUtils.readFileAsBinary(addedFile._path, function(err, buffer) {
+            if(err) {
+                console.log(err);
+            }
+            var file = new File([buffer], relPath);
+            if(peer) {
+                peer.sendFile(file);
+                return;
+            }
+            _webrtc.getPeers().forEach(function(peer) {
+                peer.sendFile(file);
+            });
+        });
+    }
+
     exports.applyDiffsToFile = applyDiffsToFile;
     exports.connect = connect;
     exports.triggerCodemirrorChange = triggerCodemirrorChange;
-
 });
