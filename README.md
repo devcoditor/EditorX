@@ -406,4 +406,4 @@ In module tree:
           utils/Global
 ```
 
-To fix it, run `git submodules update --init --recursive` in the main directory.
+To fix it, run `git submodule update --init --recursive` in the main directory.
