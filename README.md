@@ -20,7 +20,7 @@ for info on how we're using CodeMirror.
 
 # How to setup Bramble (Brackets) in your local machine
 
-Step 1: Make sure you fork and clone [Bramble](https://github.com/mozilla/brackets).
+Step 1: Make sure you fork and clone [Brackets](https://github.com/mozilla/brackets).
 
 ```
 $ git clone https://github.com/[yourusername]/brackets --recursive
@@ -391,3 +391,19 @@ There are also high-level events for changes to files:
 ```
 
 NOTE: if you want to receive generic events for file system events, especially events across windows using the same file system, use [fs.watch()](https://github.com/filerjs/filer#watch) instead.
+
+# Troubleshooting
+
+If you forgot to add the `--recursive` flag while cloning this repository, you might run into a similar error:
+
+```bash
+Tracing dependencies for: main
+Error: ENOENT: no such file or directory, open '[..]/brackets/src/thirdparty/text/text.js'
+In module tree:
+    brackets
+      language/LanguageManager
+        file/FileUtils
+          utils/Global
+```
+
+To fix it, run `git submodule update --init --recursive` in the main directory.
