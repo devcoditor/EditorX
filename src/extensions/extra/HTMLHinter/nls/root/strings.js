@@ -8,6 +8,7 @@ define({
     //✏️ - Needs follow up work
     //❓ - Audited, have questions.
     //🚫 - Not yet audited.
+    //✅ - Vetted and added to List of allowed rules
 
     //😀
     "ATTRIBUTE_IN_CLOSING_TAG_TITLE": "No attributes in a closing tag allowed!",
@@ -57,23 +58,29 @@ define({
     "INVALID_CSS_RULE_TITLE": "INVALID_CSS_RULE_TITLE",
     "INVALID_CSS_RULE": "<p><em data-highlight='[[cssRule.start]],[[cssRule.end]]'>This</em> CSS rule is not legal CSS.</p>",
 
-    //😀
+    // 😀
     "INVALID_TAG_NAME_TITLE": "That's not a valid tag!",
     "INVALID_TAG_NAME": "<p><code data-highlight='[[openTag.start]],[[openTag.end]]'>&lt;[[openTag.name]]</code> appears to be the start of a tag, but <code>[[openTag.name]]</code> is not a valid tag name.</p> <p>Here's <a href='https://developer.mozilla.org/en/docs/Web/Guide/HTML/HTML5/HTML5_element_list'>a list of HTML5 tags</a>.</p>",
     //Took out: <p>If you just want a <code>&lt;</code> to appear on your page, use <code>&amp;lt;</code> instead.</p>
 
-    //❓ Doesn't seem to get used every
+    // ❓ Doesn't seem to get used every
     // "JAVASCRIPT_URL_NOT_ALLOWED_TITLE": "JAVASCRIPT_URL_NOT_ALLOWED_TITLE",
     // "JAVASCRIPT_URL_NOT_ALLOWED": "<p>Sorry, but security restrictions on this site prevent you from using the <code>javascript:</code> URL <em data-highlight='[[value.start]],[[value.end]]'>here</em>. If you really need to use JavaScript, consider using <a href='http://jsbin.com/'>jsbin</a> or <a href='http://jsfiddle.net/'>jsfiddle</a>.</p>",
 
-    // 😀
+    // ✅
+    // For closing tags that don't match the opening tag.
     "ORPHAN_CLOSE_TAG_TITLE": "Unexpected closing tag!",
-    "ORPHAN_CLOSE_TAG": "<p>This closing <code data-highlight='[[closeTag.start]],[[closeTag.end]]'>&lt;/[[closeTag.name]]&gt;</code> tag doesn't seem to pair with any opened tags. Are you sure it needs to be here?</p>",
+    "ORPHAN_CLOSE_TAG": "<p>This closing <code data-highlight='[[closeTag.start]],[[closeTag.end]]'>&lt;/[[closeTag.name]]&gt;</code> tag doesn't seem to pair with this opening <code data-highlight='[[openTag.start]],[[openTag.end]]'>&lt;[[openTag.name]]&gt;</code> tag before it.</p>",
 
-    // 😀
-    "MISMATCHED_CLOSE_TAG_TITLE": "Mistyped a closing tag?",
-    "MISMATCHED_CLOSE_TAG": "<p>This closing <code data-highlight='[[closeTag.start]],[[closeTag.end]]'>&lt;/[[closeTag.name]]&gt;</code> tag doesn't pair with this unclosed <code data-highlight='[[openTag.start]],[[openTag.end]]'>&lt;[[openTag.name]]&gt;</code> tag.</p> <p>Close the <code>&lt;[[openTag.name]]&gt;</code> tag with a matching <code>&lt;/[[openTag.name]]&gt;</code> tag.</p>",
+    // ✅ TODO - needs a highlight
+    // For closing tags that don't match the opening tag. but are imilar to the opening tag (so could be a typo).
+    "MISMATCHED_CLOSE_TAG_TITLE": "Typo in the closing tag?",
+    "MISMATCHED_CLOSE_TAG": "<p>This closing <code data-highlight='[[closeTag.start]],[[closeTag.end]]'>&lt;/[[closeTag.name]]&gt;</code> tag doesn't pair with this opening <code data-highlight='[[openTag.start]],[[openTag.end]]'>&lt;[[openTag.name]]&gt;</code> tag.</p> <p>Close the <code>&lt;[[openTag.name]]&gt;</code> tag with a matching <code>&lt;/[[openTag.name]]&gt;</code> tag.</p>",
 
+    // ✅
+    // For tags that are outside of all other closed tag pairs.
+    "UNEXPECTED_CLOSE_TAG_TITLE": "What's this closing tag for?",
+    "UNEXPECTED_CLOSE_TAG": "<p>This closing <em data-highlight='[[closeTag.start]],[[closeTag.end]]'>&lt;/[[closeTag.name]]&gt;</em> tag isn't needed. There are no opening tags that need to be closed.</p>",
 
     //❓ Will leave these for Pomax
     "MISMATCHED_CLOSE_TAG_DUE_TO_EARLIER_AUTO_CLOSING_TITLE" : "MISMATCHED_CLOSE_TAG_DUE_TO_EARLIER_AUTO_CLOSING_TITLE",
@@ -118,10 +125,6 @@ define({
     //❓- doesn't seem to get thrown, caught by other stuff first...
     "UNCLOSED_TAG_TITLE": "UNCLOSED_TAG_TITLE",
     "UNCLOSED_TAG": "<p>The <code>&lt;[[openTag.name]]&gt;</code> tag <em data-highlight='[[openTag.start]],[[openTag.end]]'>here</em> never closes.</p>",
-
-    //😀
-    "UNEXPECTED_CLOSE_TAG_TITLE": "UNEXPECTED_CLOSE_TAG_TITLE",
-    "UNEXPECTED_CLOSE_TAG": "<p>The closing <code>&lt;/[[closeTag.name]]&gt;</code> tag <em data-highlight='[[closeTag.start]],[[closeTag.end]]'>here</em> doesn't pair with anything, because there are no opening tags that need to be closed.</p>",
 
     //😀
     "UNFINISHED_CSS_PROPERTY_TITLE": "Unfinished CSS rule",

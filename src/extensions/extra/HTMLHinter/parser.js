@@ -26,7 +26,7 @@ define(function(require) {
 
     function parse(input, type) {
 
-        var result;
+        var result, error;
 
         if (type === "HTML") {
             result = slowparse.HTML(document, input);
@@ -36,17 +36,28 @@ define(function(require) {
             return;
         }
 
-        var error;
-
         console.log("parser.js receives...");
         console.log(result.error);
 
         if(result.error) {
+
+            // We are testing these one by one, and only showing approved rules
+            var allowedRules = [
+                "ORPHAN_CLOSE_TAG",
+                "MISMATCHED_CLOSE_TAG",
+                "UNEXPECTED_CLOSE_TAG" // UNEXPECTED_CLOSE_TAG <- TODO - doesn't show highlight
+            ];
+
+            if(allowedRules.indexOf(result.error.type) < 0){
+                return;
+            }
+
             error = {};
             error.message = templatify(errorMessages[result.error.type], result.error);
             error.cursor = result.error.cursor;
             error.type = result.error.type;
             error.title = templatify(errorMessages[result.error.type + "_TITLE"], result.error);
+
             if(result.error.token) {
                 error.token = result.error.token;
             }

@@ -11,7 +11,7 @@ define(function (require, exports, module) {
         currentErrorWidget,
         errorToggle,
         isShowingDescription,
-        highlights = [];
+        activeTextHighlights = {};
 
     ExtensionUtils.loadStyleSheet(module, "main.less");
     require("tooltipsy.source");
@@ -43,7 +43,7 @@ define(function (require, exports, module) {
             removeButton();
         }
 
-        removeInvalidCodeHighlight();
+        clearAllHighlights();
         // removeLineHighlight(line);
         hideDescription();
         isShowingDescription = false;
@@ -60,58 +60,14 @@ define(function (require, exports, module) {
     }
 
     //Publicly available function used to display error markings
-    function _addInvalidCodeHighlight(highlight) {
+    function addInvalidCodeHighlight(highlight) {
         addTextHighlight(highlight.start, highlight.end, "red-text");
-
-        highlights.push({
-            start: highlight.start,
-            end: highlight.end
-        });
-
-        // TODO - make this better, we should find out how long the document is firsT?
-        addTextHighlight(highlight.end, 9999999999, "faint-text");
-
-        highlights.push({
-            start: highlight.end,
-            end: 9999999999
-        });
-    }
-
-
-    //Publicly available function used to display error markings
-    function addInvalidCodeHighlight(token) {
-        var start = token.interval.start;
-        var end = token.interval.end;
-
-        addTextHighlight(start, end, "red-text");
-
-        highlights.push({
-            start: start,
-            end: end
-        });
-
-        // TODO - make this better, we should find out how long the document is firsT?
-        addTextHighlight(end, 9999999999, "faint-text");
-
-        highlights.push({
-            start: end,
-            end: 9999999999
-        });
-    }
-
-    function removeInvalidCodeHighlight() {
-        // Remove all of the code we highlighted
-        for(var i = 0; i < highlights.length; i++) {
-            var highlight = highlights[i];
-            removeTextHighlight(highlight.start, highlight.end);
-        }
-        highlights = [];
+        addTextHighlight(highlight.end, 9999999999, "faint-text");  // TODO - should we check doc length instead?
     }
 
     //Publicly available function used to display error markings
     function scafoldHinter(errorStart, errorEnd, errorObj, markerAnimation, errorType, errorTitle) {
-        console.log("scafoldHinter", errorType, errorTitle);
-
+        // console.log("scafoldHinter", errorType, errorTitle);
 
         //Setup neccessary variables
         errorToggle = document.createElement("div");
@@ -144,22 +100,6 @@ define(function (require, exports, module) {
         return getActiveEditor()._codeMirror;
     }
 
-    //Highlights the line in which the error is present
-    // function addLineHighlight(errorObject) {
-    //     if(!errorObject.line) {
-    //         return;
-    //     }
-    //     getCodeMirror().getDoc().addLineClass(errorObject.line, "background", "errorHighlight");
-    // }
-
-    //Removes highlight from line in which error was present
-    // function removeLineHighlight(line) {
-    //     if(!line) {
-    //         return;
-    //     }
-    //     getCodeMirror().getDoc().removeLineClass(line, "background", "errorHighlight");
-    // }
-
     //Function that adds a button on the gutter (on given line nubmer) next to the line numbers
     function showButton(errorObject, animationType){
         getCodeMirror().addWidget(errorObject, errorToggle, false);
@@ -186,45 +126,33 @@ define(function (require, exports, module) {
             return;
         }
 
-        // Maybe sometimes we'll need to remove it instantly, so I'll add a speed argument
-        // for future use you fucken idiots.
-
-        var goodEmojis = [
-            "biceps","halo","heart","peace","sunglasses","wink","horns","thumbs"
-        ];
-
+        var goodEmojis = ["biceps", "halo", "heart", "peace", "sunglasses", "wink", "horns", "thumbs"];
         var randomEmoji = goodEmojis[Math.floor(Math.random() * goodEmojis.length)];
+        var CHANGE_EMOJI_TIMEOUT_MS = 400;
+        var CLEAR_EMOJI_TIMEOUT_MS = 1300;
 
-        if (errorToggle.parentNode) {
+        if(animationType == "instant") {
+            $(errorToggle).remove();
+        } else {
+            $(errorToggle).addClass("bye");
 
-            if(animationType == "instant") {
-                $(errorToggle).remove();
-            } else {
-                $(errorToggle).addClass("bye");
+            // Add the class for a "positive" emoji
+            setTimeout(function(el) {
+                return function() {
+                    el.classList.add(randomEmoji);
+                };
+            }(errorToggle), CHANGE_EMOJI_TIMEOUT_MS);
 
-                // Adds the class for the "positive" emoji we want to use
-                // partway through the animation. This is a workaround becuase we are
-                // using a CSS animation, so it's hard to make it dynamic.
-                setTimeout(function(el) {
-                    return function() {
-                        el.classList.add(randomEmoji);
-                    };
-                }(errorToggle), 400);
-
-                setTimeout(function(el) {
-                    return function() {
-                        el.remove();
-                    };
-                }(errorToggle), 1300);
-
-                setTimeout(function(el) {
-                    return function() {
-                        el.remove();
-                    };
-                }(errorToggle), 1300);
-            }
+            // Remove the emoji
+            setTimeout(function(el) {
+                return function() {
+                    el.remove();
+                };
+            }(errorToggle), CLEAR_EMOJI_TIMEOUT_MS);
         }
 
+
+        // TODO - do we need this back?
         //Destroy tooltips instance
         // var tooltips = $(".hint-marker-positioning").data("tooltipsy");
         // if(tooltips) {
@@ -262,7 +190,7 @@ define(function (require, exports, module) {
                 var coordAttr = this.getAttribute("data-highlight") || false;
                 if(coordAttr) {
                     var coords = coordAttr.split(",");
-                    removeTextHighlight(coords[0], coords[1]);
+                    removeTextHighlight(coords[0], coords[1], "styled-background");
                 }
             });
         }
@@ -274,24 +202,35 @@ define(function (require, exports, module) {
         currentErrorWidget = getCodeMirror().addLineWidget(error.line, description, options);
     }
 
-    // Stores the highlight objects created when adding text highlight
-    var activeTextHighlights = {};
 
     // Adds a text higlight to the code
     function addTextHighlight(start, end, className){
         var startHighlight = getCodeMirror().doc.posFromIndex(start);
         var endHighlight = getCodeMirror().doc.posFromIndex(end);
         var highlight = getCodeMirror().markText(startHighlight, endHighlight, { className: className, startStyle: "mark-start" });
-        activeTextHighlights[start + "," + end] = highlight;
+
+        activeTextHighlights[start + "," + end + "," + className] = highlight;
     }
 
+    // Remove ALL code highlights
+    function clearAllHighlights() {
+        for(var k in activeTextHighlights){
+            activeTextHighlights[k].clear();
+            delete activeTextHighlights[k];
+        }
+    }
+
+
     // Removes a text higlight to the code
-    function removeTextHighlight(start, end){
-        var highlight = activeTextHighlights[start + "," + end] || false;
+    function removeTextHighlight(start, end, className){
+        console.log("-", start, end, className);
+
+        var highlight = activeTextHighlights[start + "," + end + "," + className] || false;
         if(highlight){
             highlight.clear();
-            delete activeTextHighlights[start + "," + end];
+            delete activeTextHighlights[start + "," + end + "," + className];
         }
+        console.log(activeTextHighlights);
     }
 
     //Destroys the description
@@ -309,5 +248,4 @@ define(function (require, exports, module) {
     exports.cleanUp = cleanUp;
     exports.scafoldHinter = scafoldHinter;
     exports.addInvalidCodeHighlight = addInvalidCodeHighlight;
-    exports._addInvalidCodeHighlight = _addInvalidCodeHighlight; // temp new version
 });

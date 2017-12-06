@@ -39,31 +39,29 @@ define(function (require, exports, module) {
 
         var markerPresent = MarkErrors.checkForMarker();
 
-        if(error) {
-            errorDisplayTimeout = setTimeout(function(){
-                clearAllErrors("keep-emoji");
-
-                if (error.highlight) {
-                    MarkErrors._addInvalidCodeHighlight(error.highlight);
-                }
-
-                // if (error.token) {
-                //      MarkErrors.addInvalidCodeHighlight(error.token);
-                // }
-
-                errorCache.message = error.message;
-                errorCache.line = editor._codeMirror.getDoc().posFromIndex(error.cursor).line;
-
-                if(markerPresent){
-                    MarkErrors.scafoldHinter(error.cursor, error.end, errorCache, "instant", error.type, error.title);
-                } else {
-                    MarkErrors.scafoldHinter(error.cursor, error.end, errorCache, "animated", error.type, error.title);
-                }
-
-            }, errorDisplayTimeoutMS);
-        } else {
+        if(!error) {
             clearAllErrors();
+            return;
         }
+
+        errorDisplayTimeout = setTimeout(function(){
+            clearAllErrors("keep-emoji");
+
+            if (error.highlight) {
+                MarkErrors.addInvalidCodeHighlight(error.highlight);
+            }
+
+            errorCache.message = error.message;
+            errorCache.line = editor._codeMirror.getDoc().posFromIndex(error.cursor).line;
+
+            if(markerPresent){
+                MarkErrors.scafoldHinter(error.cursor, error.end, errorCache, "instant", error.type, error.title);
+            } else {
+                MarkErrors.scafoldHinter(error.cursor, error.end, errorCache, "animated", error.type, error.title);
+            }
+
+        }, errorDisplayTimeoutMS);
+
     }
 
     function clearAllErrors(type){
