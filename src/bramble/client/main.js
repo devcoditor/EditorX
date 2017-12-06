@@ -122,14 +122,28 @@ define([
 
     // Expose Filer for Path, Buffer, providers, etc.
     Bramble.Filer = Filer;
-    var _fs = new Filer.FileSystem();
+
+    var _fs;
+
+    // Checks if the query parameter is 'temporaryStorage'
+    var useTemporaryStorage = /(temporary[sS]torage[=&])|(temporary[Ss]torage$)/.test(window.location.search);
+    var provider = null;
+
+    // Using memory-backed filesystem if requested
+    if(useTemporaryStorage) {
+        provider = new Filer.FileSystem.providers.Memory();
+        console.warn("[Bramble] Overriding filesystem to use temporary storage. ALL FILES WILL BE DELETED WHEN PAGE IS CLOSED.");
+    }
+
+    _fs = new Filer.FileSystem({provider : provider});
+
     Bramble.getFileSystem = function() {
         return _fs;
     };
 
     // NOTE: THIS WILL DESTROY DATA! For error cases only, or to wipe the disk.
     Bramble.formatFileSystem = function(callback) {
-        _fs = new Filer.FileSystem({flags: ["FORMAT"]}, function(err) {
+        _fs = new Filer.FileSystem({flags: ["FORMAT"], provider : provider}, function(err) {
             if(err) {
                 return callback(err);
             }
