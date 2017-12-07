@@ -36,7 +36,7 @@ define(function(require) {
             return;
         }
 
-        console.log("parser.js receives...");
+        console.log("parser.js received...");
         console.log(result.error);
 
         if(result.error) {
@@ -46,11 +46,13 @@ define(function(require) {
                 "ORPHAN_CLOSE_TAG",
                 "MISMATCHED_CLOSE_TAG",
                 "UNEXPECTED_CLOSE_TAG",
+                "MISSING_CLOSING_TAG_NAME",
                 "INVALID_TAG_NAME",
                 "UNTERMINATED_OPEN_TAG",
                 "UNTERMINATED_CLOSE_TAG",
                 "CLOSE_TAG_FOR_VOID_ELEMENT",
-                "SELF_CLOSING_NON_VOID_ELEMENT"
+                "SELF_CLOSING_NON_VOID_ELEMENT",
+                "UNQUOTED_ATTR_VALUE"
             ];
 
             if(allowedRules.indexOf(result.error.type) < 0){

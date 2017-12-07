@@ -9,15 +9,13 @@ define({
     //❓ - Audited, have questions.
     //🚫 - Not yet audited.
     //✅ - Vetted and added to List of allowed rules
+    //     These get included in a list in parser.js
 
-
-    // ✅
-    // "<span></div>"
+    // ✅ <span></div>
     "ORPHAN_CLOSE_TAG_TITLE": "Mismatched closing tag!", // Mismatched closing tag?
     "ORPHAN_CLOSE_TAG": "<p>This closing <code data-highlight='[[closeTag.start]],[[closeTag.end]]'>&lt;/[[closeTag.name]]&gt;</code> tag doesn't seem to pair with this opening <code data-highlight='[[openTag.start]],[[openTag.end]]'>&lt;[[openTag.name]]&gt;</code> tag before it.</p>",
 
-    // ✅
-    // "<div></dov>"
+    // ✅ <div></dov>
     "MISMATCHED_CLOSE_TAG_TITLE": "Typo in the closing tag?",
     "MISMATCHED_CLOSE_TAG": "<p>This closing <code data-highlight='[[closeTag.start]],[[closeTag.end]]'>&lt;/[[closeTag.name]]&gt;</code> tag doesn't pair with this opening <code data-highlight='[[openTag.start]],[[openTag.end]]'>&lt;[[openTag.name]]&gt;</code> tag.</p> <p>Close the <code>&lt;[[openTag.name]]&gt;</code> tag with a matching <code>&lt;/[[openTag.name]]&gt;</code> tag.</p>",
 
@@ -26,31 +24,36 @@ define({
     "UNEXPECTED_CLOSE_TAG_TITLE": "Do you need this closing tag?",
     "UNEXPECTED_CLOSE_TAG": "<p>This closing <code data-highlight='[[closeTag.start]],[[closeTag.end]]'>&lt;/[[closeTag.name]]&gt;</code> tag isn't needed. There are no opening tags that need to be closed.</p>",
 
-    // ✅
-    // "<jammo>"
+    // ✅ - <div></>
+    "MISSING_CLOSING_TAG_NAME_TITLE": "Did you forget a tag name?",
+    "MISSING_CLOSING_TAG_NAME": "<p>Please put the tag name into this <code data-highlight='[[closeTag.start]],[[closeTag.end]]'>&lt/</code> closing tag.</p><p>Did you mean to close this <code data-highlight='[[openTag.start]],[[openTag.end]]'>&lt;[[openTag.name]]&gt;</code> tag? If so, use <code>&lt;/[[openTag.name]]&gt;</code>.</p>",
+
+    // ✅ - <jammo>
     "INVALID_TAG_NAME_TITLE": "That's not a valid tag!",
     "INVALID_TAG_NAME": "<p><code data-highlight='[[openTag.start]],[[openTag.end]]'>&lt;[[openTag.name]]</code> appears to be the start of a tag, but <code>[[openTag.name]]</code> is not a valid tag name.</p> <p>Here's <a href='https://developer.mozilla.org/en/docs/Web/Guide/HTML/HTML5/HTML5_element_list'>a list of HTML5 tags</a>.</p>",
 
-    // ✅
-    // "<div"
+    // ✅ - <div
     "UNTERMINATED_OPEN_TAG_TITLE": "Please close this tag!",
-    "UNTERMINATED_OPEN_TAG": "<p>Looks like this <code data-highlight='[[openTag.start]],[[openTag.end]]'>&lt;[[openTag.name]]</code> tag is not properly closed. Fix it by adding a closing <code>&gt;</code> so it looks like this: <code>&lt;[[openTag.name]]&gt;</code></p>",
+    "UNTERMINATED_OPEN_TAG": "<p>Looks like this <code data-highlight='[[openTag.start]],[[openTag.end]]'>&lt;[[openTag.name]]</code> tag is not properly closed. Fix it by adding a closing <code>&gt;</code> at the end.</p>",
 
-    // ✅
-    // "</div"
+    // ✅ - </div
     "UNTERMINATED_CLOSE_TAG_TITLE": "Please close this tag!",
     "UNTERMINATED_CLOSE_TAG": "<p>This closing <code data-highlight='[[closeTag.start]],[[closeTag.end]]'>&lt;/[[closeTag.name]]</code> tag doesn't end with a <code>&gt;</code>.</p>",
 
-    // ✅
-    // "<div />"
+    // ✅ - <div />
     "SELF_CLOSING_NON_VOID_ELEMENT_TITLE": "This is not a self-closing tag",
     "SELF_CLOSING_NON_VOID_ELEMENT": "This <code data-highlight='[[start]],[[end]]'>&lt;[[name]]&gt;</code> tag can't be self-closed because it is not a void element. Remove the <code>/</code> and then close it with a separate <code>&lt;/[[name]]&gt;</code> tag.",
 
-
-
-    // 😀
+    // ✅ - </img>
     "CLOSE_TAG_FOR_VOID_ELEMENT_TITLE": "You don't need this closing tag!",
     "CLOSE_TAG_FOR_VOID_ELEMENT": "You can delete this closing <code data-highlight='[[closeTag.start]],[[closeTag.end]]'>&lt;/[[closeTag.name]]&gt;</code> tag. <code>&lt;[[closeTag.name]]&gt;</code> elements are void elements, meaning they don't need closing tags.",
+
+    // ✅ - <div class=blam'>
+    "UNQUOTED_ATTR_VALUE_TITLE": "Missing opening quote.",
+    "UNQUOTED_ATTR_VALUE": "This attribute value <code data-highlight='[[highlight.start]], [[highlight.end]]'>[[attributeValueBeginning]]</code> should start with an opening double quote.</p>",
+
+
+
 
     //😀
     "ATTRIBUTE_IN_CLOSING_TAG_TITLE": "No attributes in a closing tag allowed!",
@@ -104,10 +107,6 @@ define({
     "MISMATCHED_CLOSE_TAG_DUE_TO_EARLIER_AUTO_CLOSING_TITLE" : "MISMATCHED_CLOSE_TAG_DUE_TO_EARLIER_AUTO_CLOSING_TITLE",
     "MISMATCHED_CLOSE_TAG_DUE_TO_EARLIER_AUTO_CLOSING" : "MISMATCHED_CLOSE_TAG_DUE_TO_EARLIER_AUTO_CLOSING",
 
-    //❓ Will leave these for Pomax
-    "MISSING_CLOSING_TAG_NAME_TITLE": "MISSING_CLOSING_TAG_NAME_TITLE",
-    "MISSING_CLOSING_TAG_NAME": "MISSING_CLOSING_TAG_NAME",
-
     // 😀❓- not sure if the message is the best
     "MISSING_CSS_BLOCK_CLOSER_TITLE": "Unclosed block of CSS",
     "MISSING_CSS_BLOCK_CLOSER": "<p>Looks like you forgot to close this block of CSS. Add a <code>}</code> after <code data-highlight='[[cssValue.start]],[[cssValue.end]]'>[[cssValue.value]]</code>.",
@@ -156,10 +155,6 @@ define({
     //😀
     "UNKOWN_CSS_KEYWORD_TITLE": "Unrecognized CSS Keyword",
     "UNKOWN_CSS_KEYWORD": "The CSS @keyword <code data-highlight='[[cssKeyword.start]],[[cssKeyword.end]]'>[[cssKeyword.value]]</code> does not match any known @keywords.",
-
-    //✏️https://github.com/mozilla/slowparse/issues/99
-    "UNQUOTED_ATTR_VALUE_TITLE": "UNQUOTED_ATTR_VALUE_TITLE",
-    "UNQUOTED_ATTR_VALUE": "The Attribute value <code data-highlight='[[start]]'>here</code> should start with an opening double quote.</p>",
 
     //✏️https://github.com/mozilla/slowparse/issues/101
     "UNTERMINATED_ATTR_VALUE_TITLE": "Unclosed attribute value",
