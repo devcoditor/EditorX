@@ -19,6 +19,7 @@ define(function (require, exports, module) {
         Path                = brackets.getModule("filesystem/impls/filer/BracketsFiler").Path,
         BrambleStartupState = brackets.getModule("bramble/StartupState"),
         Mustache            = brackets.getModule("thirdparty/mustache/mustache"),
+        PreferencesManager  = brackets.getModule("preferences/PreferencesManager"),
         escapedPathTemplate = Mustache.compile("{{path}}");
 
     // The script that will be injected into the previewed HTML to handle the other side of the post message connection.
@@ -222,14 +223,12 @@ define(function (require, exports, module) {
     // URL of document being rewritten/launched (if any)
     var _pendingReloadUrl;
 
-    // Whether or not to allow reloads in the general case (true by default)
-    var _autoUpdate = true;
-
+    // Whether or not to allow reloads in the general case
     function setAutoUpdate(value) {
-        _autoUpdate = value;
+        PreferencesManager.set("livePreviewAutoReload",value);
 
         // Force a reload if we switch back to auto-updates
-        if(_autoUpdate) {
+        if(value) {
             reload(true);
         }
     }
@@ -244,7 +243,7 @@ define(function (require, exports, module) {
         var url;
 
         // If auto-updates are disabled, and force wasn't passed, bail.
-        if(!_autoUpdate && !force) {
+        if(!PreferencesManager.get("livePreviewAutoReload") && !force) {
             return;
         }
 
