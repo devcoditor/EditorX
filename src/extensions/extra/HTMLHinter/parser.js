@@ -52,7 +52,8 @@ define(function(require) {
                 "UNTERMINATED_CLOSE_TAG",
                 "CLOSE_TAG_FOR_VOID_ELEMENT",
                 "SELF_CLOSING_NON_VOID_ELEMENT",
-                "UNQUOTED_ATTR_VALUE"
+                "UNQUOTED_ATTR_VALUE",
+                "UNCLOSED_TAG"
             ];
 
             if(allowedRules.indexOf(result.error.type) < 0){

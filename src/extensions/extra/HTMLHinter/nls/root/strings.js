@@ -15,6 +15,10 @@ define({
     "ORPHAN_CLOSE_TAG_TITLE": "Mismatched closing tag!", // Mismatched closing tag?
     "ORPHAN_CLOSE_TAG": "<p>This closing <code data-highlight='[[closeTag.start]],[[closeTag.end]]'>&lt;/[[closeTag.name]]&gt;</code> tag doesn't seem to pair with this opening <code data-highlight='[[openTag.start]],[[openTag.end]]'>&lt;[[openTag.name]]&gt;</code> tag before it.</p>",
 
+    // ✅ - <div> at the end of the doc...
+    "UNCLOSED_TAG_TITLE": "There's an unclosed tag",
+    "UNCLOSED_TAG": "<p>This <code data-highlight='[[openTag.start]],[[openTag.end]]'>&lt;[[openTag.name]]&gt;</code> tag doesn't have a matching closing tag. To fix it, delete it or add a <code>&lt;/[[openTag.name]]&gt;</code> to close it.</p>",
+
     // ✅ <div></dov>
     "MISMATCHED_CLOSE_TAG_TITLE": "Typo in the closing tag?",
     "MISMATCHED_CLOSE_TAG": "<p>This closing <code data-highlight='[[closeTag.start]],[[closeTag.end]]'>&lt;/[[closeTag.name]]&gt;</code> tag doesn't pair with this opening <code data-highlight='[[openTag.start]],[[openTag.end]]'>&lt;[[openTag.name]]&gt;</code> tag.</p> <p>Close the <code>&lt;[[openTag.name]]&gt;</code> tag with a matching <code>&lt;/[[openTag.name]]&gt;</code> tag.</p>",
@@ -51,8 +55,6 @@ define({
     // ✅ - <div class=blam'>
     "UNQUOTED_ATTR_VALUE_TITLE": "Missing opening quote.",
     "UNQUOTED_ATTR_VALUE": "This attribute value <code data-highlight='[[highlight.start]], [[highlight.end]]'>[[attributeValueBeginning]]</code> should start with an opening double quote.</p>",
-
-
 
 
     //😀
@@ -136,9 +138,7 @@ define({
     "UNCAUGHT_CSS_PARSE_ERROR_TITLE": "UNCAUGHT_CSS_PARSE_ERROR_TITLE",
     "UNCAUGHT_CSS_PARSE_ERROR": "<p>A parse error occurred outside expected cases: <em data-highlight='[[error.start]],[[error.end]]'>[[error.msg]]</em></p>",
 
-    //❓- doesn't seem to get thrown, caught by other stuff first...
-    "UNCLOSED_TAG_TITLE": "UNCLOSED_TAG_TITLE",
-    "UNCLOSED_TAG": "<p>The <code>&lt;[[openTag.name]]&gt;</code> tag <em data-highlight='[[openTag.start]],[[openTag.end]]'>here</em> never closes.</p>",
+
 
     //😀
     "UNFINISHED_CSS_PROPERTY_TITLE": "Unfinished CSS rule",
