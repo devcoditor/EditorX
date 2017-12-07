@@ -220,17 +220,13 @@ define(function (require, exports, module) {
         }
     }
 
-
     // Removes a text higlight to the code
     function removeTextHighlight(start, end, className){
-        console.log("-", start, end, className);
-
         var highlight = activeTextHighlights[start + "," + end + "," + className] || false;
         if(highlight){
             highlight.clear();
             delete activeTextHighlights[start + "," + end + "," + className];
         }
-        console.log(activeTextHighlights);
     }
 
     //Destroys the description

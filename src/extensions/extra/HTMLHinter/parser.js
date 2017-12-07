@@ -45,7 +45,12 @@ define(function(require) {
             var allowedRules = [
                 "ORPHAN_CLOSE_TAG",
                 "MISMATCHED_CLOSE_TAG",
-                "UNEXPECTED_CLOSE_TAG" // UNEXPECTED_CLOSE_TAG <- TODO - doesn't show highlight
+                "UNEXPECTED_CLOSE_TAG",
+                "INVALID_TAG_NAME",
+                "UNTERMINATED_OPEN_TAG",
+                "UNTERMINATED_CLOSE_TAG",
+                "CLOSE_TAG_FOR_VOID_ELEMENT",
+                "SELF_CLOSING_NON_VOID_ELEMENT"
             ];
 
             if(allowedRules.indexOf(result.error.type) < 0){
