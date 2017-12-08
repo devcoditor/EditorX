@@ -8,7 +8,15 @@
         }
     },
     {
-        "path": "extensions/extra/HTMLHinter"
+        "path": "extensions/extra/HTMLHinter",
+        "less": {
+               "dist/extensions/extra/HTMLHinter/main.css": [
+                   "src/extensions/extra/HTMLHinter/main.less"
+               ]
+        },
+        "copy": [
+               "extensions/extra/HTMLHinter/images/*.*"
+        ]
     },
     {
         "path": "extensions/default/HTMLCodeHints"
