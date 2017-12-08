@@ -57,7 +57,8 @@ define(function(require) {
                 "ATTRIBUTE_IN_CLOSING_TAG",
                 "INVALID_ATTR_NAME",
                 "UNTERMINATED_ATTR_VALUE",
-                "UNTERMINATED_COMMENT"
+                "UNTERMINATED_COMMENT",
+                "BLOCK_INSIDE_INLINE_ELEMENT"
             ];
 
             if(allowedRules.indexOf(result.error.type) < 0){

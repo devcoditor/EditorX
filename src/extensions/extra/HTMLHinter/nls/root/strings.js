@@ -81,6 +81,21 @@ define({
     "UNTERMINATED_COMMENT": "The comment starting at <code class='comment' data-highlight='[[start]],[[end]]'>&lt;!--</code> needs to be closed with a matching <code>--&gt;</code>.",
 
 
+  //❓ TODO - figure out where to send people
+  "BLOCK_INSIDE_INLINE_ELEMENT_TITLE" : "You can't put a &lt;[[invalidTag.name]]&gt; here!",
+  "BLOCK_INSIDE_INLINE_ELEMENT" : `
+    <p>
+    This <code data-highlight='[[invalidTag.start]],[[invalidTag.end]]'>&lt;[[invalidTag.name]]&gt;</code>
+    is a block element, which are not allowed inside of inline elements, like this
+    <code data-highlight='[[openTag.start]],[[openTag.end]]'>&lt;[[openTag.name]]&gt;</code>.
+    </p>
+    <p>
+    One way to fix this is to change the <code>&lt;[[openTag.name]]&gt;</code> to a block-level
+    element. You can read more about the difference <a href="https://developer.mozilla.org/en-US/docs/Web/HTML/Block-level_elements#Block-level_vs._inline">here</a>.
+    </p>
+  `,
+
+
     //🚫
     "CSS_MIXED_ACTIVECONTENT_TITLE": "CSS_MIXED_ACTIVECONTENT_TITLE",
     "CSS_MIXED_ACTIVECONTENT": "<p>The CSS property <em data-highlight='[[cssProperty.start]],[[cssProperty.end]]'>[[cssProperty.property]]</em> has a url() value <em data-highlight='[[cssValue.start]],[[cssValue.end]]'>here</em> that currently points to an insecure resource. You can make this error disappear by logging into Webmaker. For more information on how modern browsers signal insecure content, visit <a href='https://developer.mozilla.org/en-US/docs/Security/MixedContent'>this link</a>.</p>",
@@ -155,8 +170,6 @@ define({
     "UNCAUGHT_CSS_PARSE_ERROR_TITLE": "UNCAUGHT_CSS_PARSE_ERROR_TITLE",
     "UNCAUGHT_CSS_PARSE_ERROR": "<p>A parse error occurred outside expected cases: <em data-highlight='[[error.start]],[[error.end]]'>[[error.msg]]</em></p>",
 
-
-
     //😀
     "UNFINISHED_CSS_PROPERTY_TITLE": "Unfinished CSS rule",
     "UNFINISHED_CSS_PROPERTY": "This <code data-highlight='[[cssProperty.start]],[[cssProperty.end]]'>[[cssProperty.property]]</code> property still needs finalizing with :</p>",
@@ -173,23 +186,7 @@ define({
     "UNKOWN_CSS_KEYWORD_TITLE": "Unrecognized CSS Keyword",
     "UNKOWN_CSS_KEYWORD": "The CSS @keyword <code data-highlight='[[cssKeyword.start]],[[cssKeyword.end]]'>[[cssKeyword.value]]</code> does not match any known @keywords.",
 
-
-
     "UNTERMINATED_CSS_COMMENT_TITLE": "UNTERMINATED_CSS_COMMENT_TITLE",
     "UNTERMINATED_CSS_COMMENT": "<p>The CSS comment <em data-highlight='[[start]]'>here</em> doesn't end with a <code>*/</code>.</p>",
-
-    //❓ TODO - figure out where to send people
-    "BLOCK_INSIDE_INLINE_ELEMENT_TITLE" : "You can't put a &lt;[[invalidTag.name]]&gt; here!",
-    "BLOCK_INSIDE_INLINE_ELEMENT" : `
-      <p>
-      This <code data-highlight='[[invalidTag.start]],[[invalidTag.end]]'>&lt;[[invalidTag.name]]&gt;</code>
-      is a block element, which are not allowed inside of inline elements, like this
-      <code data-highlight='[[openTag.start]],[[openTag.end]]'>&lt;[[openTag.name]]&gt;</code>.
-      </p>
-      <p>
-      Change the <code>[[openTag.name]]</code> to a block-level
-      element: here's a <a href="https://developer.mozilla.org/en-US/docs/Web/HTML/Block-level_elements">handy list</a>.
-      </p>
-    `
 
 });
