@@ -52,8 +52,12 @@ define(function(require) {
                 "UNTERMINATED_CLOSE_TAG",
                 "CLOSE_TAG_FOR_VOID_ELEMENT",
                 "SELF_CLOSING_NON_VOID_ELEMENT",
+                "UNCLOSED_TAG",
                 "UNQUOTED_ATTR_VALUE",
-                "UNCLOSED_TAG"
+                "ATTRIBUTE_IN_CLOSING_TAG",
+                "INVALID_ATTR_NAME",
+                "UNTERMINATED_ATTR_VALUE",
+                "UNTERMINATED_COMMENT"
             ];
 
             if(allowedRules.indexOf(result.error.type) < 0){

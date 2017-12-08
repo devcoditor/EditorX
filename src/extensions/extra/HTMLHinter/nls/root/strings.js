@@ -11,30 +11,35 @@ define({
     //✅ - Vetted and added to List of allowed rules
     //     These get included in a list in parser.js
 
+    // Tags
+
+    // ✅ - <jammo>
+    "INVALID_TAG_NAME_TITLE": "That's not a valid tag!",
+    "INVALID_TAG_NAME": "<p><code data-highlight='[[openTag.start]],[[openTag.end]]'>&lt;[[openTag.name]]</code> appears to be the start of a tag, but <code>[[openTag.name]]</code> is not a valid tag name.</p> <p>Here's <a href='https://developer.mozilla.org/en/docs/Web/Guide/HTML/HTML5/HTML5_element_list'>a list of HTML5 tags</a>.</p>",
+
+
+    // Improper closing of tags
+
     // ✅ <span></div>
     "ORPHAN_CLOSE_TAG_TITLE": "Mismatched closing tag!", // Mismatched closing tag?
     "ORPHAN_CLOSE_TAG": "<p>This closing <code data-highlight='[[closeTag.start]],[[closeTag.end]]'>&lt;/[[closeTag.name]]&gt;</code> tag doesn't seem to pair with this opening <code data-highlight='[[openTag.start]],[[openTag.end]]'>&lt;[[openTag.name]]&gt;</code> tag before it.</p>",
-
-    // ✅ - <div> at the end of the doc...
-    "UNCLOSED_TAG_TITLE": "There's an unclosed tag",
-    "UNCLOSED_TAG": "<p>This <code data-highlight='[[openTag.start]],[[openTag.end]]'>&lt;[[openTag.name]]&gt;</code> tag doesn't have a matching closing tag. To fix it, delete it or add a <code>&lt;/[[openTag.name]]&gt;</code> to close it.</p>",
 
     // ✅ <div></dov>
     "MISMATCHED_CLOSE_TAG_TITLE": "Typo in the closing tag?",
     "MISMATCHED_CLOSE_TAG": "<p>This closing <code data-highlight='[[closeTag.start]],[[closeTag.end]]'>&lt;/[[closeTag.name]]&gt;</code> tag doesn't pair with this opening <code data-highlight='[[openTag.start]],[[openTag.end]]'>&lt;[[openTag.name]]&gt;</code> tag.</p> <p>Close the <code>&lt;[[openTag.name]]&gt;</code> tag with a matching <code>&lt;/[[openTag.name]]&gt;</code> tag.</p>",
 
-    // ✅
-    // For tags that are outside of all other closed tag pairs.
+    // ✅ - <html><div> at the end of the doc...
+    "UNCLOSED_TAG_TITLE": "There's an unclosed tag",
+    "UNCLOSED_TAG": "<p>This <code data-highlight='[[openTag.start]],[[openTag.end]]'>&lt;[[openTag.name]]&gt;</code> tag doesn't have a matching closing tag. To fix it, delete it or add a <code>&lt;/[[openTag.name]]&gt;</code> to close it.</p>",
+
+    // ✅ </html></div>
+    // For closing tags that are outside of all other closed tag pairs.
     "UNEXPECTED_CLOSE_TAG_TITLE": "Do you need this closing tag?",
     "UNEXPECTED_CLOSE_TAG": "<p>This closing <code data-highlight='[[closeTag.start]],[[closeTag.end]]'>&lt;/[[closeTag.name]]&gt;</code> tag isn't needed. There are no opening tags that need to be closed.</p>",
 
     // ✅ - <div></>
     "MISSING_CLOSING_TAG_NAME_TITLE": "Did you forget a tag name?",
     "MISSING_CLOSING_TAG_NAME": "<p>Please put the tag name into this <code data-highlight='[[closeTag.start]],[[closeTag.end]]'>&lt/</code> closing tag.</p><p>Did you mean to close this <code data-highlight='[[openTag.start]],[[openTag.end]]'>&lt;[[openTag.name]]&gt;</code> tag? If so, use <code>&lt;/[[openTag.name]]&gt;</code>.</p>",
-
-    // ✅ - <jammo>
-    "INVALID_TAG_NAME_TITLE": "That's not a valid tag!",
-    "INVALID_TAG_NAME": "<p><code data-highlight='[[openTag.start]],[[openTag.end]]'>&lt;[[openTag.name]]</code> appears to be the start of a tag, but <code>[[openTag.name]]</code> is not a valid tag name.</p> <p>Here's <a href='https://developer.mozilla.org/en/docs/Web/Guide/HTML/HTML5/HTML5_element_list'>a list of HTML5 tags</a>.</p>",
 
     // ✅ - <div
     "UNTERMINATED_OPEN_TAG_TITLE": "Please close this tag!",
@@ -52,14 +57,29 @@ define({
     "CLOSE_TAG_FOR_VOID_ELEMENT_TITLE": "You don't need this closing tag!",
     "CLOSE_TAG_FOR_VOID_ELEMENT": "You can delete this closing <code data-highlight='[[closeTag.start]],[[closeTag.end]]'>&lt;/[[closeTag.name]]&gt;</code> tag. <code>&lt;[[closeTag.name]]&gt;</code> elements are void elements, meaning they don't need closing tags.",
 
+
+    // Attributes
+
     // ✅ - <div class=blam'>
     "UNQUOTED_ATTR_VALUE_TITLE": "Missing opening quote.",
     "UNQUOTED_ATTR_VALUE": "This attribute value <code data-highlight='[[highlight.start]], [[highlight.end]]'>[[attributeValueBeginning]]</code> should start with an opening double quote.</p>",
 
+    // ✅ - <div 2class="bam>
+    "UNTERMINATED_ATTR_VALUE_TITLE": "Unclosed attribute value",
+    "UNTERMINATED_ATTR_VALUE": "<p>The <code>&lt;[[openTag.name]]&gt;</code> tag's <code>[[attribute.name.value]]</code> attribute has a value <code class='blue' data-highlight='[[attribute.value.start]], [[attribute.value.end]]'>here</code> that doesn't end with a closing quote.</p><p>In addition, make sure the closing quote matches the opening quote (single vs double).</p>",
 
-    //😀
+    // ✅ - <div></div class="blam">
     "ATTRIBUTE_IN_CLOSING_TAG_TITLE": "No attributes in a closing tag allowed!",
-    "ATTRIBUTE_IN_CLOSING_TAG": "This closing tag <code data-highlight='[[closeTag.start]],[[closeTag.end]]'>&lt;/[[closeTag.name]]&gt;</code> cannot contain any attributes.</p>",
+    "ATTRIBUTE_IN_CLOSING_TAG": "This closing <code data-highlight='[[closeTag.start]],[[closeTag.end]]'>&lt;/[[closeTag.name]]&gt;</code> tag cannot contain any attributes. Add the attribute to the opening <code>&lt;[[closeTag.name]]&gt;</code> tag instead.</p>",
+
+    // ✅ - <div 2class="bam">
+    "INVALID_ATTR_NAME_TITLE": "That's not a valid attribute!",
+    "INVALID_ATTR_NAME": "This attribute <code class='attribute' data-highlight='[[start]],[[end]]'>[[attribute.name.value]]</code> has a name that is not permitted in HTML5. Make sure your attribute name does not start with a number or special character.</p>",
+
+    // ✅ - <!-- (with no closing comment)
+    "UNTERMINATED_COMMENT_TITLE": "Please close your comment",
+    "UNTERMINATED_COMMENT": "The comment starting at <code class='comment' data-highlight='[[start]],[[end]]'>&lt;!--</code> needs to be closed with a matching <code>--&gt;</code>.",
+
 
     //🚫
     "CSS_MIXED_ACTIVECONTENT_TITLE": "CSS_MIXED_ACTIVECONTENT_TITLE",
@@ -77,9 +97,6 @@ define({
     "HTTP_LINK_FROM_HTTPS_PAGE_TITLE": "HTTP_LINK_FROM_HTTPS_PAGE_TITLE",
     "HTTP_LINK_FROM_HTTPS_PAGE": "<p>The <code>&lt;[[openTag.name]]&gt;</code> tag's <code>[[attribute.name.value]]</code> attribute (<em data-highlight='[[attribute.value.start]],[[attribute.value.end]]'>here</em>) currently points to an insecure resource. You can make this error disappear by logging into Webmaker. For more information on how modern browsers signal insecure content, visit <a href='https://developer.mozilla.org/en-US/docs/Security/MixedContent'>this link</a>.</p>",
 
-    //😀
-    "INVALID_ATTR_NAME_TITLE": "That's not a valid attribute!",
-    "INVALID_ATTR_NAME": "This attribute <code class='attribute' data-highlight='[[start]],[[end]]'>[[attribute.name.value]]</code> has a name that is not permitted in HTML5.</p>",
 
     //❓ - not sure how to get it to come up
     "UNSUPPORTED_ATTR_NAMESPACE_TITLE": "UNSUPPORTED_ATTR_NAMESPACE_TITLE",
@@ -156,13 +173,7 @@ define({
     "UNKOWN_CSS_KEYWORD_TITLE": "Unrecognized CSS Keyword",
     "UNKOWN_CSS_KEYWORD": "The CSS @keyword <code data-highlight='[[cssKeyword.start]],[[cssKeyword.end]]'>[[cssKeyword.value]]</code> does not match any known @keywords.",
 
-    //✏️https://github.com/mozilla/slowparse/issues/101
-    "UNTERMINATED_ATTR_VALUE_TITLE": "Unclosed attribute value",
-    "UNTERMINATED_ATTR_VALUE": "<p>The <code>&lt;[[openTag.name]]&gt;</code> tag's <code>[[attribute.name.value]]</code> attribute has a value <code class='blue' data-highlight='[[attribute.value.start]]'>here</code> that doesn't end with a closing double quote.</p>",
 
-    //✏️https://github.com/mozilla/slowparse/issues/102
-    "UNTERMINATED_COMMENT_TITLE": "Unclosed comment",
-    "UNTERMINATED_COMMENT": "This comment <code class='comment' data-highlight='[[start]]'>&lt;!--</code> needs to be closed with a matching <code>--&gt;</code>.",
 
     "UNTERMINATED_CSS_COMMENT_TITLE": "UNTERMINATED_CSS_COMMENT_TITLE",
     "UNTERMINATED_CSS_COMMENT": "<p>The CSS comment <em data-highlight='[[start]]'>here</em> doesn't end with a <code>*/</code>.</p>",
