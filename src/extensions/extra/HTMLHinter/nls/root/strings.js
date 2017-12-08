@@ -4,12 +4,12 @@
 define({
 
     // Legend
+    //✅ - Vetted and enabled
     //😀 - Audited, good!
     //✏️ - Needs follow up work
     //❓ - Audited, have questions.
     //🚫 - Not yet audited.
-    //✅ - Vetted and added to List of allowed rules
-    //     These get included in a list in parser.js
+
 
     // Tags
 
@@ -84,6 +84,9 @@ define({
     // ✅ - <span><div></div></span>
   "BLOCK_INSIDE_INLINE_ELEMENT_TITLE" : "You can't put a &lt;[[invalidTag.name]]&gt; here!",
   "BLOCK_INSIDE_INLINE_ELEMENT" : "<p> This <code data-highlight='[[invalidTag.start]],[[invalidTag.end]]'>&lt;[[invalidTag.name]]&gt;</code> is a block element, which are not allowed inside of inline elements, like this <code data-highlight='[[openTag.start]],[[openTag.end]]'>&lt;[[openTag.name]]&gt;</code>.</p> <p> One way to fix this is to change the <code>&lt;[[openTag.name]]&gt;</code> to a block-level element. You can read more about the difference <a href='https://developer.mozilla.org/en-US/docs/Web/HTML/Block-level_elements#Block-level_vs._inline'>here</a>. </p>",
+
+
+    // The rules past this point have not been enabled.
 
     //🚫
     "CSS_MIXED_ACTIVECONTENT_TITLE": "CSS_MIXED_ACTIVECONTENT_TITLE",
