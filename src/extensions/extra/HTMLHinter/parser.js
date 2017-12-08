@@ -36,8 +36,8 @@ define(function(require) {
             return;
         }
 
-        console.log("parser.js received...");
-        console.log(result.error);
+        // console.log("parser.js received...");
+        // console.log(result.error);
 
         if(result.error) {
 
@@ -64,6 +64,11 @@ define(function(require) {
             if(allowedRules.indexOf(result.error.type) < 0){
                 return;
             }
+
+            console.log("===SLOWPARSE===");
+            console.log("Displaying rule...");
+            console.log(result.error.type);
+            console.log(result.error);
 
             error = {};
             error.message = templatify(errorMessages[result.error.type], result.error);
