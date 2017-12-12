@@ -25,6 +25,7 @@ define(function (require, exports, module) {
     var Tutorial = require("lib/Tutorial");
     var Theme = require("lib/Theme");
     var UI = require("lib/UI");
+    var IframeBrowser = require("lib/iframe-browser");
 
     function _remoteCallbackFn(callback) {
         return function() {
@@ -145,6 +146,12 @@ define(function (require, exports, module) {
             break;
         case "BRAMBLE_HIDE_SIDEBAR":
             SidebarView.hide();
+            break;
+        case "BRAMBLE_SHOW_PREVIEW":
+            IframeBrowser.show();
+            break;
+        case "BRAMBLE_HIDE_PREVIEW":
+            IframeBrowser.hide();
             break;
         case "BRAMBLE_HIDE_STATUSBAR":
             StatusBar.disable();
