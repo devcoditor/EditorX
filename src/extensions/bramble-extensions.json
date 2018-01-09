@@ -58,6 +58,18 @@
         ]
     },
     {
+        "path": "extensions/default/InlineBorderRadiusEditor",
+        "less": {
+            "dist/extensions/default/InlineBorderRadiusEditor/css/main.css": [
+                "src/extensions/default/InlineBorderRadiusEditor/css/main.less"
+            ]
+        },
+        "copy": [
+            "extensions/default/InlineBorderRadiusEditor/img/*.png",
+            "extensions/default/InlineBorderRadiusEditor/BorderRadiusEditorTemplate.html"
+        ]
+    },
+    {
         "path": "extensions/default/Inline3DParametersEditor",
         "less": {
             "dist/extensions/default/Inline3DParametersEditor/css/main.css": [
