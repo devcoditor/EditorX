@@ -351,6 +351,10 @@ module.exports = function (grunt) {
             test : {
                 files: ['<%= meta.test %>', 'test/**/*'],
                 tasks: ['eslint:test']
+            },
+            bramble : {
+                files: ['src/bramble/**/*'],
+                tasks: ['build-browser-dev']
             }
         },
         /* FIXME (jasonsanjose): how to handle extension tests */
