@@ -18,7 +18,7 @@ taking our pull requests, implementing feature requests and fixing bugs! See
 [Notes on CodeMirror](https://github.com/adobe/brackets/wiki/Notes-on-CodeMirror)
 for info on how we're using CodeMirror.
 
-# How to setup WYSIWYG (Brackets) in your local machine
+# How to setup EditorX (Brackets) in your local machine
 
 Step 1: Make sure you fork and clone [Brackets](https://github.com/mozilla/brackets).
 
