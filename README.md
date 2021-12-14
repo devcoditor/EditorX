@@ -1,4 +1,4 @@
-# WYSIWYG is based on Brackets
+# EditorX is based on Brackets
 
 Brackets is a modern open-source code editor for HTML, CSS
 and JavaScript that is  *built* in HTML, CSS and JavaScript.
